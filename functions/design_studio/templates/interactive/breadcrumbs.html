@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Breadcrumbs") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .breadcrumb-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 1rem 1.25rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .breadcrumb-link {
+            color: #6b6b6b;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb-link:hover {
+            color: #1a1a1a;
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: #a3a3a3;
+            font-size: 0.75rem;
+        }
+
+        .breadcrumb-current {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        /* Breadcrumb Variants */
+        .breadcrumb-chevron .breadcrumb-separator { content: '›'; }
+        .breadcrumb-arrow .breadcrumb-separator { content: '→'; }
+        .breadcrumb-dot .breadcrumb-separator { content: '•'; }
+
+        /* With Icon */
+        .breadcrumb-icon .breadcrumb-item:first-child .breadcrumb-link::before {
+            content: '🏠';
+            margin-right: 0.25rem;
+        }
+
+        /* Compact */
+        .breadcrumb-compact {
+            padding: 0.5rem 1rem;
+            font-size: 0.8125rem;
+        }
+
+        /* With Dropdown */
+        .breadcrumb-dropdown {
+            position: relative;
+        }
+
+        .breadcrumb-toggle {
+            background: none;
+            border: none;
+            color: #6b6b6b;
+            cursor: pointer;
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .breadcrumb-toggle:hover {
+            background: #f0f0f0;
+            color: #1a1a1a;
+        }
+
+        .breadcrumb-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 0.5rem 0;
+            min-width: 200px;
+            display: none;
+            z-index: 100;
+        }
+
+        .breadcrumb-dropdown:hover .breadcrumb-menu,
+        .breadcrumb-menu.open {
+            display: block;
+        }
+
+        .breadcrumb-menu-item {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            color: #6b6b6b;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .breadcrumb-menu-item:hover {
+            background: #f7f7f8;
+            color: #1a1a1a;
+        }
+
+        .breadcrumb-menu-item.current {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        /* Visual Hierarchy */
+        .breadcrumb-visual {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .breadcrumb-visual-item {
+            padding: 0.5rem 1rem;
+            background: #f0f0f0;
+            border-radius: 6px;
+            font-size: 0.8125rem;
+            color: #6b6b6b;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .breadcrumb-visual-item:hover {
+            background: #e0e0e0;
+            color: #1a1a1a;
+        }
+
+        .breadcrumb-visual-item.active {
+            background: #1a1a1a;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="breadcrumb-container">
+        <h3 style="font-size: 0.875rem; color: #6b6b6b; margin-bottom: 0.5rem;">Default</h3>
+        <nav class="breadcrumb">
+            {% for item in breadcrumbs | default([{'label': 'Home', 'url': '#'}, {'label': 'Products', 'url': '#'}, {'label': 'Electronics', 'url': '#'}, {'label': 'Laptops', 'current': True}]) %}
+            {% if loop.first %}
+            <div class="breadcrumb-item">
+                {% if item.url %}
+                <a href="{{ item.url }}" class="breadcrumb-link">{{ item.label }}</a>
+                {% else %}
+                <span class="breadcrumb-current">{{ item.label }}</span>
+                {% endif %}
+            </div>
+            {% elif item.current %}
+            <div class="breadcrumb-item">
+                <span class="breadcrumb-separator">›</span>
+                <span class="breadcrumb-current">{{ item.label }}</span>
+            </div>
+            {% else %}
+            <div class="breadcrumb-item">
+                <span class="breadcrumb-separator">›</span>
+                <a href="{{ item.url }}" class="breadcrumb-link">{{ item.label }}</a>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </nav>
+
+        <h3 style="font-size: 0.875rem; color: #6b6b6b; margin: 1.5rem 0 0.5rem;">Visual</h3>
+        <nav class="breadcrumb-visual">
+            {% for item in breadcrumbs | default([{'label': 'Home', 'url': '#'}, {'label': 'Products', 'url': '#'}, {'label': 'Electronics', 'url': '#'}, {'label': 'Laptops', 'current': True}]) %}
+            {% if loop.first %}
+            <a href="{% if item.url %}{{ item.url }}{% else %}#{% endif %}" class="breadcrumb-visual-item {% if item.current %}active{% endif %}">{{ item.label }}</a>
+            {% elif item.current %}
+            <span class="breadcrumb-visual-item active">{{ item.label }}</span>
+            {% else %}
+            <a href="{{ item.url }}" class="breadcrumb-visual-item">{{ item.label }}</a>
+            {% endif %}
+            {% endfor %}
+        </nav>
+    </div>
+
+    <script>
+        // Dropdown breadcrumb
+        document.querySelectorAll('.breadcrumb-dropdown').forEach(dropdown => {
+            const toggle = dropdown.querySelector('.breadcrumb-toggle');
+            const menu = dropdown.querySelector('.breadcrumb-menu');
+
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menu.classList.toggle('open');
+            });
+
+            document.addEventListener('click', () => {
+                menu.classList.remove('open');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Search") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Search Box */
+        .search-box {
+            position: relative;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #1a1a1a;
+            box-shadow: 0 0 0 4px rgba(26,26,26,0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a3a3a3;
+            font-size: 1.125rem;
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #f0f0f0;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: #6b6b6b;
+        }
+
+        .search-clear.visible {
+            display: flex;
+        }
+
+        /* Autocomplete Dropdown */
+        .autocomplete-dropdown {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+        }
+
+        .autocomplete-dropdown.open {
+            display: block;
+            animation: slideDown 0.2s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .autocomplete-section {
+            padding: 0.75rem 0;
+        }
+
+        .autocomplete-section:not(:last-child) {
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .autocomplete-section-title {
+            padding: 0.25rem 1rem;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: #a3a3a3;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .autocomplete-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 1rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.focused {
+            background: #f7f7f8;
+        }
+
+        .autocomplete-item-icon {
+            width: 32px;
+            height: 32px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .autocomplete-item-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .autocomplete-item-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .autocomplete-item-subtitle {
+            font-size: 0.75rem;
+            color: #a3a3a3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .autocomplete-item-badge {
+            padding: 0.125rem 0.375rem;
+            background: #f0f0f0;
+            color: #6b6b6b;
+            border-radius: 4px;
+            font-size: 0.6875rem;
+            font-weight: 500;
+        }
+
+        /* Recent Searches */
+        .recent-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-size: 0.875rem;
+            color: #6b6b6b;
+        }
+
+        .recent-item:hover {
+            background: #f7f7f8;
+            color: #1a1a1a;
+        }
+
+        .recent-item-icon {
+            color: #a3a3a3;
+        }
+
+        /* Keyboard Shortcuts */
+        .search-shortcuts {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: #a3a3a3;
+        }
+
+        .shortcut {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .shortcut-key {
+            padding: 0.125rem 0.375rem;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 0.6875rem;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <div class="search-box">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search..." autocomplete="off">
+                <button class="search-clear" id="searchClear">✕</button>
+            </div>
+
+            <div class="autocomplete-dropdown" id="autocompleteDropdown">
+                <div class="autocomplete-section" id="recentSection">
+                    <div class="autocomplete-section-title">Recent Searches</div>
+                    {% for recent in recent_searches | default(['Landing page design', 'Dashboard UI', 'Mobile app']) %}
+                    <div class="recent-item" data-query="{{ recent }}">
+                        <span class="recent-item-icon">🕐</span>
+                        <span>{{ recent }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="autocomplete-section" id="resultsSection" style="display: none;">
+                    {% for item in search_results | default([{'title': 'Landing Page Template', 'subtitle': 'Design', 'icon': '📄', 'badge': 'Template'}, {'title': 'Landing Page Examples', 'subtitle': 'Blog', 'icon': '📝', 'badge': 'Article'}]) %}
+                    <div class="autocomplete-item" data-query="{{ item.title }}">
+                        <div class="autocomplete-item-icon">{{ item.icon }}</div>
+                        <div class="autocomplete-item-content">
+                            <div class="autocomplete-item-title">{{ item.title }}</div>
+                            <div class="autocomplete-item-subtitle">{{ item.subtitle }}</div>
+                        </div>
+                        <span class="autocomplete-item-badge">{{ item.badge }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="search-shortcuts">
+            <div class="shortcut"><span class="shortcut-key">⌘K</span> Focus search</div>
+            <div class="shortcut"><span class="shortcut-key">↑↓</span> Navigate</div>
+            <div class="shortcut"><span class="shortcut-key">↵</span> Select</div>
+        </div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchClear = document.getElementById('searchClear');
+        const dropdown = document.getElementById('autocompleteDropdown');
+        const recentSection = document.getElementById('recentSection');
+        const resultsSection = document.getElementById('resultsSection');
+        let focusedIndex = -1;
+        let items = [];
+
+        // Show/hide clear button
+        searchInput.addEventListener('input', (e) => {
+            searchClear.classList.toggle('visible', e.target.value.length > 0);
+            if (e.target.value.length > 0) {
+                showResults();
+            } else {
+                showRecent();
+            }
+        });
+
+        // Clear button
+        searchClear.addEventListener('click', () => {
+            searchInput.value = '';
+            searchClear.classList.remove('visible');
+            showRecent();
+            searchInput.focus();
+        });
+
+        // Focus input on load
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+            if (e.key === 'Escape') {
+                searchInput.blur();
+                dropdown.classList.remove('open');
+            }
+        });
+
+        function showRecent() {
+            recentSection.style.display = '';
+            resultsSection.style.display = 'none';
+            dropdown.classList.add('open');
+        }
+
+        function showResults() {
+            recentSection.style.display = 'none';
+            resultsSection.style.display = '';
+            dropdown.classList.add('open');
+            items = [...resultsSection.querySelectorAll('.autocomplete-item')];
+            focusedIndex = -1;
+        }
+
+        // Keyboard navigation
+        searchInput.addEventListener('keydown', (e) => {
+            const allItems = [...recentSection.querySelectorAll('.recent-item'), ...items];
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                focusedIndex = Math.min(focusedIndex + 1, allItems.length - 1);
+                updateFocus(allItems);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                focusedIndex = Math.max(focusedIndex - 1, 0);
+                updateFocus(allItems);
+            } else if (e.key === 'Enter' && focusedIndex >= 0) {
+                e.preventDefault();
+                const item = allItems[focusedIndex];
+                selectItem(item.dataset.query);
+            }
+        });
+
+        function updateFocus(items) {
+            items.forEach((item, i) => {
+                item.classList.toggle('focused', i === focusedIndex);
+                if (i === focusedIndex) {
+                    item.scrollIntoView({ block: 'nearest' });
+                }
+            });
+        }
+
+        function selectItem(query) {
+            searchInput.value = query;
+            dropdown.classList.remove('open');
+            console.log('Selected:', query);
+        }
+
+        // Click to select
+        document.querySelectorAll('.autocomplete-item, .recent-item').forEach(item => {
+            item.addEventListener('click', () => selectItem(item.dataset.query));
+        });
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-box')) {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        // Show recent on focus
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.length === 0) {
+                showRecent();
+            }
+        });
+    </script>
+</body>
+</html>
