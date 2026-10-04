@@ -15,11 +15,12 @@ OpenDesign is an open-source design generation platform that lives inside [Open 
 
 ### Key Features
 
-- 🎨 **14 Templates** — Landing pages, dashboards, components, presentations, emails, social media
+- 🎨 **30+ Templates** — Landing pages, dashboards, components, presentations, emails, social media, interactive components
 - 🔒 **Sandboxed Previews** — iframe rendering with strict security
 - ✏️ **Live Editor** — Split-pane code editor with real-time preview
 - 🎤 **Presenter Mode** — Keyboard navigation, fullscreen, PDF export
 - 📋 **Version History** — Save, browse, and rollback design iterations
+- 🏪 **Template Marketplace** — Submit, import, and browse community templates
 - 🤖 **LLM Agnostic** — Works with Ollama, OpenAI, or any Open WebUI-compatible model
 - 🐳 **Docker Ready** — One-command deployment
 - 🧪 **Tested** — 37 unit tests + 12 integration tests
@@ -83,6 +84,18 @@ python opendesign_cli.py
 
 ---
 
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [API Reference](docs/API.md) | Complete API documentation |
+| [Installation Guide](docs/INSTALL.md) | Step-by-step installation |
+| [Contributing Guide](docs/CONTRIBUTING.md) | How to contribute |
+| [Security Policy](docs/SECURITY.md) | Security features and reporting |
+| [FAQ & Troubleshooting](docs/FAQ.md) | Common issues and solutions |
+
+---
+
 ## 📚 Usage
 
 ### Generating Designs
@@ -103,11 +116,12 @@ Design a button component with primary and secondary variants
 
 ### Available Modes
 
-OpenDesign exposes 3 models through the OpenWebUI manifold:
+OpenDesign exposes 4 models through the OpenWebUI manifold:
 
 1. **Design Studio** — Generate new designs from prompts
-2. **Preview Generator** — View, export, or edit designs
-3. **Design Library** — Browse your saved designs
+2. **Compare Models** — Parallel LLM generation, side-by-side comparison
+3. **Design Library** — Browse saved designs and templates
+4. **Design Editor (Live)** — Split-pane code editor mode
 
 ### Actions
 
@@ -116,6 +130,10 @@ After generating a design, use these actions:
 - **Generate Preview** — Render the design in a sandboxed iframe
 - **Export HTML** — Download the raw HTML file
 - **Open Editor** — Launch the split-pane live editor
+- **Compare Models** — View multi-model comparison side-by-side
+- **Submit Template** — Share your design as a community template
+- **Import Template** — Import a template from a URL
+- **View Marketplace** — Browse community templates
 
 ---
 
@@ -198,7 +216,9 @@ python opendesign_cli.py
 | Version Persistence | 5 | ✅ Pass |
 | Preview Generator | 7 | ✅ Pass |
 | Prompt Enhancer | 3 | ✅ Pass |
-| **Total** | **37** | **✅ All Pass** |
+| Model Comparison | 5 | ✅ Pass |
+| Template Validation | 10 | ✅ Pass |
+| **Total** | **52** | **✅ All Pass** |
 
 ---
 
@@ -241,6 +261,7 @@ OpenDesign/
 ├── functions/
 │   ├── design_studio/          # Pipe: Design generation
 │   │   ├── design_studio.py    # Main pipe logic
+│   │   ├── template_marketplace.py  # Template validation & marketplace
 │   │   ├── templates/          # HTML templates
 │   │   ├── prompts/            # LLM prompt templates
 │   │   └── assets/             # CSS design tokens
@@ -256,7 +277,11 @@ OpenDesign/
 │   ├── docker-compose.yml
 │   └── docker-compose.dev.yml
 ├── docs/                       # Documentation
-│   └── INSTALL.md
+│   ├── INSTALL.md              # Installation guide
+│   ├── API.md                  # API reference
+│   ├── CONTRIBUTING.md         # Contributing guidelines
+│   ├── SECURITY.md             # Security policy
+│   └── FAQ.md                  # Troubleshooting & FAQ
 ├── plugins/                    # Community plugin manifest
 ├── opendesign_cli.py           # CLI test runner
 ├── setup.sh                    # Installation script
@@ -316,6 +341,10 @@ MIT License — See [LICENSE](LICENSE) for details.
 ## 🔗 Links
 
 - [Repository](https://github.com/asorichetti/OpenDesign)
+- [API Reference](docs/API.md)
 - [Installation Guide](docs/INSTALL.md)
+- [Contributing Guide](docs/CONTRIBUTING.md)
+- [Security Policy](docs/SECURITY.md)
+- [FAQ & Troubleshooting](docs/FAQ.md)
 - [Issue Tracker](https://github.com/asorichetti/OpenDesign/issues)
 - [Discussions](https://github.com/asorichetti/OpenDesign/discussions)
