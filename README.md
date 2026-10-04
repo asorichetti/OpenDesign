@@ -21,15 +21,38 @@ Describe what you want to build: "Create a landing page for a coffee shop" or "M
 
 ## Installation
 
-### Option 1: Open WebUI Functions (Recommended)
-
-Import each function from this repository:
+### Option 1: Open WebUI Community Plugin (Recommended)
 
 1. Go to **Admin Panel → Functions → Import From Link**
-2. Import: `https://raw.githubusercontent.com/asorichetti/OpenDesign/main/functions/design_agent/design_agent.py`
-3. Import: `https://raw.githubusercontent.com/asorichetti/OpenDesign/main/functions/preview_generator/preview_generator.py`
-4. Import: `https://raw.githubusercontent.com/asorichetti/OpenDesign/main/functions/prompt_enhancer/prompt_enhancer.py`
-5. Save each function. Select "OpenDesign Design Agent" from the model dropdown.
+2. Import each function from the `functions/` directory:
+   - `https://raw.githubusercontent.com/asorichetti/OpenDesign/main/functions/design_studio/design_studio.py`
+   - `https://raw.githubusercontent.com/asorichetti/OpenDesign/main/functions/preview_generator/preview_generator.py`
+   - `https://raw.githubusercontent.com/asorichetti/OpenDesign/main/functions/prompt_enhancer/prompt_enhancer.py`
+3. Save each function.
+4. Select **Design Studio** from the model dropdown to start generating.
+
+### Option 2: Docker Compose (Production)
+
+Run OpenDesign in an isolated Docker container with any LLM backend:
+
+```bash
+git clone https://github.com/asorichetti/OpenDesign.git
+cd OpenDesign/docker
+docker compose up -d
+```
+
+This bundles Open WebUI with all three OpenDesign functions pre-installed.
+
+### Option 3: Manual Import (Advanced)
+
+For users who want to modify the plugin or run it in a custom Python environment:
+
+```bash
+git clone https://github.com/asorichetti/OpenDesign.git
+cd OpenDesign
+# Copy functions into your Open WebUI functions directory
+cp -r functions/* /path/to/open-webui/functions/
+```
 
 ### Option 2: Docker
 
@@ -70,12 +93,14 @@ docker compose up -d
 ```
 OpenDesign/
 ├── functions/
-│   ├── design_agent/           # Pipe Function (main generation)
-│   ├── preview_generator/      # Action Function (preview rendering)
-│   └── prompt_enhancer/        # Filter Function (prompt enhancement)
-├── docker/                     # Docker deployment
-├── docs/plan/                  # Planning documents
-└── tests/                      # Unit tests
+│   ├── design_studio/          # Pipe Function — HTML generation
+│   ├── preview_generator/      # Action Function — sandboxed preview & export
+│   └── prompt_enhancer/        # Filter Function — prompt enhancement
+├── docker/                     # Docker Compose deployment
+├── docs/plan/                  # Planning documents & task cards
+├── tests/                      # Unit tests
+├── pyproject.toml              # Python project config
+└── Makefile                    # lint, test, build targets
 ```
 
 ## Development
