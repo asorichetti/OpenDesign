@@ -11,16 +11,16 @@ Return ONLY the complete HTML code wrapped in a markdown code block:
 - Semantic HTML5 elements (header, main, footer, nav, section, article)
 - WCAG 2.1 AA accessible (proper contrast, ARIA labels, keyboard navigation)
 - Responsive design (mobile-first with media queries)
-- {{ design_system }} design system tokens applied
+- {{design_system}} design system tokens applied
 - No external dependencies — all CSS and JS inline
 
-## Design System: {{ design_system }}
-{{ design_css }}
+## Design System: {{design_system}}
+{{design_css}}
 
 ## Template Structure
-{{ template_html }}
+{{template_html}}
 
 ## User Request
-{{ user_message }}
+{{user_message}}
 
 Create a complete, polished implementation that matches the user's vision.

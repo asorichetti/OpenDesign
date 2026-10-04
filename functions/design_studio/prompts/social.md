@@ -14,6 +14,6 @@ Return ONLY the complete HTML code wrapped in a markdown code block:
 - Clean, modern design
 
 ## User Request
-{{ user_message }}
+{{user_message}}
 
 Create a polished social media asset preview.

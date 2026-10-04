@@ -12,16 +12,16 @@ Return ONLY the updated HTML code wrapped in a markdown code block:
 ## Guidelines
 - Make targeted changes based on the user's request
 - Preserve the overall structure and style of the existing design
-- Apply {{ design_system }} design tokens consistently
+- Apply {{design_system}} design tokens consistently
 - Ensure all changes maintain WCAG 2.1 AA accessibility
 
-## Design System: {{ design_system }}
-{{ design_css }}
+## Design System: {{design_system}}
+{{design_css}}
 
 ## Current Template
-{{ template_html }}
+{{template_html}}
 
 ## User Request
-{{ user_message }}
+{{user_message}}
 
 Make the changes the user requested while maintaining design quality.

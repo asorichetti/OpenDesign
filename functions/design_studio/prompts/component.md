@@ -13,10 +13,10 @@ Return ONLY the complete HTML code wrapped in a markdown code block:
 - WCAG 2.1 AA accessible
 - Responsive and mobile-friendly
 
-## Design System: {{ design_system }}
-{{ design_css }}
+## Design System: {{design_system}}
+{{design_css}}
 
 ## User Request
-{{ user_message }}
+{{user_message}}
 
 Create a polished, production-ready component that the user can drop into any project.

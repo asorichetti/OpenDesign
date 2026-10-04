@@ -14,13 +14,13 @@ Return ONLY the complete HTML code wrapped in a markdown code block:
 - Print-friendly CSS for PDF export
 - Responsive design for projection screens
 
-## Design System: {{ design_system }}
-{{ design_css }}
+## Design System: {{design_system}}
+{{design_css}}
 
 ## Template Structure
-{{ template_html }}
+{{template_html}}
 
 ## User Request
-{{ user_message }}
+{{user_message}}
 
 Create a polished, professional slide deck with clear visual hierarchy.

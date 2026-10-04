@@ -5,7 +5,7 @@ author_url: https://github.com/asorichetti/OpenDesign
 version: 0.1.0
 icon_url: https://cdn.jsdelivr.net/gh/asorichetti/OpenDesign@main/assets/icon.svg
 required_open_webui_version: 0.10.0
-requirements: jinja2
+requirements: jinja2, aiohttp
 """
 
 import json
@@ -229,7 +229,7 @@ class Pipe:
 
         # Save version
         design_id = self._get_or_create_design_id(body, __user__)
-        version_path = self._save_version(design_id, parsed["html"], user_message)
+        version_path = self._save_version(design_id, parsed["html"], user_message, __user__)
 
         # Format response
         result = self._format_response(parsed["html"], design_id, version_path)
@@ -297,181 +297,143 @@ class Pipe:
     # ------------------------------------------------------------------
 
     async def _call_llm(self, body: dict, __event_emitter__: Any | None = None) -> str:
-        """Call the LLM using Open WebUI's internal mechanism.
+        """Call the LLM and return the complete response text.
 
-        Open WebUI's Pipe receives the request `body` which contains the
-        model configuration. We modify the messages and return the response.
+        Strategy:
+        1. Try Open WebUI's internal API (/api/v1/chat/completions)
+        2. Fall back to direct Ollama call for Ollama models
+        3. Return the assistant's message content
 
-        The key insight: Open WebUI handles model routing internally.
-        Our pipe receives the body *after* it's been routed to our function.
-        We just need to process it and return a response.
+        Returns the raw LLM response text, which we then parse for HTML.
         """
-        # Extract model configuration
         model_config = body.get("model", {})
-        model_id = model_config.get("id", "") if isinstance(model_config, dict) else str(model_config)
-
-        # Open WebUI provides the model via the internal API.
-        # We need to call it through the same mechanism the main app uses.
-        #
-        # The body contains everything we need:
-        # - model: {id, name, ...}
-        # - messages: the chat history
-        # - options: temperature, max_tokens, etc.
-        #
-        # Open WebUI's Pipe architecture means we should:
-        # 1. Modify the messages (inject our system prompt)
-        # 2. Let Open WebUI's internal router handle the actual LLM call
-        # 3. Return the response as a string
-        #
-        # In practice, Open WebUI passes the response through our pipe
-        # when we return it. So we modify the body and return it.
-
-        # The response comes through the same pipe mechanism
-        # We return the modified body to let Open WebUI handle the rest
-
-        # For streaming, we need to yield chunks
-        # For non-streaming, we return the final string
-
-        # Use Open WebUI's internal completion endpoint
-        # The model is configured in `body["model"]`
-        # Open WebUI routes this to the correct provider (Ollama, OpenAI, etc.)
-
-        # IMPORTANT: We must return a string or AsyncIterator[str]
-        # Open WebUI handles the actual LLM call internally
-
-        # We need to capture the response. The way Open WebUI works:
-        # - The pipe is called with the request body
-        # - The pipe returns a response
-        # - The response is sent back to the client
-
-        # The LLM call happens through Open WebUI's model pipeline.
-        # We need to use the `__metadata__` to access the model.
-
-        # For now, we return the modified body which triggers Open WebUI's
-        # internal model call mechanism.
-
-        # Actually, the correct approach for Open WebUI Pipes:
-        # We need to call the model ourselves via its API endpoint
-        # or use the internal completion API that Open WebUI exposes.
-
-        # The body contains the model configuration. We can use it to
-        # construct a proper request to Open WebUI's API.
-
-        # But wait — Open WebUI's Pipe is meant to INTERCEPT the request.
-        # The LLM call hasn't happened yet. We modify the body and return.
-        # Open WebUI then calls the model with our modified body.
-
-        # So the flow is:
-        # 1. User sends message
-        # 2. Open WebUI routes to our pipe (because they selected "Design Studio")
-        # 3. Our pipe modifies the messages and returns the body
-        # 4. Open WebUI calls the LLM with our modified body
-        # 5. The LLM response comes back through our pipe
-        # 6. We parse and format it
-
-        # This means we need TWO passes:
-        # - First pass: modify messages, forward to LLM
-        # - Second pass: parse response, format output
-
-        # Open WebUI handles this via the pipe's return value.
-        # If we return a string, it's used as-is.
-        # If we return a dict with "response", it's passed to the LLM.
-        # If we return an AsyncIterator, it's streamed.
-
-        # The correct pattern for Open WebUI:
-        # We return the modified body, and Open WebUI routes it to the LLM.
-        # But we need to know the LLM response...
-
-        # Actually, the Open WebUI Pipe architecture works like this:
-        # - The pipe receives the request body
-        # - The pipe returns an AsyncIterator[str] for streaming, or str for non-streaming
-        # - Open WebUI handles the LLM call internally and passes the result
-        # - The pipe processes and returns the final output
-
-        # The key is that Open WebUI's model provider is called between
-        # receiving the request and returning the response.
-
-        # For this to work, we need to:
-        # 1. Return an AsyncIterator that yields chunks
-        # 2. Each chunk comes from the LLM
-        # 3. We format each chunk as it arrives
-
-        # The way to do this in Open WebUI:
-        # Return a generator/async generator that yields formatted chunks.
-        # Open WebUI will call the LLM and stream the response through.
-
-        # Let me implement this properly:
-
-        return self._call_llm_proper(body, __event_emitter__)
-
-    def _call_llm_proper(self, body: dict, __event_emitter__: Any | None = None) -> str:
-        """Call the LLM and return the response.
-
-        Open WebUI's Pipe receives the body with model configuration.
-        We need to call the model using Open WebUI's internal API.
-
-        The body contains:
-        - model: {id, name, provider, ...}
-        - messages: chat history
-        - options: temperature, max_tokens, etc.
-        - stream: boolean
-
-        For the Pipe to work correctly with Open WebUI, we return
-        the response that Open WebUI would have returned, but
-        modified to include our design generation output.
-
-        In practice, Open WebUI handles model calls through its
-        internal routing. The pipe is a TRANSFORM — it modifies
-        the request and response.
-
-        The correct approach:
-        1. Modify the messages to include our system prompt
-        2. Return the body (Open WebUI routes to LLM)
-        3. The LLM response comes back through the pipe
-        4. We parse and format the response
-        """
-        # We need to simulate the LLM response for now.
-        # In a real implementation, this would call the actual model.
-
-        # The challenge: Open WebUI's Pipe doesn't have direct access
-        # to the model's completion endpoint. The model call is handled
-        # by Open WebUI's internal routing.
-
-        # The solution: We use Open WebUI's internal mechanism to call
-        # the model. The body contains everything needed:
-        # - model configuration
-        # - messages
-        # - options
-
-        # Open WebUI exposes this via its internal API at:
-        # /api/v1/models/{model_id}/completions
-
-        # But we don't have direct access to that in the Pipe.
-        # The Pipe is designed to TRANSFORM the request/response,
-        # not to make LLM calls directly.
-
-        # The correct pattern for Open WebUI Pipes:
-        # - Modify the messages (inject system prompt, etc.)
-        # - Return the body (Open WebUI handles model routing)
-        # - The LLM response is passed back to the pipe
-        # - We format and return the final output
-
-        # Since we can't easily intercept the LLM response in the
-        # same pipe call, we use a different approach:
-        # Return a generator that yields the response as it comes.
-
-        # For a placeholder, return the base model's response.
-        # In production, this would be the actual LLM response.
-
-        return self._generate_placeholder(body.get("model", {}))
-
-    def _generate_placeholder(self, model: Any) -> str:
-        """Generate a placeholder response for testing."""
-        model_name = ""
-        if isinstance(model, dict):
-            model_name = model.get("name", "") or model.get("id", "")
+        if isinstance(model_config, dict):
+            model_id = model_config.get("id", "")
+            provider = model_config.get("provider", "")
         else:
-            model_name = str(model)
+            model_id = str(model_config)
+            provider = ""
+
+        # Build the request body for the LLM API
+        request_body = self._build_api_request(body)
+
+        # Try Open WebUI's internal API first
+        try:
+            return await self._call_via_openwebui_api(model_id, request_body)
+        except Exception:
+            pass
+
+        # Fall back to direct Ollama call
+        try:
+            return await self._call_ollama_direct(model_id, request_body)
+        except Exception as exc:
+            return f"Error: LLM call failed — {exc}"
+
+    def _build_api_request(self, body: dict) -> dict:
+        """Extract and transform the request body for the LLM API."""
+        messages = body.get("messages", [])
+        options = body.get("options", {})
+
+        # Build clean messages list
+        clean_messages = []
+        for msg in messages:
+            role = msg.get("role", "")
+            content = msg.get("content", "")
+            if isinstance(content, list):
+                # Handle multimodal messages — extract text
+                text_parts = []
+                for item in content:
+                    if isinstance(item, dict) and item.get("type") == "text":
+                        text_parts.append(item.get("text", ""))
+                content = "\n".join(text_parts)
+            clean_messages.append({"role": role, "content": content})
+
+        # Build API-compatible request
+        return {
+            "model": self._extract_model_name(body),
+            "messages": clean_messages,
+            "stream": False,
+            "options": {
+                "temperature": options.get("temperature", 0.7) if isinstance(options, dict) else 0.7,
+                "num_predict": options.get("num_predict", 4096) if isinstance(options, dict) else 4096,
+            },
+        }
+
+    def _extract_model_name(self, body: dict) -> str:
+        """Extract the model name from the request body."""
+        model = body.get("model", {})
+        if isinstance(model, dict):
+            return model.get("name", model.get("id", "gpt-4o"))
+        return str(model)
+
+    async def _call_via_openwebui_api(self, model_id: str, request_body: dict) -> str:
+        """Call the LLM via Open WebUI's internal API.
+
+        Uses /api/v1/chat/completions which routes to the correct provider
+        (Ollama, OpenAI, etc.) based on the model configuration.
+        """
+        import aiohttp
+
+        # Detect the base URL
+        base_url = os.environ.get("OPENWEBUI_BASE_URL", "http://localhost:8080")
+
+        # Get the session token if available
+        headers = {}
+        # Open WebUI uses cookie-based auth; we pass through any auth context
+        if "__token__" in os.environ:
+            headers["Authorization"] = f"Bearer {os.environ['__token__']}"
+
+        url = f"{base_url.rstrip('/')}/api/v1/chat/completions"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=request_body, headers=headers, timeout=120) as resp:
+                if resp.status != 200:
+                    error_text = await resp.text()
+                    raise ValueError(f"OpenWebUI API returned {resp.status}: {error_text}")
+                data = await resp.json()
+
+        # Extract the assistant's message content
+        choices = data.get("choices", [])
+        if choices:
+            return choices[0].get("message", {}).get("content", "")
+
+        raise ValueError("No choices in LLM response")
+
+    async def _call_ollama_direct(self, model_id: str, request_body: dict) -> str:
+        """Call Ollama directly for Ollama-backed models."""
+        import aiohttp
+
+        # Determine Ollama URL
+        ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+        model_name = request_body.get("model", "")
+
+        if not model_name:
+            raise ValueError("No model name available for Ollama")
+
+        # Build Ollama API request
+        ollama_request = {
+            "model": model_name,
+            "messages": request_body.get("messages", []),
+            "stream": False,
+            "options": request_body.get("options", {}),
+        }
+
+        url = f"{ollama_url.rstrip('/')}/api/chat"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json=ollama_request, timeout=120) as resp:
+                if resp.status != 200:
+                    error_text = await resp.text()
+                    raise ValueError(f"Ollama API returned {resp.status}: {error_text}")
+                data = await resp.json()
+
+        # Extract the message content
+        message = data.get("message", {})
+        content = message.get("content", "")
+        if not content:
+            raise ValueError("Empty response from Ollama")
+
+        return content
 
         return (
             f"```html\n"
@@ -727,7 +689,9 @@ class Pipe:
         for env_var in ["OPEN_WEBUI_DATA", "DATA_DIR"]:
             path = os.environ.get(env_var)
             if path:
-                return Path(path)
+                p = Path(path)
+                if p.exists():
+                    return p
         home = Path.home()
         for candidate in [
             home / ".open-webui" / "data",
@@ -737,6 +701,17 @@ class Pipe:
             if candidate.exists():
                 return candidate
         return None
+
+    def _get_user_id(self, __user__: dict | None) -> str:
+        """Extract user ID from the user context."""
+        if __user__:
+            # Try common key names for user ID
+            for key in ["id", "user_id", "username"]:
+                if key in __user__:
+                    uid = str(__user__[key])
+                    if uid and uid != "None":
+                        return uid
+        return "anonymous"
 
     def _get_designs_dir(self, user_id: str) -> Path | None:
         """Get the designs directory for a user."""
@@ -749,18 +724,20 @@ class Pipe:
     def _get_or_create_design_id(self, body: dict, __user__: dict | None) -> str:
         """Get or create a design ID from the chat context."""
         metadata = body.get("metadata", {})
-        if metadata.get("design_id"):
+        if isinstance(metadata, dict) and metadata.get("design_id"):
             return metadata["design_id"]
 
         design_id = f"design_{uuid.uuid4().hex[:24]}"
-        if not metadata:
+        if not metadata or not isinstance(metadata, dict):
             body["metadata"] = {"design_id": design_id}
+        elif isinstance(metadata, dict):
+            metadata["design_id"] = design_id
 
         return design_id
 
-    def _save_version(self, design_id: str, html: str, prompt: str) -> str:
-        """Save a new version of a design to disk."""
-        user_id = "anonymous"
+    def _save_version(self, design_id: str, html: str, prompt: str, __user__: dict | None = None) -> str:
+        """Save a new version of a design to disk with error handling."""
+        user_id = self._get_user_id(__user__)
         designs_dir = self._get_designs_dir(user_id)
 
         if not designs_dir:
@@ -771,23 +748,43 @@ class Pipe:
 
         history_path = design_path / "history.json"
         history = []
-        if history_path.exists():
-            history = json.loads(history_path.read_text())
+        try:
+            if history_path.exists():
+                history = json.loads(history_path.read_text(encoding="utf-8"))
+                if not isinstance(history, list):
+                    history = []
+        except (json.JSONDecodeError, IOError):
+            history = []
 
         version = len(history) + 1
         version_file = f"v{version}.html"
 
-        (design_path / version_file).write_text(html, encoding="utf-8")
+        try:
+            # Atomic write: write to temp file, then rename
+            import tempfile
+            temp_path = design_path / f".tmp_{version}.html"
+            temp_path.write_text(html, encoding="utf-8")
+            temp_path.rename(design_path / version_file)
 
-        history.append({
-            "version": version,
-            "prompt": prompt[:200],
-            "html_path": version_file,
-            "created_at": _now_iso(),
-        })
-        history_path.write_text(json.dumps(history, indent=2))
+            # Append history entry
+            history.append({
+                "version": version,
+                "prompt": prompt[:200],
+                "html_path": version_file,
+                "user_id": user_id,
+                "created_at": _now_iso(),
+            })
 
-        return version_file
+            # Atomic write for history
+            temp_hist = design_path / ".tmp_history.json"
+            temp_hist.write_text(json.dumps(history, indent=2, ensure_ascii=False), encoding="utf-8")
+            temp_hist.rename(history_path)
+
+            return version_file
+        except IOError as exc:
+            # Non-fatal: log but don't block user
+            self._log_error(f"Failed to save version {version}: {exc}")
+            return "memory"
 
     def _load_user_settings(self, user_id: str) -> dict:
         """Load user-specific settings."""
@@ -795,9 +792,17 @@ class Pipe:
             return {}
 
         settings_path = self._data_dir / "opendesign" / "settings" / f"{user_id}.json"
-        if settings_path.exists():
-            return json.loads(settings_path.read_text())
+        try:
+            if settings_path.exists():
+                return json.loads(settings_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, IOError):
+            pass
         return {}
+
+    def _log_error(self, message: str) -> None:
+        """Log an error to stderr (will appear in Open WebUI logs)."""
+        import sys
+        print(f"[OpenDesign ERROR] {message}", file=sys.stderr)
 
 
 # ---------------------------------------------------------------------------
