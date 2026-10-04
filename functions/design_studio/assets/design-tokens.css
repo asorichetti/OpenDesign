@@ -1,0 +1,292 @@
+/* ============================================
+   OpenDesign Design System — Tokens & Variables
+   ============================================
+   
+   This file defines the complete design token system
+   used across all OpenDesign templates.
+   
+   Usage:
+   - Import in any template via <link> or <style>
+   - Reference variables with var(--od-token-name)
+   - Override at any scope (root, component, theme)
+   
+   ============================================ */
+
+/* ============================================
+   Color Tokens
+   ============================================ */
+
+:root {
+    /* Primary Palette */
+    --od-color-primary-50: #f0f4ff;
+    --od-color-primary-100: #e0eaff;
+    --od-color-primary-200: #b9d4ff;
+    --od-color-primary-300: #8bbfff;
+    --od-color-primary-400: #5a9fff;
+    --od-color-primary-500: #3379ff;
+    --od-color-primary-600: #1a56ff;
+    --od-color-primary-700: #0e3bfa;
+    --od-color-primary-800: #0a29d4;
+    --od-color-primary-900: #0821a8;
+
+    /* Secondary Palette */
+    --od-color-secondary-50: #f8f7ff;
+    --od-color-secondary-100: #f0eeff;
+    --od-color-secondary-200: #e0dcff;
+    --od-color-secondary-300: #c9b7ff;
+    --od-color-secondary-400: #ab84ff;
+    --od-color-secondary-500: #8c4dff;
+    --od-color-secondary-600: #7226f5;
+    --od-color-secondary-700: #5e14d4;
+    --od-color-secondary-800: #4f0faf;
+    --od-color-secondary-900: #430d8c;
+
+    /* Neutral Palette */
+    --od-color-neutral-50: #fafafa;
+    --od-color-neutral-100: #f5f5f5;
+    --od-color-neutral-200: #e8e8e8;
+    --od-color-neutral-300: #d4d4d4;
+    --od-color-neutral-400: #a3a3a3;
+    --od-color-neutral-500: #737373;
+    --od-color-neutral-600: #525252;
+    --od-color-neutral-700: #404040;
+    --od-color-neutral-800: #262626;
+    --od-color-neutral-900: #171717;
+
+    /* Semantic Colors */
+    --od-color-success: #22c55e;
+    --od-color-success-bg: #f0fdf4;
+    --od-color-warning: #f59e0b;
+    --od-color-warning-bg: #fffbeb;
+    --od-color-error: #ef4444;
+    --od-color-error-bg: #fef2f2;
+    --od-color-info: #3b82f6;
+    --od-color-info-bg: #eff6ff;
+
+    /* Background Colors */
+    --od-bg-primary: #ffffff;
+    --od-bg-secondary: #f7f7f8;
+    --od-bg-tertiary: #f0f0f0;
+    --od-bg-elevated: #ffffff;
+    --od-bg-overlay: rgba(0, 0, 0, 0.5);
+
+    /* Text Colors */
+    --od-text-primary: #171717;
+    --od-text-secondary: #737373;
+    --od-text-tertiary: #a3a3a3;
+    --od-text-inverse: #ffffff;
+    --od-text-link: #3379ff;
+
+    /* Border Colors */
+    --od-border-light: #e8e8e8;
+    --od-border-medium: #d4d4d4;
+    --od-border-dark: #a3a3a3;
+
+    /* ============================================
+       Typography Tokens
+       ============================================ */
+    --od-font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --od-font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+
+    --od-font-size-xs: 0.75rem;      /* 12px */
+    --od-font-size-sm: 0.8125rem;    /* 13px */
+    --od-font-size-base: 0.875rem;   /* 14px */
+    --od-font-size-md: 1rem;         /* 16px */
+    --od-font-size-lg: 1.125rem;     /* 18px */
+    --od-font-size-xl: 1.25rem;      /* 20px */
+    --od-font-size-2xl: 1.5rem;      /* 24px */
+    --od-font-size-3xl: 1.875rem;    /* 30px */
+    --od-font-size-4xl: 2.25rem;     /* 36px */
+    --od-font-size-5xl: 3rem;        /* 48px */
+
+    --od-font-weight-normal: 400;
+    --od-font-weight-medium: 500;
+    --od-font-weight-semibold: 600;
+    --od-font-weight-bold: 700;
+    --od-font-weight-extrabold: 800;
+
+    --od-line-height-tight: 1.25;
+    --od-line-height-normal: 1.5;
+    --od-line-height-relaxed: 1.75;
+
+    /* ============================================
+       Spacing Tokens (4px base)
+       ============================================ */
+    --od-space-0: 0;
+    --od-space-1: 0.25rem;   /* 4px */
+    --od-space-2: 0.5rem;    /* 8px */
+    --od-space-3: 0.75rem;   /* 12px */
+    --od-space-4: 1rem;      /* 16px */
+    --od-space-5: 1.25rem;   /* 20px */
+    --od-space-6: 1.5rem;    /* 24px */
+    --od-space-8: 2rem;      /* 32px */
+    --od-space-10: 2.5rem;   /* 40px */
+    --od-space-12: 3rem;     /* 48px */
+    --od-space-16: 4rem;     /* 64px */
+    --od-space-20: 5rem;     /* 80px */
+    --od-space-24: 6rem;     /* 96px */
+
+    /* ============================================
+       Border Radius Tokens
+       ============================================ */
+    --od-radius-none: 0;
+    --od-radius-sm: 0.25rem;   /* 4px */
+    --od-radius-md: 0.375rem;  /* 6px */
+    --od-radius-lg: 0.5rem;    /* 8px */
+    --od-radius-xl: 0.75rem;   /* 12px */
+    --od-radius-2xl: 1rem;     /* 16px */
+    --od-radius-3xl: 1.5rem;   /* 24px */
+    --od-radius-full: 9999px;
+
+    /* ============================================
+       Shadow Tokens
+       ============================================ */
+    --od-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --od-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --od-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --od-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --od-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    --od-shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+    /* ============================================
+       Z-Index Tokens
+       ============================================ */
+    --od-z-dropdown: 100;
+    --od-z-sticky: 200;
+    --od-z-fixed: 300;
+    --od-z-modal-backdrop: 400;
+    --od-z-modal: 500;
+    --od-z-popover: 600;
+    --od-z-tooltip: 700;
+    --od-z-toast: 800;
+
+    /* ============================================
+       Transition Tokens
+       ============================================ */
+    --od-transition-fast: 150ms ease;
+    --od-transition-base: 200ms ease;
+    --od-transition-slow: 300ms ease;
+    --od-transition-slower: 500ms ease;
+
+    /* ============================================
+       Breakpoint Tokens
+       ============================================ */
+    --od-breakpoint-sm: 640px;
+    --od-breakpoint-md: 768px;
+    --od-breakpoint-lg: 1024px;
+    --od-breakpoint-xl: 1280px;
+    --od-breakpoint-2xl: 1536px;
+
+    /* ============================================
+       Layout Tokens
+       ============================================ */
+    --od-container-sm: 640px;
+    --od-container-md: 768px;
+    --od-container-lg: 1024px;
+    --od-container-xl: 1280px;
+    --od-container-2xl: 1536px;
+}
+
+/* ============================================
+   Dark Mode Theme
+   ============================================ */
+
+[data-theme="dark"] {
+    --od-bg-primary: #171717;
+    --od-bg-secondary: #1f1f1f;
+    --od-bg-tertiary: #262626;
+    --od-bg-elevated: #262626;
+    --od-text-primary: #fafafa;
+    --od-text-secondary: #a3a3a3;
+    --od-text-tertiary: #737373;
+    --od-border-light: #262626;
+    --od-border-medium: #404040;
+    --od-border-dark: #525252;
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+/* Text Utilities */
+.od-text-xs { font-size: var(--od-font-size-xs); }
+.od-text-sm { font-size: var(--od-font-size-sm); }
+.od-text-base { font-size: var(--od-font-size-base); }
+.od-text-lg { font-size: var(--od-font-size-lg); }
+.od-text-xl { font-size: var(--od-font-size-xl); }
+.od-text-2xl { font-size: var(--od-font-size-2xl); }
+.od-text-3xl { font-size: var(--od-font-size-3xl); }
+
+.od-font-normal { font-weight: var(--od-font-weight-normal); }
+.od-font-medium { font-weight: var(--od-font-weight-medium); }
+.od-font-semibold { font-weight: var(--od-font-weight-semibold); }
+.od-font-bold { font-weight: var(--od-font-weight-bold); }
+
+.od-text-center { text-align: center; }
+.od-text-right { text-align: right; }
+
+.od-text-primary { color: var(--od-text-primary); }
+.od-text-secondary { color: var(--od-text-secondary); }
+.od-text-link { color: var(--od-text-link); }
+
+/* Spacing Utilities */
+.od-p-1 { padding: var(--od-space-1); }
+.od-p-2 { padding: var(--od-space-2); }
+.od-p-4 { padding: var(--od-space-4); }
+.od-p-6 { padding: var(--od-space-6); }
+.od-p-8 { padding: var(--od-space-8); }
+
+.od-m-1 { margin: var(--od-space-1); }
+.od-m-2 { margin: var(--od-space-2); }
+.od-m-4 { margin: var(--od-space-4); }
+.od-m-6 { margin: var(--od-space-6); }
+.od-m-8 { margin: var(--od-space-8); }
+
+/* Layout Utilities */
+.od-flex { display: flex; }
+.od-flex-col { flex-direction: column; }
+.od-flex-wrap { flex-wrap: wrap; }
+.od-items-center { align-items: center; }
+.od-justify-between { justify-content: space-between; }
+.od-justify-center { justify-content: center; }
+.od-gap-2 { gap: var(--od-space-2); }
+.od-gap-4 { gap: var(--od-space-4); }
+.od-gap-6 { gap: var(--od-space-6); }
+
+.od-grid { display: grid; }
+.od-grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.od-grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.od-grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* Background Utilities */
+.od-bg-primary { background: var(--od-bg-primary); }
+.od-bg-secondary { background: var(--od-bg-secondary); }
+.od-bg-white { background: #ffffff; }
+
+/* Border Utilities */
+.od-rounded { border-radius: var(--od-radius-md); }
+.od-rounded-lg { border-radius: var(--od-radius-lg); }
+.od-rounded-xl { border-radius: var(--od-radius-xl); }
+.od-rounded-full { border-radius: var(--od-radius-full); }
+
+.od-shadow { box-shadow: var(--od-shadow-md); }
+.od-shadow-lg { box-shadow: var(--od-shadow-lg); }
+
+/* Transition Utilities */
+.od-transition { transition: all var(--od-transition-base); }
+.od-transition-fast { transition: all var(--od-transition-fast); }
+
+/* Responsive Utilities */
+@media (min-width: 640px) {
+    .od-sm\:flex { display: flex; }
+    .od-sm\:hidden { display: none; }
+}
+
+@media (min-width: 768px) {
+    .od-md\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .od-md\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 1024px) {
+    .od-lg\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+}

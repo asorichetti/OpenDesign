@@ -1,12 +1,17 @@
-:root {
-    --od-color-bg-primary: #FFFFFF;
-    --od-color-bg-secondary: #F7F7F8;
-    --od-color-text-primary: #1A1A1A;
-    --od-color-text-secondary: #6B6B6B;
-    --od-color-accent: #737373;
-    --od-color-border: #E0E0E0;
-    --od-color-code-bg: #F4F4F5;
-    --od-font-family: system-ui, -apple-system, sans-serif;
-    --od-font-size-base: 16px;
-    --od-spacing-unit: 8px;
+/* OpenDesign Light Theme */
+/* Uses design-tokens.css as base */
+
+[data-theme="light"],
+:not([data-theme]) {
+    --od-bg-primary: #ffffff;
+    --od-bg-secondary: #f7f7f8;
+    --od-bg-tertiary: #f0f0f0;
+    --od-bg-elevated: #ffffff;
+    --od-text-primary: #171717;
+    --od-text-secondary: #737373;
+    --od-text-tertiary: #a3a3a3;
+    --od-border-light: #e8e8e8;
+    --od-border-medium: #d4d4d4;
+    --od-border-dark: #a3a3a3;
+    --od-color-code-bg: #f4f4f5;
 }

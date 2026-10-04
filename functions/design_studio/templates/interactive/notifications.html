@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Notifications") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .notifications {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .toast {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 0.75rem;
+            border-left: 4px solid #1a1a1a;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .toast.toast-out {
+            animation: slideOut 0.3s ease forwards;
+        }
+
+        @keyframes slideOut {
+            to {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+        }
+
+        .toast-success { border-left-color: #48bb78; }
+        .toast-error { border-left-color: #e53e3e; }
+        .toast-warning { border-left-color: #f59e0b; }
+        .toast-info { border-left-color: #4299e1; }
+
+        .toast-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            color: #1a1a1a;
+            font-size: 0.875rem;
+            margin-bottom: 0.125rem;
+        }
+
+        .toast-message {
+            color: #6b6b6b;
+            font-size: 0.8125rem;
+            line-height: 1.5;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: #a3a3a3;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .toast-close:hover {
+            color: #1a1a1a;
+        }
+
+        .toast-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .toast-btn {
+            padding: 0.375rem 0.75rem;
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .toast-btn-secondary {
+            background: #f0f0f0;
+            color: #6b6b6b;
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: currentColor;
+            opacity: 0.3;
+            animation: progress 5s linear forwards;
+        }
+
+        @keyframes progress {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        .toast {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="notifications">
+        {% for toast in toasts %}
+        <div class="toast toast-{{ toast.type | default('info') }}">
+            <div class="toast-icon">{{ toast.icon | default('ℹ️') }}</div>
+            <div class="toast-content">
+                <div class="toast-title">{{ toast.title | default("Notification") }}</div>
+                <div class="toast-message">{{ toast.message | default("You got a notification.") }}</div>
+                {% if toast.action %}
+                <div class="toast-actions">
+                    <button class="toast-btn">{{ toast.action_text | default("Action") }}</button>
+                    <button class="toast-btn toast-btn-secondary" onclick="this.closest('.toast').classList.add('toast-out'); setTimeout(() => this.closest('.toast').remove(), 300);">Dismiss</button>
+                </div>
+                {% endif %}
+            </div>
+            <button class="toast-close" onclick="this.closest('.toast').classList.add('toast-out'); setTimeout(() => this.closest('.toast').remove(), 300);">×</button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Auto-dismiss toasts
+        document.querySelectorAll('.toast').forEach(toast => {
+            const duration = toast.dataset.duration || 5000;
+            if (duration > 0) {
+                setTimeout(() => {
+                    if (!toast.classList.contains('toast-out')) {
+                        toast.classList.add('toast-out');
+                        setTimeout(() => toast.remove(), 300);
+                    }
+                }, duration);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,12 +1,16 @@
-:root {
-    --od-color-bg-primary: #1A1A2B;
-    --od-color-bg-secondary: #13131F;
-    --od-color-text-primary: #E8E8ED;
-    --od-color-text-secondary: #9898A6;
-    --od-color-accent: #A1A1AA;
-    --od-color-border: #3A3A4A;
+/* OpenDesign Dark Theme */
+/* Uses design-tokens.css as base */
+
+[data-theme="dark"] {
+    --od-bg-primary: #171717;
+    --od-bg-secondary: #1f1f1f;
+    --od-bg-tertiary: #262626;
+    --od-bg-elevated: #262626;
+    --od-text-primary: #fafafa;
+    --od-text-secondary: #a3a3a3;
+    --od-text-tertiary: #737373;
+    --od-border-light: #262626;
+    --od-border-medium: #404040;
+    --od-border-dark: #525252;
     --od-color-code-bg: #252535;
-    --od-font-family: system-ui, -apple-system, sans-serif;
-    --od-font-size-base: 16px;
-    --od-spacing-unit: 8px;
 }
