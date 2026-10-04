@@ -34,6 +34,11 @@ class Action:
                 "description": "Open the split-pane live editor",
                 "icon": "edit",
             },
+            {
+                "name": "Compare Models",
+                "description": "View model comparison side-by-side",
+                "icon": "columns",
+            },
         ]
 
     async def action(
@@ -66,6 +71,9 @@ class Action:
             if not code_blocks:
                 return "No HTML code blocks found in this message."
             return self._render_editor(code_blocks[0])
+
+        elif action == "Compare Models":
+            return self._render_comparison(content)
 
         return f"Unknown action: {action}"
 
@@ -246,3 +254,96 @@ To view: double-click the file or open it in any browser."""
             .replace("'", "&#x27;")
             .replace("`", "&#96;")
         )
+
+    def _render_comparison(self, content: str) -> str:
+        """Render model comparison side-by-side from comparison message."""
+        # Extract model names and HTML blocks from the comparison output
+        models = self._extract_comparison_models(content)
+
+        if not models:
+            return "No model comparison data found. Please use the **Compare Models** pipe first."
+
+        # Build comparison UI
+        panels = []
+        for model_name, html in models:
+            escaped_html = self._escape_for_srcdoc(html)
+            panels.append(
+                f"""<div class="comparison-panel">
+<div class="comparison-header">{model_name}</div>
+<iframe class="comparison-frame" srcdoc="{escaped_html}" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+</div>"""
+            )
+
+        comparison_html = f"""<div class="comparison-container">
+<style>
+.comparison-container {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; padding: 1rem; }}
+.comparison-panel {{ border: 2px solid #e5e7eb; border-radius: 12px; overflow: hidden; transition: all 0.2s; }}
+.comparison-panel:hover {{ border-color: #6366f1; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15); }}
+.comparison-panel.selected {{ border-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }}
+.comparison-header {{ padding: 0.75rem 1rem; background: #f8fafc; font-weight: 600; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }}
+.comparison-frame {{ width: 100%; height: 400px; border: none; background: white; }}
+.comparison-actions {{ padding: 0.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; gap: 0.5rem; }}
+.comparison-actions button {{ padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 6px; background: white; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; }}
+.comparison-actions button:hover {{ background: #f1f5f9; border-color: #cbd5e1; }}
+.comparison-actions button.select-btn {{ background: #6366f1; color: white; border-color: #6366f1; }}
+.comparison-actions button.select-btn:hover {{ background: #4f46e5; }}
+.stats {{ display: flex; gap: 1rem; padding: 0.5rem 1rem; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #64748b; }}
+.stats span {{ display: flex; align-items: center; gap: 0.25rem; }}
+</style>
+
+{chr(10).join(panels)}
+
+<script>
+(function() {{
+  const panels = document.querySelectorAll('.comparison-panel');
+  panels.forEach(panel => {{
+    const selectBtn = panel.querySelector('.select-btn');
+    if (selectBtn) {{
+      selectBtn.addEventListener('click', () => {{
+        panels.forEach(p => p.classList.remove('selected'));
+        panel.classList.add('selected');
+        // Emit selection event for parent to handle
+        if (window.parent) {{
+          window.parent.postMessage({{ type: 'od-compare-select', model: panel.dataset.model }}, '*');
+        }}
+      }});
+    }}
+  }});
+}})();
+</script>
+</div>"""
+
+        return comparison_html
+
+    def _extract_comparison_models(self, content: str) -> list[tuple[str, str]]:
+        """Extract model names and HTML from comparison output."""
+        models = []
+        # Pattern to find model headers followed by HTML code blocks
+        # Matches: **model-name:** ✅ Generated or similar patterns
+        model_pattern = re.compile(r"\*\*(.+?):\*\*", re.DOTALL)
+        code_pattern = re.compile(r"```(?:html)?\s*([\s\S]*?)```")
+
+        # Find all code blocks
+        code_blocks = code_pattern.findall(content)
+
+        # Try to map models to code blocks
+        model_matches = model_pattern.findall(content)
+
+        for i, code_block in enumerate(code_blocks):
+            # Skip if it's not actual HTML
+            if not any(
+                tag in code_block for tag in ["<html", "<!DOCTYPE", "<div", "<section", "<main"]
+            ):
+                continue
+
+            # Try to find associated model name
+            model_name = f"Model {i + 1}"
+            if i < len(model_matches):
+                model_name = model_matches[i].strip()
+
+            # Clean up model name
+            model_name = re.sub(r"[:\-\*\|]", "", model_name).strip()
+
+            models.append((model_name, code_block.strip()))
+
+        return models
