@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f7f7f8; }
+        .sidebar { width: 240px; background: #1a1a2b; min-height: 100vh; padding: 1.5rem; position: fixed; }
+        .sidebar h2 { color: #fff; font-size: 1.125rem; margin-bottom: 2rem; }
+        .sidebar nav a { display: block; color: #9898a6; text-decoration: none; padding: 0.5rem 0; font-size: 0.875rem; }
+        .sidebar nav a:hover { color: #fff; }
+        .main { margin-left: 240px; padding: 2rem; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 1.5rem; color: #1a1a1a; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: #fff; padding: 1.25rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat-value { font-size: 1.75rem; font-weight: 700; color: #1a1a1a; }
+        .stat-label { font-size: 0.875rem; color: #6b6b6b; margin-top: 0.25rem; }
+        .chart-area { background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .chart-placeholder { height: 200px; background: #f4f4f5; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #999; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <h2>{{ brand }}</h2>
+        <nav>
+            <a href="#">Dashboard</a>
+            <a href="#">Analytics</a>
+            <a href="#">Settings</a>
+        </nav>
+    </aside>
+    <main class="main">
+        <div class="header">
+            <h1>{{ title }}</h1>
+        </div>
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value">—</div>
+                <div class="stat-label">Metric 1</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">—</div>
+                <div class="stat-label">Metric 2</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">—</div>
+                <div class="stat-label">Metric 3</div>
+            </div>
+        </div>
+        <div class="chart-area">
+            <div class="chart-placeholder">Chart placeholder</div>
+        </div>
+    </main>
+</body>
+</html>

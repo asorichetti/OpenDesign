@@ -1,0 +1,53 @@
+{
+    "id": "opendesign",
+    "name": "OpenDesign Studio",
+    "description": "Generate beautiful, functional websites from natural language. Open-source design generation platform for Open WebUI.",
+    "version": "0.1.0",
+    "author": "asorichetti",
+    "license": "MIT",
+    "repository": "https://github.com/asorichetti/OpenDesign",
+    "functions": [
+        {
+            "type": "pipe",
+            "file": "functions/design_studio/design_studio.py",
+            "name": "Design Studio",
+            "description": "Generate HTML prototypes from chat prompts"
+        },
+        {
+            "type": "action",
+            "file": "functions/preview_generator/preview_generator.py",
+            "name": "Preview Generator",
+            "description": "Render sandboxed previews, export HTML, open live editor"
+        },
+        {
+            "type": "filter",
+            "file": "functions/prompt_enhancer/prompt_enhancer.py",
+            "name": "Prompt Enhancer",
+            "description": "Enhance design-related prompts with context and guidelines"
+        }
+    ],
+    "templates": [
+        "templates/landing/minimal.html",
+        "templates/landing/hero.html",
+        "templates/landing/feature-grid.html",
+        "templates/dashboard/analytics.html",
+        "templates/component/button.html",
+        "templates/component/card.html",
+        "templates/component/modal.html",
+        "templates/component/form.html",
+        "templates/presentation/blank.html",
+        "templates/presentation/sections.html",
+        "templates/email/newsletter.html",
+        "templates/email/transactional.html",
+        "templates/social/hero-banner.html",
+        "templates/social/og-card.html"
+    ],
+    "dependencies": [
+        "jinja2>=3.1",
+        "beautifulsoup4>=4.12",
+        "aiohttp>=3.9",
+        "pydantic>=2.0"
+    ],
+    "required_open_webui_version": ">=0.10.0",
+    "icon_url": "https://cdn.jsdelivr.net/gh/asorichetti/OpenDesign@main/assets/icon.svg"
+}

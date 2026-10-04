@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            overflow: hidden;
+        }
+
+        /* Slide Base */
+        .slide {
+            min-height: 100vh;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem;
+            position: relative;
+        }
+        .slide.active {
+            display: flex;
+        }
+
+        /* Title Slide */
+        .slide.title {
+            text-align: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+        }
+        .slide.title h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+        .slide.title .subtitle {
+            font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        /* Content Slide */
+        .slide.content h2 {
+            font-size: clamp(1.75rem, 4vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: #1a1a2e;
+        }
+        .slide.content ul {
+            list-style: none;
+            padding: 0;
+        }
+        .slide.content li {
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            padding: 0.75rem 0;
+            padding-left: 2rem;
+            position: relative;
+            line-height: 1.6;
+        }
+        .slide.content li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #0f3460;
+            font-weight: 700;
+        }
+
+        /* Two Column Layout */
+        .slide.two-column {
+            display: none;
+            flex-direction: row;
+            gap: 4rem;
+            align-items: flex-start;
+        }
+        .slide.two-column.active {
+            display: flex;
+        }
+        .column {
+            flex: 1;
+        }
+        .column h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #1a1a2e;
+        }
+
+        /* Image/Quote Slide */
+        .slide.quote {
+            background: #f8f9fa;
+            text-align: center;
+        }
+        .slide.quote blockquote {
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            font-style: italic;
+            max-width: 800px;
+            line-height: 1.5;
+            color: #1a1a2e;
+        }
+        .slide.quote cite {
+            display: block;
+            margin-top: 2rem;
+            font-size: 1.25rem;
+            color: #6b6b6b;
+            font-style: normal;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: #0f3460;
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        /* Slide Counter */
+        .slide-counter {
+            position: fixed;
+            bottom: 1rem;
+            right: 1.5rem;
+            font-size: 0.875rem;
+            color: #999;
+            z-index: 100;
+        }
+
+        /* Navigation Arrows */
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.3);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s, background 0.3s;
+        }
+        .nav-arrow:hover {
+            background: rgba(0,0,0,0.6);
+        }
+        .nav-arrow.visible {
+            opacity: 1;
+        }
+        .nav-prev { left: 1rem; }
+        .nav-next { right: 1rem; }
+
+        /* Keyboard Hints */
+        .keyboard-hints {
+            position: fixed;
+            bottom: 1rem;
+            left: 1.5rem;
+            font-size: 0.75rem;
+            color: #ccc;
+            z-index: 100;
+            display: flex;
+            gap: 1rem;
+        }
+        .keyboard-hints kbd {
+            background: rgba(255,255,255,0.1);
+            padding: 0.125rem 0.375rem;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        /* Presenter Mode */
+        body.presenter-mode .slide-counter {
+            bottom: auto;
+            top: 1rem;
+            left: 1rem;
+            color: #1a1a2e;
+            background: rgba(255,255,255,0.9);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+        }
+        body.presenter-mode .keyboard-hints {
+            display: none;
+        }
+
+        /* Presenter Notes Panel */
+        .presenter-notes {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1a1a2e;
+            color: #e8e8ed;
+            padding: 1.5rem 2rem;
+            z-index: 200;
+            border-top: 2px solid #0f3460;
+        }
+        body.presenter-mode .presenter-notes {
+            display: block;
+        }
+        .presenter-notes h4 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #7a7a8e;
+            margin-bottom: 0.5rem;
+        }
+        .presenter-notes p {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* Fullscreen */
+        body.fullscreen .nav-arrow,
+        body.fullscreen .slide-counter,
+        body.fullscreen .keyboard-hints {
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        body.fullscreen:hover .nav-arrow,
+        body.fullscreen:hover .slide-counter,
+        body.fullscreen:hover .keyboard-hints {
+            opacity: 1;
+        }
+
+        /* Print Styles for PDF Export */
+        @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+            body { background: white; }
+
+            .slide {
+                display: flex !important;
+                min-height: 100vh;
+                page-break-after: always;
+                padding: 2rem;
+            }
+            .slide:last-child { page-break-after: avoid; }
+
+            .progress-bar,
+            .slide-counter,
+            .nav-arrow,
+            .keyboard-hints,
+            .presenter-notes {
+                display: none !important;
+            }
+
+            .slide.title {
+                background: #1a1a2e !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .slide.title h1,
+            .slide.title .subtitle {
+                color: white !important;
+            }
+
+            .slide.content h2,
+            .slide.content li,
+            .slide.quote blockquote {
+                color: #1a1a1a !important;
+            }
+
+            .slide.content li::before {
+                color: #0f3460 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="slide-counter" id="slideCounter">1 / {{ total_slides }}</div>
+
+    <button class="nav-arrow nav-prev" id="prevBtn" onclick="prevSlide()">&#9664;</button>
+    <button class="nav-arrow nav-next" id="nextBtn" onclick="nextSlide()">&#9654;</button>
+
+    <div class="keyboard-hints">
+        <span><kbd>←</kbd><kbd>→</kbd> Navigate</span>
+        <span><kbd>P</kbd> Presenter</span>
+        <span><kbd>F</kbd> Fullscreen</span>
+        <span><kbd>Esc</kbd> Exit</span>
+    </div>
+
+    <div class="presenter-notes">
+        <h4>📝 Presenter Notes — Slide {{ current_slide }}</h4>
+        <p id="currentNotes">{{ presenter_notes | default("No notes for this slide.") }}</p>
+    </div>
+
+    <!-- SLIDES -->
+    <section class="slide title active" data-notes="{{ presenter_notes }}">
+        <h1>{{ title }}</h1>
+        <p class="subtitle">{{ subtitle }}</p>
+    </section>
+
+    <section class="slide content" data-notes="Introduction slide — cover the key points.">
+        <h2>{{ section_title | default("Agenda") }}</h2>
+        <ul>
+            <li>{{ point1 }}</li>
+            <li>{{ point2 }}</li>
+            <li>{{ point3 }}</li>
+            <li>{{ point4 }}</li>
+        </ul>
+    </section>
+
+    <section class="slide content" data-notes="Second section — dive deeper into the topic.">
+        <h2>{{ section2_title | default("Key Points") }}</h2>
+        <ul>
+            <li>{{ point5 }}</li>
+            <li>{{ point6 }}</li>
+            <li>{{ point7 }}</li>
+        </ul>
+    </section>
+
+    <section class="slide quote" data-notes="This slide emphasizes a key takeaway.">
+        <blockquote>{{ quote_text | default("The best way to predict the future is to create it.") }}</blockquote>
+        <cite>{{ quote_author | default("— Peter Drucker") }}</cite>
+    </section>
+
+    <section class="slide title" data-notes="Closing slide — thank the audience.">
+        <h1>{{ closing_title | default("Thank You") }}</h1>
+        <p class="subtitle">{{ closing_text | default("Questions?") }}</p>
+    </section>
+
+    <script>
+        let current = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach((s, i) => s.classList.toggle('active', i === n));
+            const progress = ((n + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('slideCounter').textContent = (n + 1) + ' / ' + totalSlides;
+
+            // Update notes
+            const notes = slides[n].getAttribute('data-notes');
+            document.getElementById('currentNotes').textContent = notes || 'No notes.';
+
+            // Update nav arrows
+            document.getElementById('prevBtn').classList.toggle('visible', n > 0);
+            document.getElementById('nextBtn').classList.toggle('visible', n < totalSlides - 1);
+        }
+
+        function nextSlide() {
+            if (current < totalSlides - 1) { current++; showSlide(current); }
+        }
+
+        function prevSlide() {
+            if (current > 0) { current--; showSlide(current); }
+        }
+
+        function togglePresenter() {
+            document.body.classList.toggle('presenter-mode');
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+                document.body.classList.add('fullscreen');
+            } else {
+                document.exitFullscreen().catch(() => {});
+                document.body.classList.remove('fullscreen');
+            }
+        }
+
+        function exitAll() {
+            if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+            document.body.classList.remove('presenter-mode', 'fullscreen');
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { nextSlide(); e.preventDefault(); }
+            if (e.key === 'ArrowLeft') { prevSlide(); e.preventDefault(); }
+            if (e.key === 'p' || e.key === 'P') togglePresenter();
+            if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+            if (e.key === 'Escape') exitAll();
+        });
+
+        // Touch support for tablets
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+        document.addEventListener('touchend', (e) => {
+            const diff = touchStartX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 50) { diff > 0 ? nextSlide() : prevSlide(); }
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

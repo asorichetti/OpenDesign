@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f4f4f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 2rem; }
+        .card { width: 500px; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card-image { height: 250px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; justify-content: center; align-items: center; }
+        .card-image span { color: #fff; font-size: 3rem; }
+        .card-body { padding: 1.5rem; }
+        .card-body h2 { font-size: 1.5rem; color: #1a1a1a; margin-bottom: 0.5rem; }
+        .card-body p { font-size: 1rem; color: #6b6b6b; line-height: 1.5; }
+        .card-footer { padding: 1rem 1.5rem; border-top: 1px solid #e0e0e0; font-size: 0.875rem; color: #999999; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="card-image"><span>{{ icon }}</span></div>
+        <div class="card-body">
+            <h2>{{ title }}</h2>
+            <p>{{ description }}</p>
+        </div>
+        <div class="card-footer">{{ brand }} · {{ url }}</div>
+    </div>
+</body>
+</html>

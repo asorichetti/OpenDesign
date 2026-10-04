@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        :root {
+            --color-bg: #FFFFFF;
+            --color-text: #1A1A1A;
+            --color-accent: #737373;
+            --color-border: #E0E0E0;
+            --font-family: system-ui, -apple-system, sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-family); line-height: 1.6; }
+        .hero {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4rem 1.5rem;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .hero-content h1 { font-size: 3rem; margin-bottom: 1rem; }
+        .hero-content p { font-size: 1.25rem; color: var(--color-accent); max-width: 600px; margin: 0 auto 2rem; }
+        .hero-buttons { display: flex; gap: 1rem; justify-content: center; }
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .btn-primary { background: var(--color-text); color: var(--color-bg); }
+        .btn-secondary { border: 1px solid var(--color-border); color: var(--color-text); }
+    </style>
+</head>
+<body>
+    <header>
+        <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 1.5rem; font-weight: 700;">{{ brand }}</div>
+            <nav style="display: flex; gap: 1.5rem;">
+                <!-- Navigation items -->
+            </nav>
+        </div>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>{{ headline }}</h1>
+                <p>{{ subtitle }}</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn btn-primary">Get Started</a>
+                    <a href="#" class="btn btn-secondary">Learn More</a>
+                </div>
+            </div>
+        </section>
+        <section style="max-width: 1200px; margin: 4rem auto; padding: 0 1.5rem;">
+            <!-- Features section -->
+        </section>
+    </main>
+    <footer style="padding: 2rem 0; text-align: center; color: var(--color-accent);">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;">
+            <p>&copy; 2025 {{ brand }}</p>
+        </div>
+    </footer>
+</body>
+</html>

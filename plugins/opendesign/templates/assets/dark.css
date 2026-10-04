@@ -1,0 +1,12 @@
+:root {
+    --od-color-bg-primary: #1A1A2B;
+    --od-color-bg-secondary: #13131F;
+    --od-color-text-primary: #E8E8ED;
+    --od-color-text-secondary: #9898A6;
+    --od-color-accent: #A1A1AA;
+    --od-color-border: #3A3A4A;
+    --od-color-code-bg: #252535;
+    --od-font-family: system-ui, -apple-system, sans-serif;
+    --od-font-size-base: 16px;
+    --od-spacing-unit: 8px;
+}

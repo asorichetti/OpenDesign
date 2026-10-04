@@ -1,10 +1,20 @@
+# OpenDesign — Docker Compose Configuration
+#
+# Usage:
+#   Production: docker compose up -d
+#   Development: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# The production build pre-installs OpenDesign.
+# The development mode mounts local files for hot reloading.
+
 services:
-  opendesign:
+  openwebui:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+    container_name: openwebui
     ports:
-      - "8080:8080"
+      - "3000:8080"
     environment:
       - WEBUI_SECRET_KEY=change-me-in-production
       # Optional: configure Ollama
@@ -15,6 +25,12 @@ services:
       # Persistent data for Open WebUI (including OpenDesign functions)
       - openwebui_data:/app/backend/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
 
 volumes:
   openwebui_data:
