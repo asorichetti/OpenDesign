@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Stepper") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .stepper-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Stepper Header */
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .stepper::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .stepper-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #a3a3a3;
+            transition: all 0.3s;
+        }
+
+        .stepper-step.active .step-circle {
+            border-color: #1a1a1a;
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .stepper-step.completed .step-circle {
+            border-color: #48bb78;
+            background: #48bb78;
+            color: white;
+        }
+
+        .step-label {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: #a3a3a3;
+            text-align: center;
+            transition: color 0.3s;
+        }
+
+        .stepper-step.active .step-label,
+        .stepper-step.completed .step-label {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        /* Step Content */
+        .step-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            min-height: 200px;
+        }
+
+        .step-panel {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .step-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 1rem;
+        }
+
+        .step-description {
+            color: #6b6b6b;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 0.375rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #1a1a1a;
+            box-shadow: 0 0 0 3px rgba(26,26,26,0.1);
+        }
+
+        .step-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .btn {
+            padding: 0.625rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #6b6b6b;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        /* Success State */
+        .step-success {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .success-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .success-text {
+            color: #6b6b6b;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .step-label { font-size: 0.625rem; }
+            .step-circle { width: 32px; height: 32px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="stepper-container">
+        <div class="stepper" id="stepper">
+            {% for step in steps | default([{'title': 'Personal'}, {'title': 'Profile'}, {'title': 'Complete'}]) %}
+            <div class="stepper-step {% if loop.first %}active{% endif %}" data-step="{{ loop.index }}">
+                <div class="step-circle">{{ loop.index }}</div>
+                <div class="step-label">{{ step.title }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="step-content">
+            {% for step in steps | default([{'title': 'Personal', 'description': 'Enter your basic information.', 'fields': [{'label': 'Full Name', 'type': 'text'}, {'label': 'Email', 'type': 'email'}]}, {'title': 'Profile', 'description': 'Tell us about yourself.', 'fields': [{'label': 'Bio', 'type': 'textarea'}, {'label': 'Website', 'type': 'url'}]}, {'title': 'Complete', 'description': 'You\'re all set!', 'success': True}]) %}
+            <div class="step-panel {% if loop.first %}active{% endif %}" data-panel="{{ loop.index }}">
+                <h3 class="step-title">{{ step.title }}</h3>
+                <p class="step-description">{{ step.description }}</p>
+
+                {% if step.success %}
+                <div class="step-success">
+                    <div class="success-icon">🎉</div>
+                    <h3 class="success-title">All Done!</h3>
+                    <p class="success-text">Your profile has been created successfully.</p>
+                </div>
+                {% else %}
+                {% for field in step.fields %}
+                <div class="form-group">
+                    <label class="form-label">{{ field.label }}</label>
+                    {% if field.type == 'textarea' %}
+                    <textarea class="form-input" rows="3" placeholder="{{ field.label }}..."></textarea>
+                    {% else %}
+                    <input type="{{ field.type }}" class="form-input" placeholder="{{ field.label }}...">
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <div class="step-actions">
+                    <button class="btn btn-secondary step-prev" {% if loop.first %}style="visibility: hidden"{% endif %}>Previous</button>
+                    <button class="btn {% if loop.last %}btn-success{% else %}btn-primary{% endif %} step-next">{{ 'Finish' if loop.last else 'Next' }}</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        const stepper = document.getElementById('stepper');
+        const steps = stepper.querySelectorAll('.stepper-step');
+        const panels = document.querySelectorAll('.step-panel');
+        let currentStep = 1;
+        const totalSteps = steps.length;
+
+        function goToStep(step) {
+            if (step < 1 || step > totalSteps) return;
+
+            // Update stepper indicators
+            steps.forEach((s, i) => {
+                s.classList.remove('active', 'completed');
+                if (i + 1 < step) s.classList.add('completed');
+                if (i + 1 === step) s.classList.add('active');
+            });
+
+            // Update panels
+            panels.forEach(p => p.classList.remove('active'));
+            document.querySelector(`[data-panel="${step}"]`).classList.add('active');
+
+            currentStep = step;
+        }
+
+        // Next button
+        document.querySelectorAll('.step-next').forEach(btn => {
+            btn.addEventListener('click', () => goToStep(currentStep + 1));
+        });
+
+        // Previous button
+        document.querySelectorAll('.step-prev').forEach(btn => {
+            btn.addEventListener('click', () => goToStep(currentStep - 1));
+        });
+
+        // Click on step circle to navigate (if completed)
+        steps.forEach((step, i) => {
+            step.addEventListener('click', () => {
+                if (i + 1 < currentStep) {
+                    goToStep(i + 1);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
