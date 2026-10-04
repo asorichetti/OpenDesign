@@ -142,37 +142,62 @@ Intercepts design-related prompts and injects context.
 class Filter:
     def __init__(self):
         self.toggle = True  # User-toggleable
-    
+
     async def inlet(self, body: dict, __user__=None) -> dict:
         """Enhance the request before it reaches the model."""
-        
+
         # Check if this is a design prompt
         if self._is_design_prompt(body.get("prompt", "")):
             # Inject design context
             body["system_prompt"] += self._get_design_context(__user__)
-        
+
         return body
-    
+
     async def stream(self, chunks: list[dict], __user__=None) -> list[dict]:
         """Intercept streamed chunks (for token counting)."""
         return chunks
-    
+
     async def outlet(self, body: dict, __user__=None) -> dict:
         """Post-process the response."""
         return body
-    
+
     def _is_design_prompt(self, prompt: str) -> bool:
         """Check if prompt is design-related using keyword matching."""
         design_keywords = [
-            "landing page", "dashboard", "website", "ui", "interface",
-            "component", "button", "card", "form", "nav", "header",
-            "footer", "hero", "presentation", "slide", "prototype",
-            "design", "layout", "theme", "color", "font", "style",
-            "email", "newsletter", "social", "banner", "og",
-            "make me a", "create a", "build me a", "generate a",
+            "landing page",
+            "dashboard",
+            "website",
+            "ui",
+            "interface",
+            "component",
+            "button",
+            "card",
+            "form",
+            "nav",
+            "header",
+            "footer",
+            "hero",
+            "presentation",
+            "slide",
+            "prototype",
+            "design",
+            "layout",
+            "theme",
+            "color",
+            "font",
+            "style",
+            "email",
+            "newsletter",
+            "social",
+            "banner",
+            "og",
+            "make me a",
+            "create a",
+            "build me a",
+            "generate a",
         ]
         return any(kw in prompt.lower() for kw in design_keywords)
-    
+
     def _get_design_context(self, user: dict) -> str:
         """Load and return user's design context."""
         # Load design system presets, templates, history

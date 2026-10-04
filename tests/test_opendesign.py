@@ -29,6 +29,7 @@ def _run_async(coro):
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def data_dir(tmp_path):
     """Create a temporary data directory for testing."""
@@ -67,6 +68,7 @@ def sample_body():
 # Test: Intent Detection
 # ---------------------------------------------------------------------------
 
+
 class TestIntentDetection:
     """Test the keyword-based intent detection."""
 
@@ -74,6 +76,7 @@ class TestIntentDetection:
     def pipe(self):
         """Create a Pipe instance for testing."""
         from functions.design_studio.design_studio import Pipe
+
         pipe = object.__new__(Pipe)
         pipe._templates_cache = {}
         pipe._prompts_cache = {}
@@ -129,10 +132,13 @@ class TestIntentDetection:
     def test_multimodal_message(self, pipe):
         """Should extract text from multimodal messages."""
         messages = [
-            {"role": "user", "content": [
-                {"type": "text", "text": "What is this?"},
-                {"type": "image", "url": "http://example.com/img.png"},
-            ]},
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "What is this?"},
+                    {"type": "image", "url": "http://example.com/img.png"},
+                ],
+            },
         ]
         assert pipe._find_last_user_message(messages) == "What is this?"
 
@@ -141,12 +147,14 @@ class TestIntentDetection:
 # Test: Template Loading
 # ---------------------------------------------------------------------------
 
+
 class TestTemplateLoading:
     """Test template file loading and caching."""
 
     @pytest.fixture
     def pipe(self):
         from functions.design_studio.design_studio import Pipe
+
         pipe = object.__new__(Pipe)
         pipe._templates_cache = {}
         pipe._prompts_cache = {}
@@ -200,12 +208,14 @@ class TestTemplateLoading:
 # Test: Prompt Construction
 # ---------------------------------------------------------------------------
 
+
 class TestPromptConstruction:
     """Test prompt template loading and variable substitution."""
 
     @pytest.fixture
     def pipe(self):
         from functions.design_studio.design_studio import Pipe
+
         pipe = object.__new__(Pipe)
         pipe._templates_cache = {}
         pipe._prompts_cache = {}
@@ -241,7 +251,11 @@ class TestPromptConstruction:
             design_system="light",
             user_message="Test",
         )
-        assert "--od-bg-primary" in constructed or "--od-color-bg" in constructed or "background" in constructed.lower()
+        assert (
+            "--od-bg-primary" in constructed
+            or "--od-color-bg" in constructed
+            or "background" in constructed.lower()
+        )
 
     def test_empty_template_html(self, pipe):
         """Should work even with empty template HTML."""
@@ -259,12 +273,14 @@ class TestPromptConstruction:
 # Test: HTML Extraction & Validation
 # ---------------------------------------------------------------------------
 
+
 class TestHTMLExtraction:
     """Test HTML code block extraction and sanitization."""
 
     @pytest.fixture
     def pipe(self):
         from functions.design_studio.design_studio import Pipe
+
         pipe = object.__new__(Pipe)
         pipe._templates_cache = {}
         pipe._prompts_cache = {}
@@ -314,7 +330,7 @@ Hope you like it!"""
 
     def test_sanitizes_eval(self, pipe):
         """eval() calls should be sanitized."""
-        html = '<script>eval(userInput)</script>'
+        html = "<script>eval(userInput)</script>"
         safe = pipe._validate_html(html)
         assert "eval(" not in safe
 
@@ -336,12 +352,14 @@ Hope you like it!"""
 # Test: Version Persistence
 # ---------------------------------------------------------------------------
 
+
 class TestVersionPersistence:
     """Test version saving and loading."""
 
     @pytest.fixture
     def pipe(self, data_dir):
         from functions.design_studio.design_studio import Pipe
+
         pipe = object.__new__(Pipe)
         pipe._data_dir = data_dir
         pipe._templates_cache = {}
@@ -358,7 +376,9 @@ class TestVersionPersistence:
 
         # Verify file was created
         user_id = pipe._get_user_id(mock_user)
-        history_path = pipe._data_dir / "opendesign" / "designs" / user_id / design_id / "history.json"
+        history_path = (
+            pipe._data_dir / "opendesign" / "designs" / user_id / design_id / "history.json"
+        )
         assert history_path.exists()
 
         history = json.loads(history_path.read_text())
@@ -373,7 +393,9 @@ class TestVersionPersistence:
         pipe._save_version(design_id, "<html>v2</html>", "Second", mock_user)
 
         user_id = pipe._get_user_id(mock_user)
-        history_path = pipe._data_dir / "opendesign" / "designs" / user_id / design_id / "history.json"
+        history_path = (
+            pipe._data_dir / "opendesign" / "designs" / user_id / design_id / "history.json"
+        )
         history = json.loads(history_path.read_text())
         assert len(history) == 2
         assert history[0]["version"] == 1
@@ -406,12 +428,14 @@ class TestVersionPersistence:
 # Test: Preview Generator Action
 # ---------------------------------------------------------------------------
 
+
 class TestPreviewGenerator:
     """Test the preview generator Action."""
 
     @pytest.fixture
     def action(self):
         from functions.preview_generator.preview_generator import Action
+
         return Action()
 
     def test_extract_code_blocks(self, action):
@@ -449,27 +473,27 @@ And some text."""
 
     def test_render_preview(self, action):
         """Should render a sandboxed iframe preview."""
-        html = '<html><body>Preview</body></html>'
+        html = "<html><body>Preview</body></html>"
         result = action._render_preview(html)
-        assert 'srcdoc=' in result
-        assert 'sandbox=' in result
-        assert 'allow-scripts' in result
-        assert 'allow-same-origin' in result
+        assert "srcdoc=" in result
+        assert "sandbox=" in result
+        assert "allow-scripts" in result
+        assert "allow-same-origin" in result
 
     def test_render_editor(self, action):
         """Should render the split-pane live editor."""
-        html = '<html><body>Editor</body></html>'
+        html = "<html><body>Editor</body></html>"
         result = action._render_editor(html)
-        assert 'srcdoc=' in result
-        assert 'textarea' in result
-        assert 'iframe' in result
+        assert "srcdoc=" in result
+        assert "textarea" in result
+        assert "iframe" in result
 
     def test_escape_for_srcdoc(self, action):
         """HTML should be properly escaped for srcdoc."""
         raw = '<script>alert("xss")</script>'
         escaped = action._escape_for_srcdoc(raw)
-        assert '&lt;' in escaped
-        assert '&gt;' in escaped
+        assert "&lt;" in escaped
+        assert "&gt;" in escaped
         assert raw not in escaped
 
     def test_actions_list(self, action):
@@ -485,12 +509,14 @@ And some text."""
 # Test: Prompt Enhancer Filter
 # ---------------------------------------------------------------------------
 
+
 class TestPromptEnhancer:
     """Test the prompt enhancer Filter."""
 
     @pytest.fixture
     def filter(self):
         from functions.prompt_enhancer.prompt_enhancer import Filter
+
         return Filter()
 
     def test_enhance_design_prompt(self, filter):

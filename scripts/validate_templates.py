@@ -14,12 +14,14 @@ from pathlib import Path
 
 try:
     from bs4 import BeautifulSoup
+
     HAS_BS4 = True
 except ImportError:
     HAS_BS4 = False
 
 try:
     from jinja2 import Environment, FileSystemLoader, UndefinedError
+
     HAS_JINJA2 = True
 except ImportError:
     HAS_JINJA2 = False

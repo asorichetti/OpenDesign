@@ -7,7 +7,6 @@ required_open_webui_version: 0.10.0
 """
 
 
-
 class Filter:
     """OpenDesign Prompt Enhancer — injects design context into prompts.
 
@@ -22,12 +21,37 @@ class Filter:
 
     # Design keywords shared with the Pipe for consistency
     DESIGN_KEYWORDS = {
-        "landing page", "dashboard", "website", "ui", "interface",
-        "component", "button", "card", "form", "nav", "header",
-        "footer", "hero", "presentation", "slide", "prototype",
-        "design", "layout", "theme", "color", "font", "style",
-        "make me a", "create a", "build me a", "generate a",
-        "mockup", "wireframe", "email", "newsletter", "social",
+        "landing page",
+        "dashboard",
+        "website",
+        "ui",
+        "interface",
+        "component",
+        "button",
+        "card",
+        "form",
+        "nav",
+        "header",
+        "footer",
+        "hero",
+        "presentation",
+        "slide",
+        "prototype",
+        "design",
+        "layout",
+        "theme",
+        "color",
+        "font",
+        "style",
+        "make me a",
+        "create a",
+        "build me a",
+        "generate a",
+        "mockup",
+        "wireframe",
+        "email",
+        "newsletter",
+        "social",
     }
 
     async def inlet(self, body: dict, __user__: dict | None = None) -> dict:

@@ -50,17 +50,22 @@ requirements: jinja2, beautifulsoup4, requests
 from pydantic import BaseModel, Field
 from typing import Optional
 
+
 class Valves(BaseModel):
     """Admin-configurable settings."""
+
     base_model: str = Field(default="gpt-4o", description="LLM to use for generation")
     api_key: Optional[str] = Field(default=None, description="API key (if not using Ollama)")
     preview_timeout: int = Field(default=10, description="Preview render timeout in seconds")
 
+
 class UserValves(BaseModel):
     """User-configurable settings."""
+
     template: str = Field(default="landing", description="Default template to use")
     design_system: str = Field(default="light", description="Design system preset")
     auto_preview: bool = Field(default=True, description="Auto-generate preview on send")
+
 
 class Pipe:
     def __init__(self):

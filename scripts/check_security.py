@@ -24,17 +24,17 @@ SECURITY_PATTERNS = {
         "message": "Potential hardcoded secret detected",
     },
     "eval_call": {
-        "pattern": r'\beval\s*\(',
+        "pattern": r"\beval\s*\(",
         "severity": "critical",
         "message": "eval() call detected - potential code injection",
     },
     "exec_call": {
-        "pattern": r'\bexec\s*\(',
+        "pattern": r"\bexec\s*\(",
         "severity": "critical",
         "message": "exec() call detected - potential code injection",
     },
     "compile_call": {
-        "pattern": r'\bcompile\s*\(',
+        "pattern": r"\bcompile\s*\(",
         "severity": "high",
         "message": "compile() call detected - potential code injection",
     },
@@ -59,12 +59,12 @@ SECURITY_PATTERNS = {
         "message": "Potential SQL injection pattern",
     },
     "innerHTML": {
-        "pattern": r'\.innerHTML\s*=',
+        "pattern": r"\.innerHTML\s*=",
         "severity": "medium",
         "message": "innerHTML usage - potential XSS vector",
     },
     "document_write": {
-        "pattern": r'document\.write\s*\(',
+        "pattern": r"document\.write\s*\(",
         "severity": "high",
         "message": "document.write() - potential XSS vector",
     },
@@ -132,7 +132,7 @@ def scan_file(filepath: Path) -> list[dict]:
         matches = re.finditer(config["pattern"], content, re.IGNORECASE)
         for match in matches:
             # Get line number
-            line_no = content[:match.start()].count("\n") + 1
+            line_no = content[: match.start()].count("\n") + 1
             line_text = lines[line_no - 1].strip() if line_no <= len(lines) else ""
 
             # Skip if line has security allow marker
@@ -143,14 +143,16 @@ def scan_file(filepath: Path) -> list[dict]:
             if pattern_name == "document_write" and "preview_generator" in rel_path:
                 continue
 
-            issues.append({
-                "file": str(filepath.relative_to(PROJECT_ROOT)),
-                "line": line_no,
-                "severity": config["severity"],
-                "pattern": pattern_name,
-                "message": config["message"],
-                "match": match.group()[:50],  # Truncate for readability
-            })
+            issues.append(
+                {
+                    "file": str(filepath.relative_to(PROJECT_ROOT)),
+                    "line": line_no,
+                    "severity": config["severity"],
+                    "pattern": pattern_name,
+                    "message": config["message"],
+                    "match": match.group()[:50],  # Truncate for readability
+                }
+            )
 
     return issues
 
@@ -193,7 +195,10 @@ def main():
 
     if all_issues:
         print(f"\n{'=' * 60}\nIssues:\n")
-        for issue in sorted(all_issues, key=lambda x: {"critical": 0, "high": 1, "medium": 2, "low": 3}[x["severity"]]):
+        for issue in sorted(
+            all_issues,
+            key=lambda x: {"critical": 0, "high": 1, "medium": 2, "low": 3}[x["severity"]],
+        ):
             print(f"  [{issue['severity'].upper():8s}] {issue['file']}:{issue['line']}")
             print(f"           {issue['message']}")
             print(f"           Match: {issue['match']}\n")
