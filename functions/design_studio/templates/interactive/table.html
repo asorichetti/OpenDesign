@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Data Table") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .table-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .table-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .table-search {
+            padding: 0.5rem 0.875rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            width: 200px;
+        }
+
+        .table-search:focus {
+            outline: none;
+            border-color: #1a1a1a;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #fafafa;
+        }
+
+        th {
+            padding: 0.875rem 1.25rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b6b6b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        th:hover {
+            color: #1a1a1a;
+        }
+
+        th .sort-icon {
+            margin-left: 0.375rem;
+            opacity: 0.3;
+        }
+
+        th.sorted .sort-icon {
+            opacity: 1;
+        }
+
+        td {
+            padding: 1rem 1.25rem;
+            font-size: 0.875rem;
+            color: #1a1a1a;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr:hover td {
+            background: #fafafa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-active { background: #f0fdf4; color: #166534; }
+        .status-pending { background: #fffbeb; color: #92400e; }
+        .status-inactive { background: #f3f4f6; color: #6b6b6b; }
+        .status-error { background: #fef2f2; color: #991b1b; }
+
+        .table-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.875rem;
+            color: #6b6b6b;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .page-btn {
+            padding: 0.375rem 0.75rem;
+            border: 1px solid #e0e0e0;
+            background: white;
+            border-radius: 6px;
+            font-size: 0.8125rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover {
+            border-color: #1a1a1a;
+        }
+
+        .page-btn.active {
+            background: #1a1a1a;
+            color: white;
+            border-color: #1a1a1a;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .table-header { flex-direction: column; gap: 0.75rem; align-items: flex-start; }
+            .table-search { width: 100%; }
+            .table-footer { flex-direction: column; gap: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="table-container">
+        <div class="table-header">
+            <h3 class="table-title">{{ title | default("Users") }}</h3>
+            <div class="table-actions">
+                <input type="text" class="table-search" id="tableSearch" placeholder="Search...">
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th data-column="name" class="sorted">Name <span class="sort-icon">↑</span></th>
+                        <th data-column="email">Email <span class="sort-icon">↑</span></th>
+                        <th data-column="role">Role <span class="sort-icon">↑</span></th>
+                        <th data-column="status">Status <span class="sort-icon">↑</span></th>
+                        <th data-column="date">Date <span class="sort-icon">↑</span></th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for user in users | default([{'name': 'Alice Johnson', 'email': 'alice@example.com', 'role': 'Admin', 'status': 'active', 'date': '2024-01-15'}, {'name': 'Bob Smith', 'email': 'bob@example.com', 'role': 'Editor', 'status': 'active', 'date': '2024-01-10'}, {'name': 'Carol White', 'email': 'carol@example.com', 'role': 'Viewer', 'status': 'pending', 'date': '2024-01-08'}, {'name': 'David Brown', 'email': 'david@example.com', 'role': 'Editor', 'status': 'inactive', 'date': '2024-01-05'}, {'name': 'Eve Davis', 'email': 'eve@example.com', 'role': 'Admin', 'status': 'active', 'date': '2024-01-12'}]) %}
+                    <tr data-name="{{ user.name | lower }}" data-email="{{ user.email | lower }}" data-role="{{ user.role | lower }}" data-status="{{ user.status | lower }}" data-date="{{ user.date }}">
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.role }}</td>
+                        <td><span class="status-badge status-{{ user.status }}">{{ user.status | title }}</span></td>
+                        <td>{{ user.date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-footer">
+            <span id="tableInfo">Showing 5 of 5 entries</span>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <script>
+        const table = document.getElementById('dataTable');
+        const tbody = document.getElementById('tableBody');
+        const searchInput = document.getElementById('tableSearch');
+        const info = document.getElementById('tableInfo');
+        const pagination = document.getElementById('pagination');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        let currentPage = 1;
+        const rowsPerPage = 5;
+        let sortColumn = 'name';
+        let sortDirection = 'asc';
+
+        function filterAndRender() {
+            const query = searchInput.value.toLowerCase();
+            let filtered = rows.filter(row => {
+                return Array.from(row.cells).some(cell => cell.textContent.toLowerCase().includes(query));
+            });
+
+            // Sort
+            filtered.sort((a, b) => {
+                const aVal = a.dataset[sortColumn] || '';
+                const bVal = b.dataset[sortColumn] || '';
+                return sortDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+            });
+
+            // Paginate
+            const totalPages = Math.ceil(filtered.length / rowsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+            const start = (currentPage - 1) * rowsPerPage;
+            const pageRows = filtered.slice(start, start + rowsPerPage);
+
+            tbody.innerHTML = '';
+            pageRows.forEach(row => tbody.appendChild(row));
+
+            info.textContent = `Showing ${pageRows.length} of ${filtered.length} entries`;
+
+            // Render pagination
+            pagination.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+                btn.textContent = i;
+                btn.onclick = () => { currentPage = i; filterAndRender(); };
+                pagination.appendChild(btn);
+            }
+        }
+
+        // Column sorting
+        document.querySelectorAll('th').forEach(th => {
+            th.addEventListener('click', () => {
+                const column = th.dataset.column;
+                if (sortColumn === column) {
+                    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortColumn = column;
+                    sortDirection = 'asc';
+                }
+
+                // Update UI
+                document.querySelectorAll('th').forEach(h => {
+                    h.classList.remove('sorted');
+                    h.querySelector('.sort-icon').textContent = '↑';
+                });
+                th.classList.add('sorted');
+                th.querySelector('.sort-icon').textContent = sortDirection === 'asc' ? '↑' : '↓';
+
+                filterAndRender();
+            });
+        });
+
+        searchInput.addEventListener('input', () => { currentPage = 1; filterAndRender(); });
+
+        // Initialize
+        filterAndRender();
+    </script>
+</body>
+</html>
