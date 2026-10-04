@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+vendor/
+go.sum
+
+# Build outputs
+dist/
+build/
+bin/
+*.exe
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Artifacts
+*.tar.gz
+*.zip
+
+# Coverage
+coverage/
+.out/
+.galene/
+
+# Turborepo
+.turbo/
+
+# Devbox
+.devbox/
+
+# Playwright
+test-results/
+playwright-report/
