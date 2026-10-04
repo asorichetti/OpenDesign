@@ -245,7 +245,7 @@ class TestPromptConstruction:
             design_system="light",
             user_message="Test",
         )
-        assert "--od-color-bg" in constructed or "--color-bg" in constructed or "background" in constructed.lower()
+        assert "--od-bg-primary" in constructed or "--od-color-bg" in constructed or "background" in constructed.lower()
 
     def test_empty_template_html(self, pipe):
         """Should work even with empty template HTML."""
