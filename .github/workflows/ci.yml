@@ -22,10 +22,8 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+      - name: Install ruff
+        run: pip install ruff
 
       - name: Run ruff linter
         run: ruff check .
@@ -53,12 +51,10 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+        run: pip install jinja2 beautifulsoup4 aiohttp pytest pytest-cov
 
       - name: Run tests
-        run: pytest tests/ -v --tb=short --cov=functions --cov-report=term-missing
+        run: pytest tests/ -v --tb=short
 
   # -------------------------------------------------------------------------
   # 3. Security Scan
