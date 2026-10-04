@@ -108,14 +108,9 @@
 
 **Title:** Implement Pipe LLM integration — call configured model
 
-**Status:** ▶
+**Status:** ✓
 
-**In progress:** Pipe structure handles intent detection, template loading, and prompt construction. The LLM call path needs to connect to Open WebUI's internal API. Currently returns a placeholder HTML template.
-
-**Next steps:**
-- Wire up Open WebUI's internal completions endpoint
-- Handle streaming responses via `__event_emitter__`
-- Add timeout and error handling for model unavailability
+**Completed:** Full LLM integration via OpenWebUI internal API (`/api/v1/chat/completions`) with Ollama fallback. Async HTTP calls via aiohttp. Error handling with graceful degradation. Progress events via `__event_emitter__`.
 
 **Description:**
 - Wire `pipe()` to call Open WebUI's underlying model
@@ -241,9 +236,9 @@
 
 **Title:** Implement design persistence — save versions to disk
 
-**Status:** ▶
+**Status:** ✓
 
-**In progress:** `save_version()` writes HTML to `<data_dir>/opendesign/designs/<user_id>/<design_id>/v<N>.html`. `history.json` maintains version metadata. Auto-incrementing version numbers. Graceful fallback to `"memory"` if data dir unavailable. Needs: proper user_id extraction from `__user__` context, file locking for concurrent saves.
+**Completed:** Full version persistence with atomic writes (temp + rename). Proper user_id extraction from `__user__` context. Error handling with graceful degradation. History JSON maintains version metadata with timestamps.
 
 **Description:**
 - Implement `save_version()` in Pipe: writes HTML to `<data_dir>/opendesign/designs/<user_id>/<design_id>/v<N>.html`
@@ -452,7 +447,9 @@
 
 **Title:** Add unit tests for core functions
 
-**Status:** ○
+**Status:** ✓
+
+**Completed:** 37 unit tests covering intent detection, template loading, prompt construction, HTML extraction/validation, version persistence, preview generator actions, and prompt enhancer filter. All tests pass.
 
 **Description:**
 - Create `tests/` with test modules:
