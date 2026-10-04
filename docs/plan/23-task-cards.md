@@ -476,4 +476,37 @@
 **Phases:** 6
 **Estimated complexity:** Medium-Large
 
-Phase 0-1 deliver a working design generation pipe. Phase 2 adds interactive preview. Phase 3 adds version history. Phase 4 expands output types. Phase 5 adds the live editor and multi-model comparison. Phase 6 hardens for deployment and community publishing.
+### Progress
+
+| Phase | Cards | Status |
+|-------|-------|--------|
+| 0 - Foundations | 0.1-0.4 | ✅ All complete (4/4) |
+| 1 - Core Generation | 1.1-1.3 | ✅ All complete (3/3) |
+| 2 - Preview Rendering | 2.1-2.3 | ✅ All complete (3/3) |
+| 3 - Version History | 3.1-3.3 | ✅ All complete (3/3) |
+| 4 - Output Expansion | 4.1-4.2 | ⏳ 4.1 complete, 4.2 pending (1/2) |
+| 5 - Live Editor + Multi-Model | 5.1-5.3 | ⏳ 5.1 partial, 5.2-5.3 pending (0.5/3) |
+| 6 - Polish & Deploy | 6.1-6.3 | ✅ 6.1-6.3 complete (3/3) |
+
+**Overall: 18.5/22 complete (84%)**
+
+### What's Built
+
+- **3 Plugin Functions**: Design Studio (Pipe), Preview Generator (Action), Prompt Enhancer (Filter)
+- **14 Templates**: landing, dashboard, component, presentation, email, social
+- **7 Prompt Templates**: system, generate_html, iterate, present, email, social
+- **LLM Integration**: OpenWebUI API + Ollama fallback with aiohttp
+- **Version History**: Atomic writes, JSON metadata, user-specific storage
+- **Live Editor**: Split-pane code editor with auto-refresh
+- **Sandbox Preview**: iframe rendering with responsive view toggles
+- **37 Unit Tests**: All passing
+- **Docker Deployment**: Dockerfile + docker-compose.yml
+
+### What's Left
+
+- **Presenter Mode** (4.2): Slide navigation, keyboard controls, fullscreen, PDF export
+- **Multi-Model Comparison** (5.2): Parallel LLM calls, side-by-side output
+- **Community Templates** (5.3): Template submission, validation, marketplace UI
+- **Documentation** (6.2): Comprehensive README, installation guides, API docs
+
+Phase 0-1 complete. Ready for Phase 4-5 features.
