@@ -4,16 +4,11 @@ author: asorichetti
 author_url: https://github.com/asorichetti/OpenDesign
 version: 0.1.0
 """
-
-
-
 # ---------------------------------------------------------------------------
 # Props Definition Schema
 # ---------------------------------------------------------------------------
-
 # Each template can define props that users can configure
 # Props schema: {name: {type, label, default, options, min, max}}
-
 COMPONENT_PROPS = {
     "button": {
         "text": {"type": "string", "label": "Button Text", "default": "Click Me"},
@@ -204,29 +199,22 @@ COMPONENT_PROPS = {
         },
     },
 }
-
-
 # ---------------------------------------------------------------------------
 # Props Renderer
 # ---------------------------------------------------------------------------
-
 class PropsRenderer:
     """Render component props configuration UI."""
-
     @staticmethod
     def render_props_form(template_name: str) -> str:
         """Render props configuration form for a template."""
         props = COMPONENT_PROPS.get(template_name, {})
-
         if not props:
             return '<div class="od-no-props">No configurable props for this template.</div>'
-
         # Build form fields
         fields_html = []
         for name, prop in props.items():
             field_html = PropsRenderer._render_field(name, prop)
             fields_html.append(field_html)
-
         html = f"""<div class="od-props-form">
 <style>
 .od-props-form {{ padding: 1rem; background: #f8fafc; border-radius: 8px; margin: 1rem 0; }}
@@ -248,10 +236,8 @@ class PropsRenderer:
 </style>
 <h3>⚙️ Configure {template_name}</h3>
 """
-
         for field in fields_html:
             html += field
-
         html += """
 <div style="margin-top: 1rem;">
     <button class="od-apply-btn" onclick="window.parent.postMessage({type: 'od-apply-props', props: getPropsValues()}, '*')">Apply & Preview</button>
@@ -290,36 +276,29 @@ function resetProps() {
 }
 </script>
 """
-
         return html
-
     @staticmethod
     def _render_field(name: str, prop: dict) -> str:
         """Render a single prop field."""
         prop_type = prop.get("type", "string")
         label = prop.get("label", name)
         default = prop.get("default", "")
-
         html = f'<div class="od-prop-group" data-prop="{name}">'
         html += f'<label class="od-prop-label">{label}</label>'
-
         if prop_type == "select":
             options = prop.get("options", [])
-            html += '<select class="od-prop-input" data-prop="' + name + '">'
+            html += '<select class="od-prop-input" data-prop="' + name + '">'  # security:allow - HTML select element, not SQL
             for opt in options:
                 selected = "selected" if opt == default else ""
                 html += f'<option value="{opt}" {selected}>{opt}</option>'
             html += "</select>"
-
         elif prop_type == "boolean":
             checked = "checked" if default else ""
             html += f'<input type="checkbox" class="od-prop-input" data-prop="{name}" {checked}>'
-
         elif prop_type == "number":
             min_val = prop.get("min", "")
             max_val = prop.get("max", "")
             html += f'<input type="number" class="od-prop-input" data-prop="{name}" value="{default}" {f"min={min_val}" if min_val else ""} {f"max={max_val}" if max_val else ""}>'
-
         elif prop_type == "array":
             default_items = default if isinstance(default, list) else [default]
             html += '<div class="od-array-container" data-props-arr="' + name + '">'
@@ -330,22 +309,17 @@ function resetProps() {
                     item_str = str(item)
                 html += f'<div class="od-array-item"><input type="text" value="{item_str}" placeholder="Item"><button onclick="this.parentElement.remove()">×</button></div>'
             html += '</div><button class="od-add-btn" onclick="this.previousElementSibling.insertAdjacentHTML(\'beforeend\', \'\'\'<div class=\"od-array-item\"><input type=\"text\" placeholder=\"Item\"><button onclick=\"this.parentElement.remove()\">×</button></div>\')">+ Add</button>'
-
         else:  # string, text
             html_type = "textarea" if len(str(default)) > 50 else "text"
             html += f'<{html_type} class="od-prop-input" data-prop="{name}">{default if html_type == "textarea" else ""}</{html_type}>'
-
         if prop.get("description"):
             html += f'<div class="od-prop-hint">{prop["description"]}</div>'
-
         html += "</div>"
         return html
-
     @staticmethod
     def substitute_props(html: str, props: dict) -> str:
         """Substitute template variables with prop values."""
         result = html
-
         for name, value in props.items():
             # Convert value to string
             if isinstance(value, bool):
@@ -354,19 +328,15 @@ function resetProps() {
                 str_value = ", ".join(str(v) for v in value)
             else:
                 str_value = str(value)
-
             # Simple substitution patterns
             patterns = [
                 (f"{{{{{name}}}}}", str_value),
                 (f"{{{{{name.upper()}}}}}", str_value),
                 (f'{{{{{name.capitalize()}}}}}', str_value),
             ]
-
             for pattern, replacement in patterns:
                 result = result.replace(pattern, replacement)
-
         return result
-
     @staticmethod
     def get_props_for_template(template_name: str) -> dict:
         """Get props definition for a template."""
