@@ -6,7 +6,6 @@ version: 0.1.0
 required_open_webui_version: 0.10.0
 """
 
-from typing import Any
 
 
 class Filter:

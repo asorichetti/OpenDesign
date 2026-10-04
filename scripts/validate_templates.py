@@ -50,7 +50,6 @@ validated = 0
 def validate_html(filename: str, content: str) -> list[str]:
     """Validate a single HTML file."""
     issues = []
-    filepath = f"functions/design_studio/templates/{filename}"
 
     # Skip email templates (they have different structure requirements)
     if "email/" in filename:

@@ -11,17 +11,13 @@ Tests for core functionality:
 
 import asyncio
 import json
-import os
-import tempfile
-from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
 
 def _run_async(coro):
     """Helper to run async test methods (Python 3.14 compatible)."""
-    import asyncio
     loop = asyncio.new_event_loop()
     try:
         return loop.run_until_complete(coro)

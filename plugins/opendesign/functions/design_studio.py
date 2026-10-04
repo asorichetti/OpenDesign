@@ -12,11 +12,12 @@ import json
 import os
 import re
 import uuid
+from collections.abc import AsyncIterator
+from datetime import UTC
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
 
 from pydantic import BaseModel, Field
-
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -309,10 +310,8 @@ class Pipe:
         model_config = body.get("model", {})
         if isinstance(model_config, dict):
             model_id = model_config.get("id", "")
-            provider = model_config.get("provider", "")
         else:
             model_id = str(model_config)
-            provider = ""
 
         # Build the request body for the LLM API
         request_body = self._build_api_request(body)
@@ -753,7 +752,7 @@ class Pipe:
                 history = json.loads(history_path.read_text(encoding="utf-8"))
                 if not isinstance(history, list):
                     history = []
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             history = []
 
         version = len(history) + 1
@@ -761,7 +760,6 @@ class Pipe:
 
         try:
             # Atomic write: write to temp file, then rename
-            import tempfile
             temp_path = design_path / f".tmp_{version}.html"
             temp_path.write_text(html, encoding="utf-8")
             temp_path.rename(design_path / version_file)
@@ -781,7 +779,7 @@ class Pipe:
             temp_hist.rename(history_path)
 
             return version_file
-        except IOError as exc:
+        except OSError as exc:
             # Non-fatal: log but don't block user
             self._log_error(f"Failed to save version {version}: {exc}")
             return "memory"
@@ -795,7 +793,7 @@ class Pipe:
         try:
             if settings_path.exists():
                 return json.loads(settings_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             pass
         return {}
 
@@ -811,5 +809,5 @@ class Pipe:
 
 def _now_iso() -> str:
     """Return current time as ISO 8601 string."""
-    from datetime import datetime, timezone
-    return datetime.now(timezone.utc).isoformat()
+    from datetime import datetime
+    return datetime.now(UTC).isoformat()

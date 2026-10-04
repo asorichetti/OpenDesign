@@ -13,12 +13,10 @@ Run a specific test:
 Shows the generation pipeline working end-to-end without needing OpenWebUI.
 """
 
+import json
 import os
 import sys
-import json
-import shutil
 from pathlib import Path
-from typing import Optional
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -26,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from functions.design_studio.design_studio import Pipe
 from functions.preview_generator.preview_generator import Action as PreviewGenerator
 from functions.prompt_enhancer.prompt_enhancer import Filter as PromptEnhancer
+
 
 # ANSI colors
 class C:
@@ -177,13 +176,13 @@ def test_sanitization():
     """Test HTML sanitization (done by Pipe, not Action)."""
     section("5. HTML Sanitization")
 
-    pipe = create_pipe()
-
     # Sanitization is done by the Pipe, test via _validate_html
     # Check that dangerous patterns are flagged
     dangerous_patterns = ["onclick", "javascript:", "eval(", "onerror="]
     for pattern in dangerous_patterns:
-        found = any(pattern in html.lower() for html in ["<div onclick=\"alert(1)\">", "href=javascript:alert(1)", "eval(code)", "<img onerror=\"x\">"])
+        test_htmls = ["<div onclick=\"alert(1)\">", "href=javascript:alert(1)", "eval(code)", "<img onerror=\"x\">"]
+        for html in test_htmls:
+            assert pattern in html, f"Pattern {pattern} not found in {html}"
         print(f"  {C.GREEN}✓{C.RESET} Dangerous pattern detected: '{pattern}'")
 
     # Safe HTML should pass through
@@ -226,14 +225,14 @@ def test_version_persistence():
             print(f"  {C.GREEN}✓{C.RESET} Version saved: {result}")
 
             # Verify content
-            with open(result, "r") as f:
+            with open(result) as f:
                 content = f.read()
             print(f"  {C.GREEN}✓{C.RESET} Content verified: {'Test Version' in content}")
 
             # Check history
             history_path = data_dir / "history.json"
             if history_path.exists():
-                with open(history_path, "r") as f:
+                with open(history_path) as f:
                     history = json.load(f)
                 print(f"  {C.GREEN}✓{C.RESET} History updated: {len(history.get('versions', []))} versions")
 
@@ -311,7 +310,7 @@ def test_all_templates_render():
 
     valid = 0
     for tf in sorted(template_files):
-        with open(tf, "r") as f:
+        with open(tf) as f:
             content = f.read()
 
         has_open = "<html" in content or "<!DOCTYPE" in content
@@ -338,7 +337,6 @@ def test_design_systems():
 
     for css_file in sorted(assets.glob("*.css")):
         content = css_file.read_text()
-        has_vars = "--od-color" in content or "--color" in content
         has_dark = "dark" in str(css_file).lower()
         print(f"  {C.GREEN}✓{C.RESET} {css_file.name:15s} {len(content):>5d}b {'dark' if has_dark else 'light'}")
 
@@ -404,7 +402,7 @@ def main():
     print(f"  {C.GREEN}Passed: {passed}{C.RESET} / {total}")
     if failed:
         print(f"  {C.RED}Failed: {failed}{C.RESET} / {total}")
-    print(f"\n")
+    print("\n")
 
     # Show demo link
     demo_path = Path(__file__).parent / "demo" / "index.html"
