@@ -634,3 +634,156 @@ class TestModelComparison:
         assert "comparison-frame" in result
         assert "sandbox=" in result
         assert "allow-scripts" in result
+
+
+# ---------------------------------------------------------------------------
+# Template Marketplace Tests
+# ---------------------------------------------------------------------------
+
+
+class TestTemplateValidation:
+    """Tests for template validation."""
+
+    def test_valid_template_passes(self):
+        """Valid HTML templates should pass validation."""
+        from functions.design_studio.template_marketplace import TemplateValidator
+
+        html = "<!DOCTYPE html><html><head><title>Test</title></head><body><div>Hello</div></body></html>"
+        is_valid, errors = TemplateValidator.validate_template(html)
+        assert is_valid
+        assert len(errors) == 0
+
+    def test_invalid_template_rejected(self):
+        """Templates with dangerous patterns should be rejected."""
+        from functions.design_studio.template_marketplace import TemplateValidator
+
+        html = "<script>eval(userInput)</script>"
+        is_valid, errors = TemplateValidator.validate_template(html)
+        assert not is_valid
+        assert any("eval" in e for e in errors)
+
+    def test_external_script_rejected(self):
+        """Templates with external scripts should be rejected."""
+        from functions.design_studio.template_marketplace import TemplateValidator
+
+        html = '<script src="https://evil.com/malware.js"></script>'
+        is_valid, errors = TemplateValidator.validate_template(html)
+        assert not is_valid
+
+    def test_empty_template_rejected(self):
+        """Empty templates should be rejected."""
+        from functions.design_studio.template_marketplace import TemplateValidator
+
+        is_valid, errors = TemplateValidator.validate_template("")
+        assert not is_valid
+
+    def test_template_store_saves(self, tmp_path):
+        """Template store should save templates correctly."""
+        from functions.design_studio.template_marketplace import TemplateStore
+
+        store = TemplateStore(tmp_path)
+        result = store.save_template(
+            user_id="user123",
+            title="Test Template",
+            description="A test template",
+            html="<div>Test</div>",
+            template_type="custom",
+        )
+        assert result is not None
+        assert result["title"] == "Test Template"
+        assert result["version"] == "1.0.0"
+
+    def test_template_version_increments(self, tmp_path):
+        """Template versions should increment on re-save."""
+        from functions.design_studio.template_marketplace import TemplateStore
+
+        store = TemplateStore(tmp_path)
+        store.save_template(
+            user_id="user123",
+            title="Test Template",
+            description="Test",
+            html="<div>v1</div>",
+        )
+        result = store.save_template(
+            user_id="user123",
+            title="Test Template",
+            description="Test",
+            html="<div>v2</div>",
+        )
+        assert result["version"] == "1.0.1"
+
+    def test_template_loads(self, tmp_path):
+        """Templates should be loadable by slug."""
+        from functions.design_studio.template_marketplace import TemplateStore
+
+        store = TemplateStore(tmp_path)
+        store.save_template(
+            user_id="user123",
+            title="Test Template",
+            description="Test",
+            html="<div>Hello World</div>",
+        )
+        result = store.load_template("test-template", "user123")
+        assert result is not None
+        assert "Hello World" in result["html"]
+
+    def test_marketplace_ui_rendered(self):
+        """Marketplace UI should render correctly."""
+        from functions.design_studio.template_marketplace import MarketplaceUI
+
+        templates = [
+            {
+                "slug": "test",
+                "title": "Test",
+                "description": "A test template",
+                "template_type": "custom",
+                "version": "1.0.0",
+                "author": "Test Author",
+            }
+        ]
+        html = MarketplaceUI.render_marketplace(templates)
+        assert "template-grid" in html
+        assert "Test" in html
+        assert "test-template" in html or "slug: 'test'" in html
+        assert "import-section" in html  # Has import functionality
+
+    def test_import_from_url_validates(self, tmp_path):
+        """Imported templates should be validated."""
+        from unittest.mock import AsyncMock, MagicMock, patch
+
+        from functions.design_studio.template_marketplace import TemplateImporter
+
+        async def test():
+            # Create mock response
+            mock_response = MagicMock()
+            mock_response.status = 200
+            mock_response.headers = {"Content-Type": "text/html"}
+            mock_response.text = AsyncMock(return_value="<div>Safe content</div>")
+            mock_response.__aenter__ = AsyncMock(return_value=mock_response)
+            mock_response.__aexit__ = AsyncMock(return_value=False)
+
+            # Create mock session
+            mock_session = MagicMock()
+            mock_session.get.return_value = mock_response
+            mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+            mock_session.__aexit__ = AsyncMock(return_value=False)
+
+            with patch("aiohttp.ClientSession", return_value=mock_session):
+                html, errors = await TemplateImporter.import_from_url(
+                    "https://example.com/template.html"
+                )
+                assert html == "<div>Safe content</div>"
+                assert len(errors) == 0
+
+        _run_async(test())
+
+    def test_template_actions_exist(self):
+        """TemplateActions should have correct actions."""
+        from functions.design_studio.template_marketplace import TemplateActions
+
+        actions = TemplateActions()
+        action_list = actions.actions()
+        action_names = [a["name"] for a in action_list]
+        assert "Submit Template" in action_names
+        assert "Import Template" in action_names
+        assert "View Marketplace" in action_names
