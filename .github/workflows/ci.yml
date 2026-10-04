@@ -51,7 +51,7 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: pip install jinja2 beautifulsoup4 aiohttp pytest pytest-cov
+        run: pip install jinja2 beautifulsoup4 aiohttp pydantic pytest pytest-cov
 
       - name: Run tests
         run: pytest tests/ -v --tb=short
