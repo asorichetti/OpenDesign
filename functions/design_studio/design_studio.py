@@ -20,6 +20,11 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from .template_marketplace import (
+    TemplateActions,
+    TemplateStore,
+)
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -63,10 +68,11 @@ class UserValves(BaseModel):
 class Pipe:
     """OpenDesign Design Studio — generates HTML prototypes from chat prompts.
 
-    Manifold exposes three models:
-    - Design Studio: General design generation (landing pages, dashboards, etc.)
-    - Design Editor (Live): Split-pane code editor mode (Phase 5)
-    - Design Library: Browse and load saved designs
+    Manifold exposes models:
+    - Design Studio: General design generation
+    - Design Editor (Live): Split-pane code editor mode
+    - Design Library: Browse saved designs and templates
+    - Compare Models: Parallel LLM comparison
     """
 
     def __init__(self):
@@ -77,6 +83,9 @@ class Pipe:
         self._templates_cache: dict[str, str] = {}
         self._prompts_cache: dict[str, str] = {}
         self._data_dir = self._resolve_data_dir()
+        self._template_store = TemplateStore(self._data_dir)
+        self._template_actions = TemplateActions()
+        self._template_actions.store = self._template_store
 
     # ------------------------------------------------------------------
     # Manifold — exposes multiple models
@@ -299,57 +308,72 @@ class Pipe:
     # ------------------------------------------------------------------
 
     async def _handle_library_mode(self, __user__: dict | None) -> str:
-        """List saved designs for the user."""
+        """List saved designs and templates for the user."""
         user_id = __user__.get("id") if __user__ else "anonymous"
+
+        # Collect designs
         designs_dir = (
             self._data_dir / "opendesign" / "designs" / user_id if self._data_dir else None
         )
-
-        if not designs_dir or not designs_dir.exists():
-            return (
-                "📚 *Your Design Library*\n\n"
-                "You haven't created any designs yet. "
-                "Use **Design Studio** to create your first one!\n\n"
-                'Try: *"Create a landing page for a coffee shop"*'
-            )
-
-        # Collect all designs
         designs = []
-        for design_path in sorted(designs_dir.iterdir()):
-            if design_path.is_dir():
-                history_path = design_path / "history.json"
-                if history_path.exists():
-                    history = json.loads(history_path.read_text())
-                    if history:
-                        designs.append(
-                            {
-                                "id": design_path.name,
-                                "title": history[0].get("prompt", "Untitled"),
-                                "versions": len(history),
-                                "last_modified": history[-1].get("created_at", ""),
-                            }
-                        )
+        if designs_dir and designs_dir.exists():
+            for design_path in sorted(designs_dir.iterdir()):
+                if design_path.is_dir():
+                    history_path = design_path / "history.json"
+                    if history_path.exists():
+                        history = json.loads(history_path.read_text())
+                        if history:
+                            designs.append(
+                                {
+                                    "id": design_path.name,
+                                    "title": history[0].get("prompt", "Untitled"),
+                                    "versions": len(history),
+                                    "last_modified": history[-1].get("created_at", ""),
+                                }
+                            )
 
-        if not designs:
-            return "📚 *Your Design Library*\n\nNo saved designs found."
+        # Collect templates
+        templates = self._template_store.get_user_templates(user_id)
 
-        # Format as markdown table
+        # Build response
         lines = [
             "📚 *Your Design Library*",
             "",
-            "| Design | Versions | Last Modified |",
-            "|--------|----------|---------------|",
+            "## Designs",
+            "",
         ]
-        for d in designs:
-            title = d["title"][:30] + "..." if len(d["title"]) > 30 else d["title"]
-            lines.append(
-                f"| {title} | {d['versions']} | {d['last_modified'][:10] if d['last_modified'] else 'N/A'} |"
-            )
+
+        if designs:
+            lines.append("| Design | Versions | Last Modified |")
+            lines.append("|--------|----------|---------------|")
+            for d in designs:
+                title = d["title"][:30] + "..." if len(d["title"]) > 30 else d["title"]
+                lines.append(
+                    f"| {title} | {d['versions']} | {d['last_modified'][:10] if d['last_modified'] else 'N/A'} |"
+                )
+        else:
+            lines.append("*No designs yet.*")
+
+        lines.append("")
+        lines.append("## Templates")
+        lines.append("")
+
+        if templates:
+            lines.append("| Template | Type | Version |")
+            lines.append("|----------|------|---------|")
+            for t in templates:
+                lines.append(
+                    f"| {t.get('title', 'Untitled')} | {t.get('template_type', 'custom')} | {t.get('version', '1.0')} |"
+                )
+        else:
+            lines.append("*No templates yet.*")
 
         lines.append("")
         lines.append(
-            "*Use **Design Studio** to create new designs, or **Generate Preview** to view saved designs.*"
+            "**Actions**: Submit a design as a template, import from URL, or browse the marketplace."
         )
+        lines.append("*Use **Design Studio** to create new designs.*")
+
         return "\n".join(lines)
 
     # ------------------------------------------------------------------
