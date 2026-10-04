@@ -1,52 +1,38 @@
-# Dependencies
-node_modules/
-vendor/
-go.sum
-
-# Build outputs
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
 dist/
 build/
-bin/
-*.exe
+.eggs/
+*.egg
+
+# Virtual envs
+.venv/
+venv/
+env/
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
 # OS
 .DS_Store
-Thumbs.db
 
-# Logs
-*.log
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
 
-# Environment
+# ruff
+.ruff_cache/
+
+# Open WebUI data
+data/
 .env
-.env.local
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Artifacts
-*.tar.gz
-*.zip
-
-# Coverage
-coverage/
-.out/
-.galene/
-
-# Turborepo
-.turbo/
-
-# Devbox
-.devbox/
-
-# Playwright
-test-results/
-playwright-report/
+# LLM cache
+.cache/

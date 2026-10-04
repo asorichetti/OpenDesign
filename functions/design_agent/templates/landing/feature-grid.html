@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        :root {
+            --color-bg: #FFFFFF;
+            --color-text: #1A1A1A;
+            --color-accent: #737373;
+            --color-border: #E0E0E0;
+            --font-family: system-ui, -apple-system, sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-family); line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container" style="padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 1.5rem; font-weight: 700;">{{ brand }}</div>
+            <nav style="display: flex; gap: 1.5rem;">
+                <!-- Navigation items -->
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="container" style="padding: 3rem 1.5rem;">
+            <!-- Feature grid goes here -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                <!-- Feature cards -->
+            </div>
+        </div>
+    </main>
+    <footer style="padding: 2rem 0; text-align: center; color: var(--color-accent);">
+        <div class="container">
+            <p>&copy; 2025 {{ brand }}</p>
+        </div>
+    </footer>
+</body>
+</html>

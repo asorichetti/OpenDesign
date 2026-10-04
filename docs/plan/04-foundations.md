@@ -2,71 +2,129 @@
 
 ## Tech Choices
 
-| Layer          | Choice                    | Why                                                                 |
-|----------------|---------------------------|---------------------------------------------------------------------|
-| Language (BE)  | Go                        | Single static binary, strong typing, great concurrency primitives   |
-| Language (FE)  | TypeScript + React        | Type safety, component model, ecosystem maturity                    |
-| API Protocol   | ConnectRPC + Protobuf     | Type-safe across Go/TS, auto-generated code, SSE streaming support  |
-| Build System   | Turborepo + Yarn 4        | Monorepo caching, workspace management, reproducible builds         |
-| Database       | PostgreSQL                | ACID, JSONB, trigram search, mature Go driver (pgx)                 |
-| ORM/Query      | pgx + hand-written SQL    | Full control, reviewable SQL, no magic                              |
-| Auth           | bcrypt + JWT              | Simple, self-hosted, no external deps                               |
-| File Storage   | Local filesystem (S3 opt) | Simple first, S3 configurable later                                 |
-| LLM Backend    | OpenAI-compatible API     | Provider abstraction, swap providers via config                     |
-| Linting        | Biome (TS) + golangci-lint (Go) | Fast, opinionated, single config per language                  |
-| Formatting     | Biome (TS) + gofmt (Go)   | Zero-config, deterministic                                       |
-| Testing (FE)   | Playwright                | Evidence-based E2E, matches mono/baking-companion pattern           |
-| Testing (BE)   | Go test + pgx testutil    | Standard library, no framework overhead                             |
-| Icons          | Lucide React              | Clean, consistent, MIT licensed                                     |
-| Markdown       | react-markdown + remark   | Safe rendering, plugins for code blocks                             |
-| Syntax Highlighting | react-syntax-highlighter | Widely used, supports many languages                              |
-| State Mgmt     | Zustand                   | Minimal boilerplate, TypeScript-friendly                            |
-| Routing        | React Router v7           | Standard, file-based routing ready                                 |
+| Layer | Choice | Why |
+|-------|--------|-----|
+| Plugin Runtime | Open WebUI Python Functions | In-process, full Python access, auto-loaded |
+| Design Generation | LLM (user-configurable) | Works with any model Open WebUI supports |
+| Preview Rendering | Sandboxed iframe | Safe HTML rendering, no SSR needed |
+| Template Storage | Static files (markdown + CSS) | Simple, versionable, no database needed |
+| Design State | JSON files | Per-user design history, lightweight |
+| Styling | CSS custom properties | Theme switching, design tokens |
+| Linting | ruff (Python) | Fast, auto-formatting |
+| Testing | pytest | Standard Python test framework |
 
 ## Non-Negotiables
 
-These are the things that separate a production tool from a demo. Do not drop any of them.
+1. **Preview sandboxes never trust user input.** Every preview is rendered in an iframe with `sandbox` attributes. No `allow-scripts` without restrictions. No `allow-same-origin`. This is a hard security block.
 
-1. **Every conversation message stores the full text.** No partial rendering tricks. The database is the source of truth. Streaming is purely a UX layer.
+2. **The Pipe never calls the LLM directly.** It always uses Open WebUI's request context (`__user__`, `__event_emitter__`, `__metadata__`). This ensures proper auth, rate limiting, and token tracking.
 
-2. **No floating point for IDs.** UUIDv7 everywhere. Generated in the application layer, never the database.
+3. **All design prompts are stored as separate markdown files.** Never in Python strings. This lets users edit them without touching code.
 
-3. **Timestamps are RFC 3339 UTC strings.** Stored in PostgreSQL `timestamptz`, serialized as RFC 3339 text in JSON. Never Unix epoch in the API.
+4. **Templates are static, not generated from code.** A template is a `.html` file with placeholder comments (`<!-- {{title}} -->`). The LLM fills them in. No runtime template engine needed.
 
-4. **SQL lives in hand-written files.** No ORMs, no code generators for queries. Each migration is a `.sql` file reviewed by humans.
+5. **No persistent database required.** Designs are stored as JSON files in Open WebUI's data directory. If no data dir is configured, the Pipe gracefully falls back to in-memory-only mode.
 
-5. **The domain layer knows nothing about SQL or network.** Pure types, pure logic. `store/` translates; `domain/` calculates; `service/` orchestrates.
+6. **The filter must not slow down non-design conversations.** Keyword detection happens on the first 100 chars of the prompt. If no design keywords match, the filter returns immediately with no LLM call.
 
-6. **Every mutating RPC with an irreversible effect takes validation.** Deleting a conversation checks ownership. Uploading a file checks size and type. Never trust the client.
+7. **All generated HTML must be valid and accessible.** WCAG 2.1 AA contrast ratios, semantic HTML elements, ARIA attributes on interactive elements. This is validated before returning to the user.
 
-7. **Markdown rendering is sanitized.** All HTML is stripped. Only safe elements are allowed. This is a hard block, not a warning.
+## Python Function Conventions
 
-8. **The codebase must compile at every checkpoint.** Build in order, verify at each step. Never write 20 files and try to compile once.
+Following Open WebUI's plugin patterns:
 
-9. **Every user-visible string is i18n-ready.** Even if we only ship English today, no hard-coded strings in component code.
+```python
+"""
+title: OpenDesign Design Agent
+author: asorichetti
+author_url: https://github.com/asorichetti/OpenDesign
+version: 0.1.0
+icon_url: https://example.com/icon.svg
+required_open_webui_version: 0.10.0
+requirements: jinja2, beautifulsoup4, requests
+"""
 
-10. **The frontend must be keyboard-complete.** Tab navigation, Enter to submit, Escape to close modals. Zero axe violations.
+from pydantic import BaseModel, Field
+from typing import Optional
 
-## Commit Conventions
+class Valves(BaseModel):
+    """Admin-configurable settings."""
+    base_model: str = Field(default="gpt-4o", description="LLM to use for generation")
+    api_key: Optional[str] = Field(default=None, description="API key (if not using Ollama)")
+    preview_timeout: int = Field(default=10, description="Preview render timeout in seconds")
 
-Conventional Commits scoped by service:
+class UserValves(BaseModel):
+    """User-configurable settings."""
+    template: str = Field(default="landing", description="Default template to use")
+    design_system: str = Field(default="light", description="Design system preset")
+    auto_preview: bool = Field(default=True, description="Auto-generate preview on send")
+
+class Pipe:
+    def __init__(self):
+        self.type = "pipe"
+        self.name = "Design Agent"
+        self.valves = Valves()
+        self.user_valves = UserValves()
+
+    async def pipe(self, body: dict, __user__=None, __event_emitter__=None, **kwargs):
+        # Implementation
+        ...
+```
+
+## Prompt Engineering Strategy
+
+Design prompts are stored as templates with Jinja2 variables:
 
 ```
-feat(api): stream chat with SSE protocol
-feat(web): add streaming message component
-fix(api): handle empty conversation on regenerate
-docs(plan): update data model for attachments
+# prompts/generate_html.md
+You are a senior front-end designer. Create a complete, self-contained HTML page based on the user's request.
+
+## Requirements
+- Single HTML file with embedded CSS and JavaScript
+- Semantic HTML5 elements (header, main, footer, nav, section, article)
+- WCAG 2.1 AA accessible (proper contrast, ARIA labels, keyboard navigation)
+- Responsive design (mobile-first)
+- {{ design_system }} design system
+
+## Output Format
+Return ONLY the HTML code. Wrap it in a code block:
+```html
+{{ code }}
+```
 ```
 
-Scope formats:
-- `api` — Go backend
-- `web` — React frontend
-- `ui` — shared component library
-- `proto` — protobuf definitions
-- `plan` — planning documents
-- `docker` — docker compose files
-- `deps` — dependency updates
+## File Layout
 
-## Project Structure
+```
+functions/design_agent/
+├── design_agent.py          # Pipe (300-500 lines)
+├── prompts/
+│   ├── system.md            # Base system prompt (200 chars)
+│   ├── generate_html.md     # HTML generation (400 chars)
+│   ├── iterate.md           # Iteration/refinement (300 chars)
+│   └── present.md           # Presentation mode (350 chars)
+├── templates/
+│   ├── landing/
+│   │   ├── minimal.html     # Clean, minimal landing
+│   │   ├── feature-grid.html # Feature showcase layout
+│   │   └── hero.html        # Hero-section focused
+│   ├── dashboard/
+│   │   ├── analytics.html   # Data dashboard
+│   │   └── admin.html       # Admin panel layout
+│   └── presentation/
+│       ├── blank.html       # Blank slide deck
+│       └── sections.html    # Pre-sectioned deck
+├── assets/
+│   ├── light.css            # Light theme tokens
+│   ├── dark.css             # Dark theme tokens
+│   └── accessible.css       # WCAG AA compliance layer
+└── frontmatter.md           # Plugin metadata
 
-See `02-architecture.md` for the full monorepo layout.
+functions/preview_generator/
+├── preview_generator.py     # Action (100-200 lines)
+└── frontmatter.md
+
+functions/prompt_enhancer/
+├── prompt_enhancer.py       # Filter (100-200 lines)
+└── frontmatter.md
+```

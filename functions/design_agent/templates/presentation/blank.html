@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        :root {
+            --color-bg: #FFFFFF;
+            --color-text: #1A1A1A;
+            --color-accent: #737373;
+            --color-border: #E0E0E0;
+            --font-family: system-ui, -apple-system, sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-family); background: var(--color-bg); }
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .slide h1 { font-size: 3rem; margin-bottom: 1rem; text-align: center; }
+        .slide h2 { font-size: 2rem; margin-bottom: 1rem; text-align: center; }
+        .slide p { font-size: 1.25rem; color: var(--color-accent); max-width: 600px; text-align: center; }
+        .slide ul { list-style: none; margin-top: 2rem; }
+        .slide li { font-size: 1.25rem; padding: 0.5rem 0; }
+        .notes { display: none; }
+        body.presenter .notes { display: block; position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a2b; color: #e8e8ed; padding: 1rem; font-size: 0.875rem; }
+        .controls { position: fixed; bottom: 1rem; right: 1rem; display: flex; gap: 0.5rem; }
+        .controls button { padding: 0.5rem 1rem; border: 1px solid var(--color-border); border-radius: 4px; cursor: pointer; }
+        @media print { .notes, .controls { display: none !important; } .slide { page-break-after: always; } }
+    </style>
+</head>
+<body>
+    <section class="slide">
+        <h1>{{ title }}</h1>
+        <p>{{ subtitle }}</p>
+        <aside class="notes">Presenter notes go here</aside>
+    </section>
+    <!-- Additional slides -->
+    <section class="slide">
+        <h2>Section Title</h2>
+        <p>Content goes here</p>
+        <aside class="notes">Presenter notes for this slide</aside>
+    </section>
+    <div class="controls">
+        <button onclick="prev()">←</button>
+        <button onclick="next()">→</button>
+        <button onclick="togglePresenter()">Presenter (P)</button>
+        <button onclick="toggleFullscreen()">Fullscreen (F)</button>
+    </div>
+    <script>
+        let current = 0;
+        const slides = document.querySelectorAll('.slide');
+        function showSlide(n) {
+            slides.forEach((s, i) => s.style.display = i === n ? 'flex' : 'none');
+        }
+        function next() { current = Math.min(current + 1, slides.length - 1); showSlide(current); }
+        function prev() { current = Math.max(current - 1, 0); showSlide(current); }
+        function togglePresenter() { document.body.classList.toggle('presenter'); }
+        function toggleFullscreen() { document.documentElement.requestFullscreen?.(); }
+        document.addEventListener('keydown', e => { if (e.key === 'ArrowRight') next(); if (e.key === 'ArrowLeft') prev(); if (e.key === 'p') togglePresenter(); if (e.key === 'f') toggleFullscreen(); });
+        showSlide(0);
+    </script>
+</body>
+</html>
