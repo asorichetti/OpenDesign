@@ -20,10 +20,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from .template_marketplace import (
-    TemplateActions,
-    TemplateStore,
-)
+from .template_marketplace import TemplateActions, TemplateStore
 
 # ---------------------------------------------------------------------------
 # Configuration
