@@ -15,7 +15,9 @@
 
 **Title:** Initialize project structure with Python plugin scaffolding
 
-**Status:** ○
+**Status:** ✓
+
+**Completed:** Project scaffold created with `functions/` layout, `pyproject.toml`, `Makefile`, `.gitignore`. Directory structure matches plan.
 
 **Description:**
 - Create project structure: `functions/design_studio/`, `functions/preview_generator/`, `functions/prompt_enhancer/`
@@ -33,7 +35,9 @@
 
 **Title:** Implement Pipe: Design Studio — skeleton with manifold
 
-**Status:** ○
+**Status:** ▶
+
+**In progress:** Basic structure created. Needs: proper LLM integration, error handling, event emission, production-ready code.
 
 **Description:**
 - Create `functions/design_studio/design_studio.py` with `Pipe` class
@@ -52,7 +56,9 @@
 
 **Title:** Create prompt templates and design system assets
 
-**Status:** ○
+**Status:** ✓
+
+**Completed:** All prompt templates created (system, generate_html, iterate, present, email, social). Design system assets (light.css, dark.css) created.
 
 **Description:**
 - Create `prompts/system.md` — base system prompt for design generation
@@ -74,7 +80,9 @@
 
 **Title:** Create template library — landing page and component templates
 
-**Status:** ○
+**Status:** ✓
+
+**Completed:** Templates created for landing (minimal, hero, feature-grid), component (button, card, modal, form), dashboard (analytics), presentation (blank, sections), email (newsletter, transactional), social (hero-banner, og-card).
 
 **Description:**
 - Create `templates/landing/minimal.html` — clean, minimal landing
