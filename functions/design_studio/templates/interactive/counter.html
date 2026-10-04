@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Counter") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .counters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .counter-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .counter-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .counter-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .counter-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 0.25rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .counter-label {
+            font-size: 0.875rem;
+            color: #6b6b6b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .counter-bar {
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .counter-bar-fill {
+            height: 100%;
+            background: #1a1a1a;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+    </style>
+</head>
+<body>
+    <div class="counters">
+        {% for counter in counters %}
+        <div class="counter-card">
+            <div class="counter-icon">{{ counter.icon | default("📊") }}</div>
+            <div class="counter-value" data-target="{{ counter.value | default(0) }}">0</div>
+            <div class="counter-label">{{ counter.label | default("Counter") }}</div>
+            {% if counter.max %}
+            <div class="counter-bar">
+                <div class="counter-bar-fill" data-target="{{ (counter.value / counter.max * 100) | int }}"></div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        const counters = document.querySelectorAll('.counter-value');
+        const bars = document.querySelectorAll('.counter-bar-fill');
+        const duration = 1500;
+        const startTime = performance.now();
+
+        function animateCounter(current, target, start, end, now) {
+            const progress = Math.min((now - start) / (end - start), 1);
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            const value = Math.floor(current + (target - current) * easeOut);
+            current.textContent = value.toLocaleString();
+            return progress < 1;
+        }
+
+        function animateBar(bar, target) {
+            bar.style.width = target + '%';
+        }
+
+        function animate() {
+            const now = performance.now();
+            let running = false;
+
+            counters.forEach(counter => {
+                const target = parseInt(counter.dataset.target);
+                running = animateCounter(counter, target, startTime, startTime + duration, now) || running;
+            });
+
+            bars.forEach(bar => {
+                const target = parseInt(bar.dataset.target);
+                if (now > startTime + 100) animateBar(bar, target);
+            });
+
+            if (running) requestAnimationFrame(animate);
+        }
+
+        // Start on scroll into view or immediately
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animate();
+                    observer.disconnect();
+                }
+            });
+        });
+
+        observer.observe(document.querySelector('.counters'));
+        // Fallback: start if not visible
+        setTimeout(animate, 500);
+    </script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Accordion") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .accordion {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .accordion-item {
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .accordion-item:last-child {
+            border-bottom: none;
+        }
+
+        .accordion-header {
+            width: 100%;
+            padding: 1.25rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            text-align: left;
+            transition: background 0.2s;
+        }
+
+        .accordion-header:hover {
+            background: #f7f7f8;
+        }
+
+        .accordion-header[aria-expanded="true"] {
+            background: #f7f7f8;
+        }
+
+        .accordion-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+            font-size: 1.25rem;
+            color: #6b6b6b;
+        }
+
+        .accordion-header[aria-expanded="true"] .accordion-icon {
+            transform: rotate(45deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .accordion-content.active {
+            max-height: 500px;
+        }
+
+        .accordion-body {
+            padding: 0 1.5rem 1.5rem;
+            color: #6b6b6b;
+            line-height: 1.6;
+            font-size: 0.875rem;
+        }
+
+        .accordion-body p {
+            margin-bottom: 0.75rem;
+        }
+
+        .accordion-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .accordion-counter {
+            text-align: center;
+            padding: 1rem;
+            color: #999;
+            font-size: 0.875rem;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="accordion" id="accordion" role="list">
+        {% for item in items %}
+        <div class="accordion-item" role="listitem">
+            <button class="accordion-header"
+                    aria-expanded="false"
+                    aria-controls="accordion-content-{{ loop.index }}"
+                    id="accordion-header-{{ loop.index }}">
+                <span>{{ item.question | default("Question " ~ loop.index) }}</span>
+                <span class="accordion-icon">+</span>
+            </button>
+            <div class="accordion-content"
+                 id="accordion-content-{{ loop.index }}"
+                 role="region"
+                 aria-labelledby="accordion-header-{{ loop.index }}"
+                 {% if item.open %}class="active"{% endif %}>
+                <div class="accordion-body">
+                    {{ item.answer | default("Answer content goes here.") | nl2br }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        const accordion = document.getElementById('accordion');
+        const headers = accordion.querySelectorAll('.accordion-header');
+
+        headers.forEach(header => {
+            header.addEventListener('click', () => {
+                const isExpanded = header.getAttribute('aria-expanded') === 'true';
+                const content = header.nextElementSibling;
+
+                // Close all others (exclusive mode)
+                headers.forEach(h => {
+                    h.setAttribute('aria-expanded', 'false');
+                    h.nextElementSibling.classList.remove('active');
+                });
+
+                // Toggle current
+                if (!isExpanded) {
+                    header.setAttribute('aria-expanded', 'true');
+                    content.classList.add('active');
+                }
+            });
+        });
+
+        // Keyboard navigation
+        accordion.addEventListener('keydown', (e) => {
+            const header = e.target.closest('.accordion-header');
+            if (!header) return;
+
+            const headers = Array.from(accordion.querySelectorAll('.accordion-header'));
+            const index = headers.indexOf(header);
+
+            if (e.key === 'ArrowDown' && index < headers.length - 1) {
+                e.preventDefault();
+                headers[index + 1].focus();
+            } else if (e.key === 'ArrowUp' && index > 0) {
+                e.preventDefault();
+                headers[index - 1].focus();
+            }
+        });
+    </script>
+</body>
+</html>
