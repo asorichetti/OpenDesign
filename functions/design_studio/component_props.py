@@ -293,8 +293,8 @@ function resetProps() {
         if prop_type == "select":
             options = prop.get("options", [])
             html += (
-                '<select class="od-prop-input" data-prop="' + name + '">'
-            )  # security:allow - HTML select element, not SQL
+                '<select class="od-prop-input" data-prop="' + name + '">'  # security:allow
+            )
             for opt in options:
                 selected = "selected" if opt == default else ""
                 html += f'<option value="{opt}" {selected}>{opt}</option>'
