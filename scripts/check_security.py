@@ -143,6 +143,12 @@ def scan_file(filepath: Path) -> list[dict]:
             if pattern_name == "document_write" and "preview_generator" in rel_path:
                 continue
 
+            # Skip re.compile() calls (safe regex compilation, not code compile)
+            if pattern_name == "compile_call" and (
+                "re.compile" in line_text or "regex" in line_text
+            ):
+                continue
+
             issues.append(
                 {
                     "file": str(filepath.relative_to(PROJECT_ROOT)),

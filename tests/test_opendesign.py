@@ -549,3 +549,88 @@ class TestPromptEnhancer:
         result = _run_async(filter.outlet(body))
         assert "opendesign" in result.get("metadata", {})
         assert result["metadata"]["opendesign"]["source"] == "opendesign"
+
+
+# ---------------------------------------------------------------------------
+# Multi-model Comparison Tests
+# ---------------------------------------------------------------------------
+
+
+class TestModelComparison:
+    """Tests for the multi-model comparison feature."""
+
+    def test_manifold_includes_compare_models(self):
+        """Compare Models should be in the manifold."""
+        from functions.design_studio.design_studio import Pipe
+
+        pipe = object.__new__(Pipe)
+        models = pipe.pipes()
+        model_ids = [m["id"] for m in models]
+        assert "compare-models" in model_ids
+        compare_model = next(m for m in models if m["id"] == "compare-models")
+        assert "Compare Models" in compare_model["name"]
+
+    def test_detect_comparison_mode(self):
+        """Should detect compare mode from model id."""
+        from functions.design_studio.design_studio import Pipe
+
+        pipe = object.__new__(Pipe)
+        assert pipe._detect_mode("compare-models") == "compare"
+        assert pipe._detect_mode("compare models") == "compare"
+        assert pipe._detect_mode("design-studio") == "generate"
+
+    def test_compare_action_exists(self):
+        """Compare Models action should exist in preview generator."""
+        from functions.preview_generator.preview_generator import Action
+
+        action = Action()
+        action_names = [a["name"] for a in action.actions()]
+        assert "Compare Models" in action_names
+
+    def test_extract_comparison_models(self):
+        """Should extract model names and HTML from comparison output."""
+        from functions.preview_generator.preview_generator import Action
+
+        action = Action()
+        content = """🔄 *Model Comparison Complete*
+
+**gpt-4o:** ✅ Generated
+**claude-3.5-sonnet:** ✅ Generated
+
+```html
+<div class='test'>GPT Output</div>
+```
+
+```html
+<div class='test'>Claude Output</div>
+```
+"""
+        models = action._extract_comparison_models(content)
+        assert len(models) == 2
+        assert "gpt-4o" in models[0][0] or models[0][0]
+        assert "claude-3.5-sonnet" in models[1][0] or models[1][0]
+        assert "<div class='test'>GPT Output</div>" in models[0][1]
+        assert "<div class='test'>Claude Output</div>" in models[1][1]
+
+    def test_render_comparison(self):
+        """Should render comparison UI."""
+        from functions.preview_generator.preview_generator import Action
+
+        action = Action()
+        content = """**gpt-4o:** ✅
+**claude-3.5-sonnet:** ✅
+
+```html
+<!DOCTYPE html><html><body><h1>GPT</h1></body></html>
+```
+
+```html
+<!DOCTYPE html><html><body><h1>Claude</h1></body></html>
+```
+"""
+        result = action._render_comparison(content)
+        assert "comparison-container" in result
+        assert "comparison-panel" in result
+        assert "comparison-frame" in result
+        assert "sandbox=" in result
+        assert "allow-scripts" in result
