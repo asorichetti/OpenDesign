@@ -32,6 +32,7 @@ OpenDesign uses **file-based storage** within Open WebUI's data directory. No se
   "user_id": "user_abc123",
   "title": "Coffee Shop Landing Page",
   "prompt": "Create a landing page for a specialty coffee shop called Bean & Brew...",
+  "output_type": "landing",
   "template": "landing/hero",
   "design_system": "light",
   "model": "gpt-4o",
@@ -67,7 +68,8 @@ OpenDesign uses **file-based storage** within Open WebUI's data directory. No se
   "auto_preview": true,
   "preferred_model": "gpt-4o",
   "favorite_templates": ["landing/hero", "presentation/blank"],
-  "custom_css": ""
+  "custom_css": "",
+  "editor_theme": "light"
 }
 ```
 

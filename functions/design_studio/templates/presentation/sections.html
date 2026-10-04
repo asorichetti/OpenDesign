@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #fff; }
+        .slide { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 4rem; border-bottom: 1px solid #e0e0e0; text-align: center; }
+        .slide h1 { font-size: 3rem; margin-bottom: 1rem; }
+        .slide h2 { font-size: 2rem; margin-bottom: 1rem; }
+        .slide p { font-size: 1.25rem; color: #6b6b6b; max-width: 600px; }
+        .notes { display: none; }
+        body.presenter .notes { display: block; position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a2b; color: #e8e8ed; padding: 1rem; font-size: 0.875rem; }
+        .controls { position: fixed; bottom: 1rem; right: 1rem; display: flex; gap: 0.5rem; }
+        .controls button { padding: 0.5rem 1rem; border: 1px solid #e0e0e0; border-radius: 4px; cursor: pointer; }
+        @media print { .notes, .controls { display: none !important; } .slide { page-break-after: always; } }
+    </style>
+    <script>
+        let current = 0;
+        const slides = document.querySelectorAll('.slide');
+        function showSlide(n) { slides.forEach((s, i) => s.style.display = i === n ? 'flex' : 'none'); }
+        function next() { current = Math.min(current + 1, slides.length - 1); showSlide(current); }
+        function prev() { current = Math.max(current - 1, 0); showSlide(current); }
+        function togglePresenter() { document.body.classList.toggle('presenter'); }
+        document.addEventListener('keydown', e => { if (e.key === 'ArrowRight') next(); if (e.key === 'ArrowLeft') prev(); if (e.key === 'p') togglePresenter(); });
+        showSlide(0);
+    </script>
+</head>
+<body>
+    <section class="slide">
+        <h1>{{ title }}</h1>
+        <p>{{ subtitle }}</p>
+        <aside class="notes">Presenter notes</aside>
+    </section>
+    <section class="slide">
+        <h2>Section 1</h2>
+        <p>Content goes here</p>
+        <aside class="notes">Presenter notes for section 1</aside>
+    </section>
+    <section class="slide">
+        <h2>Section 2</h2>
+        <p>Content goes here</p>
+        <aside class="notes">Presenter notes for section 2</aside>
+    </section>
+    <div class="controls">
+        <button onclick="prev()">←</button>
+        <button onclick="next()">→</button>
+        <button onclick="togglePresenter()">Presenter (P)</button>
+    </div>
+</body>
+</html>

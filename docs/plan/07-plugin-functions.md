@@ -1,8 +1,8 @@
 # Plugin Functions
 
-## Pipe: Design Agent
+## Pipe: Design Studio
 
-The core function. Registers as "OpenDesign Design Agent" in the model dropdown.
+The core function. Registers as "Design Studio" in the model dropdown.
 
 ### Request Flow
 
@@ -28,7 +28,7 @@ User message → Pipe.pipe(body)
         [HTML CODE]
         ```
         
-        💡 *Click the "Generate Preview" button to see this in action*
+        💡 *Click "Generate Preview" to see it live, or "Open Editor" to edit.*
 ```
 
 ### Key Methods
@@ -41,6 +41,12 @@ class Pipe:
     async def generate_html(self, user_message: str, context: dict) -> str:
         """Call LLM to generate HTML for the design request."""
     
+    async def generate_email(self, user_message: str, context: dict) -> str:
+        """Call LLM to generate HTML email template."""
+    
+    async def generate_social(self, user_message: str, context: dict) -> str:
+        """Call LLM to generate social media asset."""
+    
     async def save_version(self, design: dict, html: str, prompt: str) -> str:
         """Save a new version to disk, return version ID."""
     
@@ -50,9 +56,9 @@ class Pipe:
     def pipes(self) -> list[dict]:
         """Return list of models (manifold pattern):"""
         return [
-            {"id": "opendesign-agent", "name": "OpenDesign Design Agent"},
-            {"id": "opendesign-presentation", "name": "OpenDesign Presentations"},
-            {"id": "opendesign-components", "name": "OpenDesign Components"},
+            {"id": "design-studio", "name": "Design Studio"},
+            {"id": "design-editor", "name": "Design Editor (Live)"},
+            {"id": "design-library", "name": "Design Library"},
         ]
 ```
 
@@ -62,15 +68,29 @@ The Pipe exposes **three models** from one function:
 
 | Model ID | Purpose |
 |----------|---------|
-| `opendesign-agent` | General design generation (landing pages, dashboards, etc.) |
-| `opendesign-presentation` | Slide deck generation with presenter notes |
-| `opendesign-components` | UI component generation (buttons, cards, forms, navbars) |
+| `design-studio` | General design generation (landing pages, dashboards, components, emails, social) |
+| `design-editor` | Live editing mode — connects to split-pane editor (Phase 5) |
+| `design-library` | Browse and load saved designs |
 
-Users select the model they need from the dropdown. The Pipe routes to the appropriate prompt template.
+Users select the model they need from the dropdown. The Pipe routes to the appropriate output type.
 
-## Action: Generate Preview
+### Multi-Model Comparison (Phase 5)
 
-Adds a "Generate Preview" button on messages containing design code.
+The `design-editor` model can optionally spawn **parallel LLM calls** to compare outputs:
+
+```python
+# When user enables "Compare Models":
+results = await asyncio.gather(
+    self._call_llm(body, model="gpt-4o"),
+    self._call_llm(body, model="claude-sonnet-4"),
+    self._call_llm(body, model="llama-3.1-70b"),
+)
+# Returns all 3 HTML outputs side by side in the editor
+```
+
+## Action: Preview + Export
+
+Adds "Generate Preview", "Export", and "Open Editor" buttons on messages with design code.
 
 ### Key Methods
 
@@ -85,6 +105,12 @@ class Action:
     async def render_preview(self, html: str) -> str:
         """Generate HTML with sandboxed iframe preview."""
     
+    async def open_editor(self, html: str) -> str:
+        """Open split-pane live editor with the code."""
+    
+    async def export_zip(self, html: str) -> str:
+        """Package HTML + CSS + JS into downloadable ZIP."""
+    
     def actions(self) -> list[dict]:
         """Return list of available actions."""
         return [
@@ -92,6 +118,11 @@ class Action:
                 "name": "Generate Preview",
                 "description": "Render the generated design in a sandboxed preview",
                 "icon": "eye",
+            },
+            {
+                "name": "Open Editor",
+                "description": "Open the split-pane live code editor",
+                "icon": "edit",
             },
             {
                 "name": "Export HTML",
@@ -137,6 +168,8 @@ class Filter:
             "component", "button", "card", "form", "nav", "header",
             "footer", "hero", "presentation", "slide", "prototype",
             "design", "layout", "theme", "color", "font", "style",
+            "email", "newsletter", "social", "banner", "og",
+            "make me a", "create a", "build me a", "generate a",
         ]
         return any(kw in prompt.lower() for kw in design_keywords)
     

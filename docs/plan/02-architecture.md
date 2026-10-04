@@ -2,10 +2,10 @@
 
 ## What This Is
 
-OpenDesign is a **collection of Open WebUI plugin functions** that, when installed on any Open WebUI instance, enable Claude Design capabilities:
+OpenDesign is a **collection of Open WebUI plugin functions** that, when installed on any Open WebUI instance, enable AI-powered design generation:
 
-1. **Pipe Function** — Registers as a "Design Agent" model. When a user chats with it, the pipe orchestrates design generation using an underlying LLM.
-2. **Action Function** — Adds "Generate Preview" and "Export" buttons to chat messages.
+1. **Pipe Function** — Registers as a "Design Studio" model. When a user chats with it, the pipe orchestrates design generation using an underlying LLM.
+2. **Action Function** — Adds "Generate Preview", "Export", and "Open Editor" buttons to chat messages.
 3. **Filter Function** — Intercepts design prompts to enhance them with design system context.
 
 ## Architecture Diagram
@@ -27,8 +27,8 @@ OpenDesign is a **collection of Open WebUI plugin functions** that, when install
 │                 │                  │                     │
 │          ┌──────▼──────┐   ┌──────▼──────┐   ┌────────▼──────┐
 │          │   Pipe      │   │  Action     │   │   Filter      │
-│          │  "Design    │   │  "Generate  │   │  "Enhance    │
-│          │   Agent"    │   │  Preview"   │   │  Prompts"    │
+│          │  "Design    │   │  "Preview + │   │  "Enhance   │
+│          │   Studio"   │   │  Export"    │   │  Prompts"   │
 │          └──────┬──────┘   └──────┬──────┘   └──────┬──────┘
 │                 │                 │                 │
 │          ┌──────▼─────────────────▼─────────────────▼──────┐
@@ -36,7 +36,8 @@ OpenDesign is a **collection of Open WebUI plugin functions** that, when install
 │          │  - LLM call orchestration                        │
 │          │  - HTML/CSS/JS generation                        │
 │          │  - Preview validation                             │
-│          │  - Asset/template management                     │
+│          │  - Template management                           │
+│          │  - Live editor proxy (Phase 5)                   │
 │          └───────────────────┬─────────────────────────────┘
 │                              │
 │                      ┌───────▼───────┐
@@ -56,23 +57,30 @@ OpenDesign/
 ├── docs/
 │   └── plan/
 ├── functions/
-│   ├── design_agent/
-│   │   ├── design_agent.py          # Pipe Function
+│   ├── design_studio/
+│   │   ├── design_studio.py          # Pipe Function
 │   │   ├── frontmatter.md           # Function metadata
 │   │   ├── prompts/
 │   │   │   ├── system.md            # System prompt template
 │   │   │   ├── generate_html.md     # HTML generation prompt
 │   │   │   ├── iterate.md           # Iteration prompt
-│   │   │   └── present.md           # Presentation prompt
+│   │   │   ├── present.md           # Presentation prompt
+│   │   │   ├── email.md             # Email template prompt
+│   │   │   └── social.md            # Social asset prompt
 │   │   ├── templates/
 │   │   │   ├── landing/             # Landing page templates
 │   │   │   ├── dashboard/           # Dashboard templates
+│   │   │   ├── component/           # UI component templates
 │   │   │   ├── presentation/        # Slide deck templates
-│   │   │   └── component/           # UI component templates
+│   │   │   ├── email/               # Email template layouts
+│   │   │   └── social/              # Social media templates
+│   │   ├── live/                    # Live editor assets
+│   │   │   ├── editor.html          # Split-pane editor UI
+│   │   │   └── websocket.js         # Live sync protocol
 │   │   └── assets/                  # Design system presets
 │   │       ├── light.css
 │   │       ├── dark.css
-│   │       └── tailwind.config.json
+│   │       └── accessible.css
 │   ├── preview_generator/
 │   │   ├── preview_generator.py     # Action Function
 │   │   └── frontmatter.md
@@ -89,7 +97,7 @@ OpenDesign/
 
 ## How the Pipe Works
 
-1. User selects "OpenDesign Design Agent" from the model dropdown
+1. User selects "Design Studio" from the model dropdown
 2. User describes a design: "Create a landing page for a coffee shop"
 3. The Pipe receives the chat body dict (Open WebUI format)
 4. Pipe calls the underlying LLM with an enhanced design prompt
@@ -100,10 +108,10 @@ OpenDesign/
 ## How the Action Works
 
 1. User sees a message with design code
-2. "Generate Preview" button appears on the message toolbar
+2. Buttons appear on the message toolbar: "Generate Preview", "Export", "Open Editor"
 3. On click, Action extracts the HTML/CSS/JS from the message
 4. Action returns a rich HTML preview rendered in an iframe
-5. User can interact with the prototype directly in chat
+5. "Open Editor" opens the split-pane live editor (Phase 5)
 
 ## How the Filter Works
 
@@ -112,7 +120,6 @@ OpenDesign/
    - Injects design system context (color tokens, typography scale)
    - Adds accessibility requirements to the prompt
    - Appends template suggestions based on user history
-3. The enhanced prompt goes to the LLM
 
 ## Deployment Options
 
@@ -120,7 +127,7 @@ OpenDesign/
 
 ```bash
 # In Open WebUI Admin Panel > Functions > Import From Link
-# Point to: https://raw.githubusercontent.com/asorichetti/OpenDesign/main/functions/design_agent/design_agent.py
+# Point to: https://raw.githubusercontent.com/asorichetti/OpenDesign/main/functions/design_studio/design_studio.py
 # Repeat for preview_generator and prompt_enhancer
 ```
 
@@ -129,11 +136,4 @@ OpenDesign/
 ```bash
 docker compose up -d
 # Open WebUI starts with OpenDesign functions pre-installed
-```
-
-### Option C: Standalone Preview Server
-
-```bash
-# For advanced use: run a preview rendering server
-# that Open WebUI can proxy to for complex previews
 ```

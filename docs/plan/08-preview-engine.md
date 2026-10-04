@@ -41,7 +41,9 @@ The Action function returns a rich HTML response that renders:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  🎨 Generated Preview                    [🔄 Refresh] [⛶ Full] │
+│  🎨 Generated Preview                    [🔄 Refresh]       │
+├─────────────────────────────────────────────────────────────┤
+│  [🖥️ Desktop] [📱 Tablet] [📲 Mobile] [⛶ Fullscreen]       │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  ┌─────────────────────────────────────────────────────┐   │
@@ -54,7 +56,7 @@ The Action function returns a rich HTML response that renders:
 │  │  │  [ Order Now ] [ View Menu ]              │    │   │
 │  │  │                                             │    │   │
 │  │  │  ┌──────┐ ┌──────┐ ┌──────┐              │    │   │
-│  │  │  │☕ Espress│☕ Latte │☕ Cappucc│              │    │   │
+│  │  │  │☕ Espresso│☕ Latte │☕ Cappucc│              │    │   │
 │  │  │  └──────┘ └──────┘ └──────┘              │    │   │
 │  │                                             │    │   │
 │  │  ┌─────────────────────────────────────────────┐    │   │
@@ -76,11 +78,65 @@ The preview adapts to the chat width:
 | Desktop | 100% of chat panel | Default |
 | Tablet | 768px | "Tablet" view button |
 | Mobile | 375px | "Mobile" view button |
-| Fullscreen | 100vw × 100vh | "Full" view button |
+| Fullscreen | 100vw × 100vh | "Fullscreen" button |
 
-## Live Edit (Future)
+## Live Editor (Phase 5)
 
-Phase 5+ may include a split-pane live editor:
-- Left: code editor with syntax highlighting
-- Right: live preview that updates as you type
-- Powered by a WebSocket connection to a preview server
+The split-pane editor provides real-time code-preview sync:
+
+```
+┌───────────────────────────────────────────────────────────────┐
+│  ✏️ Design Editor                         [💾 Save] [👁️ Preview] │
+├──────────────────────────────┬────────────────────────────────┤
+│  < > Code                    │  <iframe> Preview               │
+│                              │                                │
+│  <html>                      │  ┌──────────────────────────┐  │
+│  <head>                      │  │  [Live preview updates   │  │
+│  <style>                     │  │   as you type]           │  │
+│  </style>                    │  │                          │  │
+│  </head>                     │  │  ☕ Bean & Brew          │  │
+│  <body>                      │  │  ...                   │  │
+│  <div>...</div>              │  └──────────────────────────┘  │
+│  </body>                     │                                │
+│  </html>                     │                                │
+│                              │                                │
+│  ──── resizable gutter ────  │                                │
+│                              │                                │
+│  Syntax highlighting         │  Auto-refresh on save/blur    │
+│  Line numbers                │  Responsive toggle            │
+│  Auto-complete (basic)       │  Fullscreen mode              │
+└──────────────────────────────┴────────────────────────────────┘
+```
+
+### Live Editor Features
+
+| Feature | Description |
+|---------|-------------|
+| Syntax highlighting | Basic HTML/CSS/JS coloring |
+| Auto-refresh | Preview updates on save or blur |
+| Resizable panes | Drag the divider to adjust |
+| Fullscreen | Editor takes over the browser |
+| Save | Persist changes to version history |
+| Reset | Discard changes, reload last version |
+
+### Editor Architecture
+
+The live editor is rendered **inside the iframe** (not in the parent page) for security:
+
+```
+┌─────────────── Open WebUI ───────────────┐
+│  ┌─────────────────────────────────────┐ │
+│  │  <iframe sandbox="...">             │ │
+│  │    ┌───────────┬─────────────────┐  │ │
+│  │    │ Editor    │ Preview         │  │ │
+│  │    │ (code)    │ (rendered HTML) │  │ │
+│  │    │           │                 │  │ │
+│  │    │ textarea  │ iframe srcdoc   │  │ │
+│  │    │           │                 │  │ │
+│  │    └───────────┴─────────────────┘  │ │
+│  │  </iframe>                          │ │
+│  └─────────────────────────────────────┘ │
+└──────────────────────────────────────────┘
+```
+
+The editor page is served as inline `srcdoc` in a sandboxed iframe. It uses `postMessage` to communicate between the editor pane and preview pane (both inside the same sandbox).

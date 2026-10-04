@@ -7,7 +7,8 @@
 | Plugin Runtime | Open WebUI Python Functions | In-process, full Python access, auto-loaded |
 | Design Generation | LLM (user-configurable) | Works with any model Open WebUI supports |
 | Preview Rendering | Sandboxed iframe | Safe HTML rendering, no SSR needed |
-| Template Storage | Static files (markdown + CSS) | Simple, versionable, no database needed |
+| Live Editor | WebSocket proxy (Phase 5) | Real-time code-preview sync |
+| Template Storage | Static files (markdown + HTML) | Simple, versionable, no database needed |
 | Design State | JSON files | Per-user design history, lightweight |
 | Styling | CSS custom properties | Theme switching, design tokens |
 | Linting | ruff (Python) | Fast, auto-formatting |
@@ -29,13 +30,15 @@
 
 7. **All generated HTML must be valid and accessible.** WCAG 2.1 AA contrast ratios, semantic HTML elements, ARIA attributes on interactive elements. This is validated before returning to the user.
 
+8. **Template sharing must be safe.** Community templates are validated for dangerous patterns before loading. No `eval()`, no `import`, no file system access.
+
 ## Python Function Conventions
 
 Following Open WebUI's plugin patterns:
 
 ```python
 """
-title: OpenDesign Design Agent
+title: OpenDesign Design Studio
 author: asorichetti
 author_url: https://github.com/asorichetti/OpenDesign
 version: 0.1.0
@@ -62,7 +65,7 @@ class UserValves(BaseModel):
 class Pipe:
     def __init__(self):
         self.type = "pipe"
-        self.name = "Design Agent"
+        self.name = "Design Studio"
         self.valves = Valves()
         self.user_valves = UserValves()
 
@@ -96,35 +99,51 @@ Return ONLY the HTML code. Wrap it in a code block:
 ## File Layout
 
 ```
-functions/design_agent/
-├── design_agent.py          # Pipe (300-500 lines)
+functions/design_studio/
+├── design_studio.py          # Pipe (400-600 lines)
 ├── prompts/
-│   ├── system.md            # Base system prompt (200 chars)
-│   ├── generate_html.md     # HTML generation (400 chars)
-│   ├── iterate.md           # Iteration/refinement (300 chars)
-│   └── present.md           # Presentation mode (350 chars)
+│   ├── system.md             # Base system prompt (200 chars)
+│   ├── generate_html.md      # HTML generation (400 chars)
+│   ├── iterate.md            # Iteration/refinement (300 chars)
+│   ├── present.md            # Presentation mode (350 chars)
+│   ├── email.md              # Email template prompt (300 chars)
+│   └── social.md             # Social asset prompt (250 chars)
 ├── templates/
 │   ├── landing/
-│   │   ├── minimal.html     # Clean, minimal landing
+│   │   ├── minimal.html      # Clean, minimal landing
 │   │   ├── feature-grid.html # Feature showcase layout
-│   │   └── hero.html        # Hero-section focused
+│   │   └── hero.html         # Hero-section focused
 │   ├── dashboard/
-│   │   ├── analytics.html   # Data dashboard
-│   │   └── admin.html       # Admin panel layout
-│   └── presentation/
-│       ├── blank.html       # Blank slide deck
-│       └── sections.html    # Pre-sectioned deck
+│   │   ├── analytics.html    # Data dashboard
+│   │   └── admin.html        # Admin panel layout
+│   ├── component/
+│   │   ├── button.html       # Button variants
+│   │   ├── card.html         # Card layouts
+│   │   ├── modal.html        # Modal/dialog
+│   │   └── form.html         # Form elements
+│   ├── presentation/
+│   │   ├── blank.html        # Blank slide deck
+│   │   └── sections.html     # Pre-sectioned deck
+│   ├── email/
+│   │   ├── newsletter.html   # Newsletter layout
+│   │   └── transactional.html # Receipt/confirmation
+│   └── social/
+│       ├── hero-banner.html  # Hero banner
+│       └── og-card.html      # Open Graph card
+├── live/
+│   ├── editor.html           # Split-pane editor UI
+│   └── websocket.js          # Live sync protocol
 ├── assets/
-│   ├── light.css            # Light theme tokens
-│   ├── dark.css             # Dark theme tokens
-│   └── accessible.css       # WCAG AA compliance layer
-└── frontmatter.md           # Plugin metadata
+│   ├── light.css             # Light theme tokens
+│   ├── dark.css              # Dark theme tokens
+│   └── accessible.css        # WCAG AA compliance layer
+└── frontmatter.md            # Plugin metadata
 
 functions/preview_generator/
-├── preview_generator.py     # Action (100-200 lines)
+├── preview_generator.py      # Action (200-300 lines)
 └── frontmatter.md
 
 functions/prompt_enhancer/
-├── prompt_enhancer.py       # Filter (100-200 lines)
+├── prompt_enhancer.py        # Filter (100-200 lines)
 └── frontmatter.md
 ```

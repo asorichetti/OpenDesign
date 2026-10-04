@@ -13,12 +13,12 @@
 
 ### Card 0.1
 
-**Title:** Initialize monorepo structure with Python plugin scaffolding
+**Title:** Initialize project structure with Python plugin scaffolding
 
 **Status:** ○
 
 **Description:**
-- Create project structure: `functions/design_agent/`, `functions/preview_generator/`, `functions/prompt_enhancer/`
+- Create project structure: `functions/design_studio/`, `functions/preview_generator/`, `functions/prompt_enhancer/`
 - Add `pyproject.toml` with ruff, pytest, jinja2 dependencies
 - Add `Makefile` with `lint`, `test`, `build` targets
 - Add `.gitignore` for Python artifacts, `__pycache__`, `.ruff_cache`
@@ -31,13 +31,13 @@
 
 ### Card 0.2
 
-**Title:** Implement Pipe: Design Agent — skeleton with manifold
+**Title:** Implement Pipe: Design Studio — skeleton with manifold
 
 **Status:** ○
 
 **Description:**
-- Create `functions/design_agent/design_agent.py` with `Pipe` class
-- Implement `pipes()` manifold returning 3 models (agent, presentation, components)
+- Create `functions/design_studio/design_studio.py` with `Pipe` class
+- Implement `pipes()` manifold returning 3 models: Design Studio, Design Editor, Design Library
 - Implement `Valves` with: base_model, api_key, preview_timeout
 - Implement `UserValves` with: template, design_system, auto_preview
 - Stub `pipe()` method that forwards non-design messages to configured LLM
@@ -45,7 +45,7 @@
 
 **Verification:**
 - Open WebUI loads the function without errors
-- "OpenDesign Design Agent" appears in model dropdown with 3 variants
+- "Design Studio" appears in model dropdown with 3 variants
 - Non-design messages are forwarded correctly (no crashes)
 
 ### Card 0.3
@@ -59,6 +59,8 @@
 - Create `prompts/generate_html.md` — HTML generation prompt template
 - Create `prompts/iterate.md` — iterative refinement prompt
 - Create `prompts/present.md` — presentation generation prompt
+- Create `prompts/email.md` — email template generation prompt
+- Create `prompts/social.md` — social asset generation prompt
 - Create `assets/light.css` — light theme CSS custom properties
 - Create `assets/dark.css` — dark theme CSS custom properties
 - Create `assets/accessible.css` — WCAG AA compliance layer
@@ -70,7 +72,7 @@
 
 ### Card 0.4
 
-**Title:** Create template library — landing page templates
+**Title:** Create template library — landing page and component templates
 
 **Status:** ○
 
@@ -78,16 +80,19 @@
 - Create `templates/landing/minimal.html` — clean, minimal landing
 - Create `templates/landing/hero.html` — hero-section focused
 - Create `templates/landing/feature-grid.html` — feature showcase
+- Create `templates/component/button.html` — button variants
+- Create `templates/component/card.html` — card layouts
+- Create `templates/component/modal.html` — modal/dialog
 - Each template uses `<!-- {{variable}} -->` placeholder syntax
 - Each template is a complete, valid HTML5 document
 - Each template includes responsive CSS
 
 **Verification:**
-- All HTML files pass `html5validator` (no errors)
+- All HTML files pass basic validation (no unclosed tags)
 - Placeholders are clearly marked with `{{ }}` syntax
 - Templates render correctly when placeholders are filled
 
-## Phase 1: Core Design Generation
+## Phase 1: Core Generation
 
 **Goal:** Pipe that takes a design prompt and returns HTML code.
 
@@ -151,13 +156,13 @@
 
 ### Card 2.1
 
-**Title:** Implement Action: Generate Preview — code extraction
+**Title:** Implement Action: Preview + Export — code extraction
 
 **Status:** ○
 
 **Description:**
 - Create `functions/preview_generator/preview_generator.py` with `Action` class
-- Implement `actions()` returning "Generate Preview" and "Export HTML"
+- Implement `actions()` returning "Generate Preview", "Export", "Open Editor"
 - Implement `extract_code_blocks()` to find ` ```html ` blocks in messages
 - Parse message content for multiple code blocks (HTML, CSS, JS)
 - Return structured data for the Action UI
@@ -176,7 +181,7 @@
 **Description:**
 - Generate HTML with `<iframe srcdoc="...">` containing the design
 - Apply sandbox attributes: `allow-scripts allow-same-origin allow-forms`
-- Wrap iframe in a container with toolbar (Refresh, Tablet, Mobile, Full)
+- Wrap iframe in a container with toolbar (Refresh, Tablet, Mobile, Fullscreen)
 - Inject CSS custom properties from selected design system
 - Handle large previews (truncation with warning at 2MB)
 
@@ -251,41 +256,42 @@
 **Status:** ○
 
 **Description:**
-- Add a new Pipe model "OpenDesign Library" that lists user's saved designs
+- Add "Design Library" model in Pipe that lists user's saved designs
 - Query file system for designs belonging to current user
-- Display: title, thumbnail (screenshot of first version), date, template used
+- Display: title, output type, thumbnail, date, template used
 - Click a design to load it into the chat for further editing
-- Support filtering by template and tag
+- Support filtering by output type and tag
 
 **Verification:**
-- "OpenDesign Library" model shows all user's saved designs
+- "Design Library" model shows all user's saved designs
 - Clicking a design loads it into the conversation
-- Filter by template shows only matching designs
+- Filter by output type shows only matching designs
 
-## Phase 4: Presentation Mode
+## Phase 4: Output Expansion
 
-**Goal:** Generate slide decks with presenter notes.
+**Goal:** Add presentations, email templates, and social media assets.
 
 ### Card 4.1
 
-**Title:** Implement presentation generation prompt and template
+**Title:** Implement presentation and email generation prompts
 
 **Status:** ○
 
 **Description:**
 - Create `prompts/present.md` — presentation-specific system prompt
-- Create `templates/presentation/blank.html` — blank slide deck template
+- Create `prompts/email.md` — email template generation prompt
+- Create `prompts/social.md` — social asset generation prompt
+- Create `templates/presentation/blank.html` — blank slide deck
 - Create `templates/presentation/sections.html` — pre-sectioned deck
-- Prompt instructs LLM to generate multi-slide HTML with:
-  - Slide separators (`.slide` class)
-  - Presenter notes (`<aside class="notes">`)
-  - Navigation controls (arrow keys)
-  - Print-friendly CSS
+- Create `templates/email/newsletter.html` — newsletter layout
+- Create `templates/email/transactional.html` — receipt/confirmation
+- Create `templates/social/hero-banner.html` — hero banner
+- Create `templates/social/og-card.html` — Open Graph card
 
 **Verification:**
-- Pipe returns multi-slide HTML when using "OpenDesign Presentations" model
-- Slides are separated by `<section class="slide">` tags
-- Presenter notes are in `<aside>` elements
+- Pipe generates multi-slide HTML when using "Design Studio" with presentation prompt
+- Email templates are valid HTML email (inline styles, table-based layout)
+- Social assets are self-contained preview cards
 
 ### Card 4.2
 
@@ -307,11 +313,73 @@
 - Fullscreen mode takes over the browser window
 - Print stylesheet produces clean PDF output
 
-## Phase 5: Polish & Deploy
+## Phase 5: Live Editor + Multi-Model
 
-**Goal:** Docker, docs, Open WebUI community publishing.
+**Goal:** Split-pane editor, live preview sync, model comparison.
 
 ### Card 5.1
+
+**Title:** Implement split-pane live editor
+
+**Status:** ○
+
+**Description:**
+- Create `live/editor.html` — split-pane editor UI rendered in sandbox
+- Implement code textarea with basic syntax highlighting
+- Implement live preview iframe that updates on save/blur
+- Resizable gutter between editor and preview
+- Save button persists changes to version history
+- Reset button discards changes
+
+**Verification:**
+- Editor renders inside sandboxed iframe
+- Typing in editor updates preview after save
+- Resizable gutter adjusts pane sizes
+- Save persists to version history
+
+### Card 5.2
+
+**Title:** Implement multi-model comparison mode
+
+**Status:** ○
+
+**Description:**
+- Add "Compare Models" valve to admin settings
+- When enabled, spawn parallel LLM calls with different models
+- Display all 3 outputs side by side in the editor
+- Allow user to pick the best output and continue editing
+- Log model comparison stats (tokens, time, cost)
+
+**Verification:**
+- With 3 models configured, all 3 generate simultaneously
+- Outputs displayed in 3-column layout
+- User can select one output to continue editing
+- Stats logged to event emitter
+
+### Card 5.3
+
+**Title:** Implement community template sharing
+
+**Status:** ○
+
+**Description:**
+- Add template validation (scan for dangerous patterns)
+- Create template submission workflow (user creates custom template, shares it)
+- Add template marketplace UI in the Design Library
+- Support template import from URL (raw file fetch)
+- Version tags on templates (v1.0, v1.1, etc.)
+
+**Verification:**
+- Malicious templates (containing `import`, `eval`) are rejected
+- User can submit a template with metadata (title, description, author)
+- Imported templates render correctly in preview
+- Template versioning works correctly
+
+## Phase 6: Polish & Deploy
+
+**Goal:** Docker, docs, Open WebUI community publishing, tests.
+
+### Card 6.1
 
 **Title:** Implement Docker deployment
 
@@ -329,7 +397,7 @@
 - OpenDesign functions appear in Open WebUI Admin Panel
 - All three functions are active and working
 
-### Card 5.2
+### Card 6.2
 
 **Title:** Write comprehensive documentation
 
@@ -343,6 +411,7 @@
 - Prompt customization guide: how to edit prompt templates
 - Troubleshooting FAQ
 - Contributing guidelines
+- Security considerations (sandboxing, template validation)
 
 **Verification:**
 - README has clear getting-started instructions
@@ -350,7 +419,7 @@
 - Template customization is copy-paste ready
 - Docker setup works from scratch in 5 minutes
 
-### Card 5.3
+### Card 6.3
 
 **Title:** Add unit tests for core functions
 
@@ -363,6 +432,7 @@
   - `test_template_loading.py` — template file I/O
   - `test_version_saving.py` — file persistence
   - `test_code_extraction.py` — code block parsing
+  - `test_sandbox.py` — iframe security validation
 - Use pytest with fixtures
 - Mock file I/O and LLM calls
 - Test error paths (missing files, invalid HTML, etc.)
@@ -376,8 +446,8 @@
 
 ## Summary
 
-**Total cards:** 18
-**Phases:** 5
-**Estimated complexity:** Medium
+**Total cards:** 22
+**Phases:** 6
+**Estimated complexity:** Medium-Large
 
-Phase 0-1 deliver a working design generation pipe. Phase 2 adds interactive preview. Phase 3 adds version history. Phase 4 adds presentations. Phase 5 hardens for deployment.
+Phase 0-1 deliver a working design generation pipe. Phase 2 adds interactive preview. Phase 3 adds version history. Phase 4 expands output types. Phase 5 adds the live editor and multi-model comparison. Phase 6 hardens for deployment and community publishing.

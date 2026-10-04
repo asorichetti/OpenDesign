@@ -1,49 +1,51 @@
 # Scope
 
-## What Claude Design Does
+## What OpenDesign Does
 
-Claude Design is the capability to describe a visual interface conversationally and receive:
+OpenDesign turns natural language into deployable visual output. Describe what you want to build and receive:
 
-1. **Static HTML/CSS/JS pages** — Complete, self-contained web pages
-2. **Interactive prototypes** — Clickable, navigable multi-page prototypes
-3. **Presentation slides** — Slide decks with transitions and layouts
-4. **UI component libraries** — Reusable, themed component sets
-5. **Iterative refinement** — Conversational editing: "make the header darker"
+1. **HTML prototypes** — Complete, self-contained web pages (landing pages, dashboards, forms, navigation)
+2. **UI components** — Buttons, cards, modals, tables, data grids, navbars
+3. **Slide decks** — Professional presentations with presenter notes, keyboard navigation, print-to-PDF
+4. **Email templates** — Responsive HTML email layouts
+5. **Social media assets** — Hero banners, card previews, OG images
+6. **Iterative refinement** — Conversational editing: "make the header darker", "add a pricing section"
 
-## What This Project Rebuilds
+## What OpenDesign Is
 
-This project recreates the **generation + preview** pipeline as an Open WebUI extension:
+- An **Open WebUI plugin** (Pipe + Action + Filter functions in Python)
+- **Model-agnostic** — works with any LLM backend Open WebUI supports (Ollama, OpenAI, Anthropic, etc.)
+- **Self-hostable** — runs entirely on your infrastructure
+- **Extensible** — add templates, design systems, and output types without touching core code
 
-### ✅ In Scope
+## What OpenDesign Is Not
 
-- **Design generation via chat** — Describe what you want, get HTML/CSS/JS back
-- **Preview rendering** — Sandbox iframe preview directly in Open WebUI chat
-- **Version history** — Save iterations, compare versions, roll back
-- **Template library** — Pre-built templates for landing pages, dashboards, presentations
-- **Design system presets** — Color tokens, typography, spacing presets (light/dark)
-- **Iterative refinement** — Conversational editing of generated designs
-- **Export** — Download as ZIP (HTML/CSS/JS), copy to clipboard
-- **LLM-agnostic** — Works with any model Open WebUI supports (Ollama, OpenAI, etc.)
+- A drag-and-drop visual editor (that's a different product category)
+- A replacement for design tools (Figma, Sketch, Framer)
+- An image generation tool (Open WebUI already has this via DALL-E, ComfyUI)
+- A full-stack framework (outputs are HTML/CSS/JS only, no API/backend)
 
-### ❌ Out of Scope (v1)
+## Output Type Matrix
 
-- Drag-and-drop design tool (that's a different product)
-- Native mobile app generation
-- Real design software (Figma/Sketch file export)
-- Asset generation (images, icons) — handled by Open WebUI's image gen tools
-- Collaborative editing (multi-user)
-- Version control (Git integration)
-- Custom CSS framework compilation (Tailwind build step)
+| Output Type | Phase | Description |
+|-------------|-------|-------------|
+| Landing pages | Phase 1 | Hero, features, CTA, footer layouts |
+| Dashboards | Phase 1 | Stat cards, data tables, chart placeholders |
+| UI components | Phase 1 | Buttons, cards, forms, navbars, modals |
+| Slide decks | Phase 4 | Multi-slide presentations with notes |
+| Email templates | Phase 4 | Responsive HTML email layouts |
+| Social assets | Phase 4 | Hero banners, OG image previews |
+| Component libraries | Phase 5 | Full design system with variants |
+| Live editor | Phase 5 | Split-pane: code + real-time preview |
 
-## Feature Parity Map
+## Feature Goals
 
-| Claude Design Feature | OpenDesign Equivalent |
-|----------------------|----------------------|
-| "Make me a landing page for..." | Pipe generates HTML from prompt |
-| Preview in browser | Action renders iframe preview |
-| "Change the font to Inter" | Iterative refinement via chat |
-| "Show me a dark mode version" | Template variant generation |
-| Export as code | Download ZIP with HTML/CSS/JS |
-| Presentation mode | Slide deck generation + presenter view |
-| Component library | Template system with presets |
-| Design system tokens | CSS custom property presets |
+- **Zero-config setup** — install 3 Python files, start generating
+- **Template library** — pre-built templates users can extend
+- **Design system presets** — light/dark themes, color tokens, typography scales
+- **Version history** — save iterations, diff between versions, roll back
+- **Export options** — download ZIP, copy clipboard, share via link
+- **Live preview** — sandboxed iframe with responsive views
+- **Live editor** (Phase 5) — split-pane code editor with real-time preview sync
+- **Multi-model** (Phase 5) — compare outputs from different LLMs side by side
+- **Community templates** (Phase 5) — share and discover templates from others

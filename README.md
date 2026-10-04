@@ -1,6 +1,6 @@
 # OpenDesign
 
-An open-source, self-hostable recreation of **Claude Design** — the capability to take conversational prompts and generate visual assets, interactive prototypes, and presentations. Built as an **Open WebUI extension**.
+An open-source, self-hostable design generation platform built as an **Open WebUI extension**. It takes conversational prompts and produces visual outputs — HTML prototypes, UI components, slide decks, email templates, and more — all rendered as interactive previews directly in chat.
 
 ## What This Is
 
@@ -8,12 +8,15 @@ Describe what you want to build: "Create a landing page for a coffee shop" or "M
 
 ## Features
 
-- 🎨 **Design Generation** — Conversational UI to generate landing pages, dashboards, presentations, and UI components
+- 🎨 **Design Generation** — Conversational UI to generate landing pages, dashboards, UI components, emails, social assets, and presentations
 - 👁️ **Live Preview** — Sandbox-secured iframe previews directly in chat
 - 📋 **Version History** — Save iterations, compare versions, roll back
-- 🖼️ **Template Library** — Pre-built templates for landing pages, dashboards, presentations
-- 🎭 **Design System Presets** — Light/dark themes, accessibility compliance
-- 📤 **Export** — Download as ZIP or copy to clipboard
+- 🖼️ **Template Library** — Pre-built templates for landing pages, dashboards, components, presentations, emails, social assets
+- 🎭 **Design System Presets** — Light/dark themes, accessibility compliance, color tokens
+- 📤 **Export** — Download as ZIP, copy clipboard, or share via link
+- ✏️ **Live Editor** (Phase 5) — Split-pane code editor with real-time preview
+- 🔀 **Multi-Model** (Phase 5) — Compare outputs from different LLMs side by side
+- 🌍 **Community Templates** (Phase 5) — Share and discover templates from others
 - 🔌 **Open WebUI Plugin** — Works with any LLM backend (Ollama, OpenAI, etc.)
 
 ## Installation
@@ -57,11 +60,10 @@ docker compose up -d
 ## Models Available
 
 | Model | Purpose |
-|-------|---------|
-| OpenDesign Design Agent | General design generation (landing pages, dashboards) |
-| OpenDesign Presentations | Slide deck generation with presenter notes |
-| OpenDesign Components | UI component generation (buttons, cards, forms) |
-| OpenDesign Library | Browse and load saved designs |
+|-------|---------|  
+| Design Studio | General design generation (landing pages, dashboards, components, emails, social) |
+| Design Editor | Live editing mode — split-pane code editor with real-time preview |
+| Design Library | Browse and load saved designs |
 
 ## Project Structure
 
