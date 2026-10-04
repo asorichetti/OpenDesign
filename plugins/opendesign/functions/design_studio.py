@@ -12,15 +12,17 @@ import json
 import os
 import re
 import uuid
+from collections.abc import AsyncIterator
+from datetime import UTC
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
 
 from pydantic import BaseModel, Field
-
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
+
 
 class Valves(BaseModel):
     """Admin-configurable settings."""
@@ -55,6 +57,7 @@ class UserValves(BaseModel):
 # ---------------------------------------------------------------------------
 # Pipe Class
 # ---------------------------------------------------------------------------
+
 
 class Pipe:
     """OpenDesign Design Studio — generates HTML prototypes from chat prompts.
@@ -135,13 +138,41 @@ class Pipe:
     # ------------------------------------------------------------------
 
     DESIGN_KEYWORDS = {
-        "landing page", "dashboard", "website", "ui", "interface",
-        "component", "button", "card", "form", "nav", "header",
-        "footer", "hero", "presentation", "slide", "prototype",
-        "design", "layout", "theme", "color", "font", "style",
-        "make me a", "create a", "build me a", "generate a",
-        "mockup", "wireframe", "email", "newsletter", "receipt",
-        "social", "og card", "banner", "calendar",
+        "landing page",
+        "dashboard",
+        "website",
+        "ui",
+        "interface",
+        "component",
+        "button",
+        "card",
+        "form",
+        "nav",
+        "header",
+        "footer",
+        "hero",
+        "presentation",
+        "slide",
+        "prototype",
+        "design",
+        "layout",
+        "theme",
+        "color",
+        "font",
+        "style",
+        "make me a",
+        "create a",
+        "build me a",
+        "generate a",
+        "mockup",
+        "wireframe",
+        "email",
+        "newsletter",
+        "receipt",
+        "social",
+        "og card",
+        "banner",
+        "calendar",
     }
 
     def _is_design_prompt(self, prompt: str) -> bool:
@@ -224,7 +255,7 @@ class Pipe:
             return (
                 f"{llm_response}\n\n"
                 f"⚠️ *I didn't generate a code block. "
-                f"Try rephrasing: \"Create an HTML page for...\"*"
+                f'Try rephrasing: "Create an HTML page for..."*'
             )
 
         # Save version
@@ -254,14 +285,16 @@ class Pipe:
     async def _handle_library_mode(self, __user__: dict | None) -> str:
         """List saved designs for the user."""
         user_id = __user__.get("id") if __user__ else "anonymous"
-        designs_dir = self._data_dir / "opendesign" / "designs" / user_id if self._data_dir else None
+        designs_dir = (
+            self._data_dir / "opendesign" / "designs" / user_id if self._data_dir else None
+        )
 
         if not designs_dir or not designs_dir.exists():
             return (
                 "📚 *Your Design Library*\n\n"
                 "You haven't created any designs yet. "
                 "Use **Design Studio** to create your first one!\n\n"
-                "Try: *\"Create a landing page for a coffee shop\"*"
+                'Try: *"Create a landing page for a coffee shop"*'
             )
 
         # Collect all designs
@@ -272,24 +305,35 @@ class Pipe:
                 if history_path.exists():
                     history = json.loads(history_path.read_text())
                     if history:
-                        designs.append({
-                            "id": design_path.name,
-                            "title": history[0].get("prompt", "Untitled"),
-                            "versions": len(history),
-                            "last_modified": history[-1].get("created_at", ""),
-                        })
+                        designs.append(
+                            {
+                                "id": design_path.name,
+                                "title": history[0].get("prompt", "Untitled"),
+                                "versions": len(history),
+                                "last_modified": history[-1].get("created_at", ""),
+                            }
+                        )
 
         if not designs:
             return "📚 *Your Design Library*\n\nNo saved designs found."
 
         # Format as markdown table
-        lines = ["📚 *Your Design Library*", "", "| Design | Versions | Last Modified |", "|--------|----------|---------------|"]
+        lines = [
+            "📚 *Your Design Library*",
+            "",
+            "| Design | Versions | Last Modified |",
+            "|--------|----------|---------------|",
+        ]
         for d in designs:
             title = d["title"][:30] + "..." if len(d["title"]) > 30 else d["title"]
-            lines.append(f"| {title} | {d['versions']} | {d['last_modified'][:10] if d['last_modified'] else 'N/A'} |")
+            lines.append(
+                f"| {title} | {d['versions']} | {d['last_modified'][:10] if d['last_modified'] else 'N/A'} |"
+            )
 
         lines.append("")
-        lines.append("*Use **Design Studio** to create new designs, or **Generate Preview** to view saved designs.*")
+        lines.append(
+            "*Use **Design Studio** to create new designs, or **Generate Preview** to view saved designs.*"
+        )
         return "\n".join(lines)
 
     # ------------------------------------------------------------------
@@ -309,10 +353,8 @@ class Pipe:
         model_config = body.get("model", {})
         if isinstance(model_config, dict):
             model_id = model_config.get("id", "")
-            provider = model_config.get("provider", "")
         else:
             model_id = str(model_config)
-            provider = ""
 
         # Build the request body for the LLM API
         request_body = self._build_api_request(body)
@@ -354,8 +396,12 @@ class Pipe:
             "messages": clean_messages,
             "stream": False,
             "options": {
-                "temperature": options.get("temperature", 0.7) if isinstance(options, dict) else 0.7,
-                "num_predict": options.get("num_predict", 4096) if isinstance(options, dict) else 4096,
+                "temperature": options.get("temperature", 0.7)
+                if isinstance(options, dict)
+                else 0.7,
+                "num_predict": options.get("num_predict", 4096)
+                if isinstance(options, dict)
+                else 4096,
             },
         }
 
@@ -439,10 +485,10 @@ class Pipe:
             f"```html\n"
             f"<!-- Generated by OpenDesign via {model_name or 'the configured LLM'} -->\n"
             f"<!DOCTYPE html>\n"
-            f"<html lang=\"en\">\n"
+            f'<html lang="en">\n'
             f"<head>\n"
-            f"    <meta charset=\"UTF-8\">\n"
-            f"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+            f'    <meta charset="UTF-8">\n'
+            f'    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
             f"    <title>OpenDesign Preview</title>\n"
             f"    <style>\n"
             f"        :root {{\n"
@@ -482,24 +528,24 @@ class Pipe:
             f"</head>\n"
             f"<body>\n"
             f"    <header>\n"
-            f"        <div class=\"container\">\n"
-            f"            <div class=\"logo\">OpenDesign</div>\n"
+            f'        <div class="container">\n'
+            f'            <div class="logo">OpenDesign</div>\n'
             f"            <nav>\n"
-            f"                <a href=\"#\">Home</a>\n"
-            f"                <a href=\"#\">About</a>\n"
-            f"                <a href=\"#\">Contact</a>\n"
+            f'                <a href="#">Home</a>\n'
+            f'                <a href="#">About</a>\n'
+            f'                <a href="#">Contact</a>\n'
             f"            </nav>\n"
             f"        </div>\n"
             f"    </header>\n"
             f"    <main>\n"
-            f"        <div class=\"container\">\n"
+            f'        <div class="container">\n'
             f"            <h1>Hello from OpenDesign!</h1>\n"
             f"            <p>This is a preview. The LLM will generate your actual design here.</p>\n"
-            f"            <a href=\"#\" class=\"btn\">Get Started</a>\n"
+            f'            <a href="#" class="btn">Get Started</a>\n'
             f"        </div>\n"
             f"    </main>\n"
             f"    <footer>\n"
-            f"        <div class=\"container\">\n"
+            f'        <div class="container">\n'
             f"            <p>&copy; 2025 OpenDesign. Generated with ❤️</p>\n"
             f"        </div>\n"
             f"    </footer>\n"
@@ -525,10 +571,10 @@ class Pipe:
         return (
             f"💡 *I'm Design Studio — here to help you build things!*\n\n"
             f"Try asking me to create:\n"
-            f"- *\"Create a landing page for a coffee shop\"*\n"
-            f"- *\"Make a dashboard for analytics\"*\n"
-            f"- *\"Generate a presentation about climate change\"*\n"
-            f"- *\"Build a button component library\"*\n\n"
+            f'- *"Create a landing page for a coffee shop"*\n'
+            f'- *"Make a dashboard for analytics"*\n'
+            f'- *"Generate a presentation about climate change"*\n'
+            f'- *"Build a button component library"*\n\n'
             f"You're currently using **{model_name or 'the configured LLM'}**."
         )
 
@@ -643,8 +689,8 @@ class Pipe:
         dangerous = [
             r'<form\s[^>]*action\s*=\s*["\'][^"\']*["\']',
             r'\bon\w+\s*=\s*["\'][^"\']*["\']',
-            r'javascript\s*:',
-            r'\beval\s*\(',
+            r"javascript\s*:",
+            r"\beval\s*\(",
         ]
         for pattern in dangerous:
             html = re.sub(pattern, "", html, flags=re.IGNORECASE)
@@ -735,7 +781,9 @@ class Pipe:
 
         return design_id
 
-    def _save_version(self, design_id: str, html: str, prompt: str, __user__: dict | None = None) -> str:
+    def _save_version(
+        self, design_id: str, html: str, prompt: str, __user__: dict | None = None
+    ) -> str:
         """Save a new version of a design to disk with error handling."""
         user_id = self._get_user_id(__user__)
         designs_dir = self._get_designs_dir(user_id)
@@ -753,7 +801,7 @@ class Pipe:
                 history = json.loads(history_path.read_text(encoding="utf-8"))
                 if not isinstance(history, list):
                     history = []
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             history = []
 
         version = len(history) + 1
@@ -761,27 +809,30 @@ class Pipe:
 
         try:
             # Atomic write: write to temp file, then rename
-            import tempfile
             temp_path = design_path / f".tmp_{version}.html"
             temp_path.write_text(html, encoding="utf-8")
             temp_path.rename(design_path / version_file)
 
             # Append history entry
-            history.append({
-                "version": version,
-                "prompt": prompt[:200],
-                "html_path": version_file,
-                "user_id": user_id,
-                "created_at": _now_iso(),
-            })
+            history.append(
+                {
+                    "version": version,
+                    "prompt": prompt[:200],
+                    "html_path": version_file,
+                    "user_id": user_id,
+                    "created_at": _now_iso(),
+                }
+            )
 
             # Atomic write for history
             temp_hist = design_path / ".tmp_history.json"
-            temp_hist.write_text(json.dumps(history, indent=2, ensure_ascii=False), encoding="utf-8")
+            temp_hist.write_text(
+                json.dumps(history, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
             temp_hist.rename(history_path)
 
             return version_file
-        except IOError as exc:
+        except OSError as exc:
             # Non-fatal: log but don't block user
             self._log_error(f"Failed to save version {version}: {exc}")
             return "memory"
@@ -795,13 +846,14 @@ class Pipe:
         try:
             if settings_path.exists():
                 return json.loads(settings_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             pass
         return {}
 
     def _log_error(self, message: str) -> None:
         """Log an error to stderr (will appear in Open WebUI logs)."""
         import sys
+
         print(f"[OpenDesign ERROR] {message}", file=sys.stderr)
 
 
@@ -809,7 +861,9 @@ class Pipe:
 # Utility
 # ---------------------------------------------------------------------------
 
+
 def _now_iso() -> str:
     """Return current time as ISO 8601 string."""
-    from datetime import datetime, timezone
-    return datetime.now(timezone.utc).isoformat()
+    from datetime import datetime
+
+    return datetime.now(UTC).isoformat()

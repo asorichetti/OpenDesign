@@ -1,0 +1,152 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # -------------------------------------------------------------------------
+  # 1. Lint & Format
+  # -------------------------------------------------------------------------
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Run ruff linter
+        run: ruff check .
+
+      - name: Check formatting
+        run: ruff format --check .
+
+  # -------------------------------------------------------------------------
+  # 2. Unit Tests
+  # -------------------------------------------------------------------------
+  test:
+    name: Unit Tests (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install jinja2 beautifulsoup4 aiohttp pydantic pytest pytest-cov
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+
+  # -------------------------------------------------------------------------
+  # 3. Security Scan
+  # -------------------------------------------------------------------------
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install safety
+        run: pip install safety
+
+      - name: Check dependencies for vulnerabilities
+        run: safety check --json --output=json > safety-report.json || true
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: safety-report.json
+
+      # Fail if any HIGH or CRITICAL vulnerabilities found
+      - name: Block on critical vulnerabilities
+        run: |
+          if grep -q '"severity":"high"' safety-report.json 2>/dev/null || \
+             grep -q '"severity":"critical"' safety-report.json 2>/dev/null; then
+            echo "::error::High or critical vulnerabilities found. Please update dependencies."
+            exit 1
+          fi
+        continue-on-error: true
+
+  # -------------------------------------------------------------------------
+  # 4. Template Validation
+  # -------------------------------------------------------------------------
+  templates:
+    name: Template Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install jinja2 beautifulsoup4
+
+      - name: Validate all templates
+        run: python scripts/validate_templates.py
+
+  # -------------------------------------------------------------------------
+  # 5. HTML Sanitization Check
+  # -------------------------------------------------------------------------
+  sanitize:
+    name: HTML Sanitization Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install jinja2 beautifulsoup4
+
+      - name: Check for dangerous patterns in templates
+        run: python scripts/check_security.py
+
+  # -------------------------------------------------------------------------
+  # Gate: Require all checks to pass
+  # -------------------------------------------------------------------------
+  gate:
+    name: Merge Gate
+    runs-on: ubuntu-latest
+    needs: [lint, test, security, templates, sanitize]
+    if: always()
+    steps:
+      - name: Check results
+        run: |
+          results="${{ toJSON(needs.*.result) }}"
+          echo "Job results: $results"
+          if echo "$results" | grep -q '"failure"\|"cancelled"'; then
+            echo "::error::One or more checks failed. Cannot merge."
+            exit 1
+          fi
+          echo "✅ All checks passed. Ready to merge."
