@@ -26,7 +26,7 @@ try:
 except ImportError:
     HAS_JINJA2 = False
 
-TEMPLATES_DIR = Path(__file__).parent.parent / "functions" / "design_studio" / "templates"
+TEMPLATES_DIR = Path(__file__).parent.parent / "functions" / "designer_studio" / "templates"
 
 # Dangerous patterns that should not appear in templates
 DANGEROUS_PATTERNS = [
