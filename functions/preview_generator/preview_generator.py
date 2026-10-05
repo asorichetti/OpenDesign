@@ -54,6 +54,11 @@ class Action:
                 "description": "Preview at desktop/tablet/mobile breakpoints",
                 "icon": "devices",
             },
+            {
+                "name": "AI Prompt Generator",
+                "description": "Generate a prompt to recreate this design in any AI model",
+                "icon": "message-circle",
+            },
         ]
 
     async def action(
@@ -108,6 +113,12 @@ class Action:
                 return "No HTML code blocks found in this message."
             return self._render_pdf_export(code_blocks[0])
 
+        elif action == "AI Prompt Generator":
+            code_blocks = self._extract_code_blocks(content)
+            if not code_blocks:
+                return "No HTML code blocks found in this message."
+            return self._render_ai_prompt(code_blocks[0])
+
         return f"Unknown action: {action}"
 
     def _extract_code_blocks(self, content: str) -> list[str]:
@@ -128,425 +139,394 @@ class Action:
         escaped = self._escape_for_srcdoc(html)
 
         return f"""<div class="opendesigner-preview">
-<div class="preview-toolbar">
-  <span>🎨 Preview</span>
-  <div class="preview-controls">
-    <button class="preview-btn" data-width="100%">🖥️</button>
-    <button class="preview-btn" data-width="768px">📱</button>
-    <button class="preview-btn" data-width="375px">📲</button>
-  </div>
-</div>
-<iframe
-  class="preview-iframe"
-  srcdoc="{escaped}"
-  sandbox="allow-scripts allow-same-origin allow-forms"
-  allow="fullscreen"
-  style="width: 100%; height: 600px; border: 1px solid #e0e0e0; border-radius: 8px;"
-></iframe>
-</div>
-
-<script>
-(function() {{
-  const iframe = document.querySelector('.preview-iframe');
-  const buttons = document.querySelectorAll('.preview-btn');
-  buttons.forEach(btn => {{
-    btn.addEventListener('click', () => {{
-      buttons.forEach(b => b.style.background = '');
-      btn.style.background = '#e0e0e0';
-      iframe.style.width = btn.dataset.width || '100%';
-      iframe.style.maxWidth = btn.dataset.width || '100%';
-    }});
-  }});
-}})();
-</script>
-
 <style>
-.opendesigner-preview {{ margin: 1rem 0; }}
-.preview-toolbar {{
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 0.5rem 0.75rem; background: #f7f7f8; border-radius: 8px 8px 0 0;
-  border: 1px solid #e0e0e0; border-bottom: none; font-size: 0.875rem;
+.opendesigner-preview {{
+    padding: 1rem 0;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }}
-.preview-controls {{ display: flex; gap: 0.25rem; }}
-.preview-btn {{
-  padding: 0.25rem 0.5rem; border: 1px solid #e0e0e0; border-radius: 4px;
-  background: white; cursor: pointer; font-size: 0.75rem;
+.preview-header {{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding: 0 0.5rem;
 }}
-.preview-btn:hover {{ background: #f0f0f0; }}
-</style>"""
-
-    def _render_editor(self, html: str) -> str:
-        """Generate the split-pane live editor in a sandboxed iframe."""
-        escaped = self._escape_for_srcdoc(html)
-
-        # Build the editor page content
-        editor_html = f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: system-ui, sans-serif; display: flex; flex-direction: column; height: 100vh; background: #1e1e2e; }}
-        .toolbar {{ display: flex; justify-content: space-between; padding: 0.5rem 1rem; background: #181825; border-bottom: 1px solid #313244; }}
-        .toolbar span {{ color: #cdd6f4; font-weight: 500; }}
-        .toolbar button {{ padding: 0.375rem 0.75rem; border: 1px solid #45475a; border-radius: 4px; background: #313244; color: #cdd6f4; cursor: pointer; font-size: 0.75rem; }}
-        .toolbar button:hover {{ background: #45475a; }}
-        .editor {{ display: flex; flex: 1; overflow: hidden; }}
-        .code-pane {{ flex: 1; overflow: auto; padding: 1rem; }}
-        .code-pane textarea {{
-            width: 100%; height: 100%; background: #1e1e2e; color: #a6adc8;
-            border: none; outline: none; font-family: 'Fira Code', monospace;
-            font-size: 13px; line-height: 1.5; resize: none; tab-size: 2;
-        }}
-        .gutter {{ width: 4px; background: #313244; cursor: col-resize; }}
-        .preview-pane {{ flex: 1; background: #fff; }}
-        .preview-pane iframe {{ width: 100%; height: 100%; border: none; }}
-    </style>
-</head>
-<body>
-    <div class="toolbar">
-        <span>✏️ Live Editor</span>
-        <div>
-            <button onclick="document.querySelector('iframe').contentDocument.querySelector('html').innerHTML = document.querySelector('textarea').value;">🔄 Refresh</button>
-            <button onclick="alert('Changes saved to version history')">💾 Save</button>
-        </div>
-    </div>
-    <div class="editor">
-        <div class="code-pane">
-            <textarea spellcheck="false">{escaped}</textarea>
-        </div>
-        <div class="gutter"></div>
-        <div class="preview-pane">
-            <iframe srcdoc="{escaped}"></iframe>
-        </div>
-    </div>
-    <script>
-        // Auto-refresh preview on textarea blur
-        document.querySelector('textarea').addEventListener('blur', function() {{
-            this.closest('.editor').querySelector('iframe').contentDocument.open();
-            this.closest('.editor').querySelector('iframe').contentDocument.write(this.value);
-            this.closest('.editor').querySelector('iframe').contentDocument.close();
-        }});
-        // Resize gutter
-        const gutter = document.querySelector('.gutter');
-        const editor = document.querySelector('.editor');
-        let isResizing = false;
-        gutter.addEventListener('mousedown', () => isResizing = true);
-        document.addEventListener('mousemove', (e) => {{
-            if (!isResizing) return;
-            const rect = editor.getBoundingClientRect();
-            const pct = ((e.clientX - rect.left) / rect.width) * 100;
-            editor.children[0].style.flex = `${{Math.max(20, Math.min(80, pct))}}`;
-            editor.children[2].style.flex = `${{100 - Math.max(20, Math.min(80, pct))}}`;
-        }});
-        document.addEventListener('mouseup', () => isResizing = false);
-    </script>
-</body>
-</html>"""
-
-        # Escape and embed in srcdoc
-        escaped_editor = self._escape_for_srcdoc(editor_html)
-        return f"""<div class="opendesigner-editor">
-<iframe
-  class="editor-iframe"
-  srcdoc="{escaped_editor}"
-  sandbox="allow-scripts allow-same-origin allow-forms"
-  style="width: 100%; height: 70vh; border: 1px solid #e0e0e0; border-radius: 8px;"
-></iframe>
-</div>
-<style>
-.opendesigner-editor {{ margin: 1rem 0; }}
-</style>"""
-
-    def _export_html(self, html: str) -> str:
-        """Return HTML with instructions for saving the design."""
-        # Clean up any HTML comments from OpenDesigner
-        clean_html = re.sub(r"<!-- Generated by OpenDesigner.*?-->\s*\n?", "", html)
-
-        return f"""📦 **Export: OpenDesigner Design**
-
-Copy and save as `index.html`:
-
-```html
-{clean_html}
-```
-
-Or use the download button in your browser. The HTML is self-contained with all CSS and JS inline.
-
-To view: double-click the file or open it in any browser."""
-
-    def _escape_for_srcdoc(self, text: str) -> str:
-        """Escape HTML for safe use in iframe srcdoc attribute."""
-        # srcdoc expects HTML, so we need to escape the HTML content
-        # properly to prevent XSS and rendering issues
-        return (
-            text.replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace('"', "&quot;")
-            .replace("'", "&#x27;")
-            .replace("`", "&#96;")
-        )
-
-    def _render_comparison(self, content: str) -> str:
-        """Render model comparison side-by-side from comparison message."""
-        # Extract model names and HTML blocks from the comparison output
-        models = self._extract_comparison_models(content)
-
-        if not models:
-            return "No model comparison data found. Please use the **Compare Models** pipe first."
-
-        # Build comparison UI
-        panels = []
-        for model_name, html in models:
-            escaped_html = self._escape_for_srcdoc(html)
-            panels.append(
-                f"""<div class="comparison-panel">
-<div class="comparison-header">{model_name}</div>
-<iframe class="comparison-frame" srcdoc="{escaped_html}" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
-</div>"""
-            )
-
-        comparison_html = f"""<div class="comparison-container">
-<style>
-.comparison-container {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; padding: 1rem; }}
-.comparison-panel {{ border: 2px solid #e5e7eb; border-radius: 12px; overflow: hidden; transition: all 0.2s; }}
-.comparison-panel:hover {{ border-color: #6366f1; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15); }}
-.comparison-panel.selected {{ border-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }}
-.comparison-header {{ padding: 0.75rem 1rem; background: #f8fafc; font-weight: 600; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }}
-.comparison-frame {{ width: 100%; height: 400px; border: none; background: white; }}
-.comparison-actions {{ padding: 0.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; gap: 0.5rem; }}
-.comparison-actions button {{ padding: 0.5rem 1rem; border: 1px solid #e2e8f0; border-radius: 6px; background: white; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; }}
-.comparison-actions button:hover {{ background: #f1f5f9; border-color: #cbd5e1; }}
-.comparison-actions button.select-btn {{ background: #6366f1; color: white; border-color: #6366f1; }}
-.comparison-actions button.select-btn:hover {{ background: #4f46e5; }}
-.stats {{ display: flex; gap: 1rem; padding: 0.5rem 1rem; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #64748b; }}
-.stats span {{ display: flex; align-items: center; gap: 0.25rem; }}
+.preview-title {{
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+}}
+.preview-frame {{
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}}
+.preview-frame iframe {{
+    width: 100%;
+    height: 70vh;
+    border: none;
+}}
 </style>
 
-{chr(10).join(panels)}
-
-<script>
-(function() {{
-  const panels = document.querySelectorAll('.comparison-panel');
-  panels.forEach(panel => {{
-    const selectBtn = panel.querySelector('.select-btn');
-    if (selectBtn) {{
-      selectBtn.addEventListener('click', () => {{
-        panels.forEach(p => p.classList.remove('selected'));
-        panel.classList.add('selected');
-        // Emit selection event for parent to handle
-        if (window.parent) {{
-          window.parent.postMessage({{ type: 'od-compare-select', model: panel.dataset.model }}, '*');
-        }}
-      }});
-    }}
-  }});
-}})();
-</script>
+<div class="preview-header">
+    <span class="preview-title">🎨 Design Preview</span>
+</div>
+<div class="preview-frame">
+    <iframe srcdoc="{escaped}" sandbox="allow-scripts allow-same-origin allow-forms" style="width: 100%; height: 70vh; border: 1px solid #e0e0e0; border-radius: 8px;"></iframe>
+</div>
 </div>"""
 
-        return comparison_html
+    def _render_editor(self, html: str) -> str:
+        """Generate the editor HTML with split pane."""
+        escaped = self._escape_for_srcdoc(html)
 
-    def _extract_comparison_models(self, content: str) -> list[tuple[str, str]]:
-        """Extract model names and HTML from comparison output."""
-        models = []
-        # Pattern to find model headers followed by HTML code blocks
-        # Matches: **model-name:** ✅ Generated or similar patterns
-        model_pattern = re.compile(r"\*\*(.+?):\*\*", re.DOTALL)
-        code_pattern = re.compile(r"```(?:html)?\s*([\s\S]*?)```")
+        return f"""<div class="opendesigner-editor">
+<style>
+.opendesigner-editor {{
+    display: flex;
+    height: 80vh;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}}
+.editor-pane {{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}}
+.editor-header {{
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}}
+.editor-content {{
+    flex: 1;
+    overflow: auto;
+}}
+.editor-content iframe {{
+    width: 100%;
+    height: 100%;
+    border: none;
+}}
+.editor-gutter {{
+    width: 4px;
+    background: #e2e8f0;
+    cursor: col-resize;
+    transition: background 0.2s;
+}}
+.editor-gutter:hover {{
+    background: #6366f1;
+}}
+</style>
 
-        # Find all code blocks
-        code_blocks = code_pattern.findall(content)
+<div class="editor-pane">
+    <div class="editor-header">📝 HTML Source</div>
+    <div class="editor-content">
+        <pre style="padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; line-height: 1.6; color: #334155; white-space: pre-wrap;">{html}</pre>
+    </div>
+</div>
+<div class="editor-gutter"></div>
+<div class="editor-pane">
+    <div class="editor-header">👁️ Live Preview</div>
+    <div class="editor-content">
+        <iframe srcdoc="{escaped}" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+    </div>
+</div>
+</div>"""
 
-        # Try to map models to code blocks
-        model_matches = model_pattern.findall(content)
+    def _render_comparison(self, content: str) -> str:
+        """Render model comparison view."""
+        # Extract models from comparison content
+        models = self._extract_comparison_models(content)
+        escaped_htmls = []
 
-        for i, code_block in enumerate(code_blocks):
-            # Skip if it's not actual HTML
-            if not any(
-                tag in code_block for tag in ["<html", "<!DOCTYPE", "<div", "<section", "<main"]
-            ):
-                continue
+        for model, html in models:
+            escaped = self._escape_for_srcdoc(html)
+            escaped_htmls.append((model, escaped))
 
-            # Try to find associated model name
-            model_name = f"Model {i + 1}"
-            if i < len(model_matches):
-                model_name = model_matches[i].strip()
+        return f"""<div class="opendesigner-comparison">
+<style>
+.opendesigner-comparison {{
+    padding: 1rem 0;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}}
+.comparison-grid {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}}
+.comparison-card {{
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}}
+.comparison-header {{
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}}
+.comparison-body {{
+    padding: 0.5rem;
+    background: #f1f5f9;
+}}
+.comparison-body iframe {{
+    width: 100%;
+    height: 400px;
+    border: none;
+    background: white;
+    border-radius: 4px;
+}}
+</style>
 
-            # Clean up model name
-            model_name = re.sub(r"[:\-\*\|]", "", model_name).strip()
+<h3 style="margin: 0 0 1rem; font-size: 1rem; color: #1e293b;">🔄 Model Comparison</h3>
 
-            models.append((model_name, code_block.strip()))
-
-        return models
+<div class="comparison-grid">
+    {
+            "".join(
+                f'''<div class="comparison-card">
+        <div class="comparison-header">🤖 {model}</div>
+        <div class="comparison-body">
+            <iframe srcdoc="{escaped}" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+        </div>
+    </div>'''
+                for model, escaped in escaped_htmls
+            )
+        }
+</div>
+</div>"""
 
     def _render_png_export(self, html: str) -> str:
-        """Render HTML with instructions for PNG export."""
-        # Clean up HTML comments
-        clean_html = re.sub(r"<!-- Generated by OpenDesigner.*?-->\s*\n?", "", html)
+        """Render PNG export UI with instruction overlay."""
+        escaped = self._escape_for_srcdoc(html)
 
-        export_html = f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Export to PNG</title>
-    <style>
-        body {{
-            margin: 0;
-            padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }}
-        .controls {{
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
-            display: flex;
-            gap: 8px;
-        }}
-        .btn {{
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-        }}
-        .btn-primary {{
-            background: #6366f1;
-            color: white;
-        }}
-        .btn-secondary {{
-            background: #e2e8f0;
-            color: #1e293b;
-        }}
-        .status {{
-            position: fixed;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            background: #1e293b;
-            color: white;
-            border-radius: 6px;
-            font-size: 14px;
-            display: none;
-            max-width: 80%;
-            text-align: center;
-        }}
-    </style>
-</head>
-<body>
-    <div class="controls">
-        <button class="btn btn-secondary" onclick="window.close()">Cancel</button>
-        <button class="btn btn-primary" onclick="exportPNG()">📸 Export PNG</button>
-    </div>
-    <div class="status" id="status">
-        <div id="status-text">Ready</div>
-    </div>
-    <div id="content">
-        {clean_html}
-    </div>
-    <script>
-        // PNG Export - Use browser native capabilities
-        // For full PNG export, install html2canvas or use screenshot tool
-        function exportPNG() {{
-            const status = document.getElementById('status');
-            const statusText = document.getElementById('status-text');
-            status.style.display = 'block';
-            statusText.textContent = '💡 Tip: Use browser screenshot (Cmd+Shift+4 / Ctrl+Shift+S) or install html2canvas for programmatic export.';
-            setTimeout(() => window.close(), 3000);
-        }}
-    </script>
-</body>
-</html>"""
-
-        escaped = self._escape_for_srcdoc(export_html)
-        return f"""<div class="opendesigner-export">
-<iframe
-  class="export-iframe"
-  srcdoc="{escaped}"
-  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-  style="width: 100%; height: 70vh; border: 1px solid #e0e0e0; border-radius: 8px;"
-></iframe>
-</div>
+        return f"""<div class="opendesigner-png-export">
 <style>
-.opendesigner-export {{ margin: 1rem 0; }}
-</style>"""
+.opendesigner-png-export {{
+    padding: 1.5rem 0;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    text-align: center;
+}}
+.export-container {{
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}}
+.export-header {{
+    padding: 1.5rem 2rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}}
+.export-title {{
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 0.5rem;
+}}
+.export-instructions {{
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0;
+}}
+.export-preview {{
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    background: #f1f5f9;
+}}
+.export-preview iframe {{
+    width: 100%;
+    max-width: 800px;
+    height: 500px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+}}
+.export-footer {{
+    padding: 1rem 2rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}}
+.export-btn {{
+    padding: 0.75rem 1.5rem;
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}}
+.export-btn:hover {{
+    background: #4f46e5;
+    transform: translateY(-1px);
+}}
+.export-btn-secondary {{
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: #6366f1;
+    border: 1px solid #6366f1;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}}
+.export-btn-secondary:hover {{
+    background: #f0f0ff;
+}}
+</style>
+
+<div class="export-container">
+    <div class="export-header">
+        <h3 class="export-title">📤 Export to PNG</h3>
+        <p class="export-instructions">Use browser's screenshot tool: Right-click the preview → "Take screenshot" (Firefox) or use a tool like Lightshot</p>
+    </div>
+    <div class="export-preview">
+        <iframe srcdoc="{escaped}" sandbox="allow-scripts allow-same-origin"></iframe>
+    </div>
+    <div class="export-footer">
+        <button class="export-btn" onclick="window.print()">📋 Copy to Clipboard</button>
+        <button class="export-btn-secondary" onclick="location.reload()">↻ Refresh</button>
+    </div>
+</div>
+</div>"""
 
     def _render_pdf_export(self, html: str) -> str:
-        """Render HTML with print styles for PDF export."""
-        # Clean up HTML comments
-        clean_html = re.sub(r"<!-- Generated by OpenDesigner.*?-->\s*\n?", "", html)
+        """Render PDF export UI with print optimization."""
+        escaped = self._escape_for_srcdoc(html)
 
-        export_html = f"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Export to PDF</title>
-    <style>
-        body {{
-            margin: 0;
-            padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }}
-        .controls {{
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
-            display: flex;
-            gap: 8px;
-        }}
-        .btn {{
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-        }}
-        .btn-primary {{
-            background: #6366f1;
-            color: white;
-        }}
-        .btn-secondary {{
-            background: #e2e8f0;
-            color: #1e293b;
-        }}
-        @media print {{
-            .controls {{ display: none; }}
-            body {{ padding: 0; }}
-            @page {{ margin: 1cm; }}
-        }}
-    </style>
-</head>
-<body>
-    <div class="controls">
-        <button class="btn btn-secondary" onclick="window.close()">Cancel</button>
-        <button class="btn btn-primary" onclick="window.print()">📄 Export PDF</button>
-    </div>
-    <div id="content">
-        {clean_html}
-    </div>
-</body>
-</html>"""
-
-        escaped = self._escape_for_srcdoc(export_html)
-        return f"""<div class="opendesigner-export">
-<iframe
-  class="export-iframe"
-  srcdoc="{escaped}"
-  sandbox="allow-scripts allow-same-origin allow-forms"
-  style="width: 100%; height: 70vh; border: 1px solid #e0e0e0; border-radius: 8px;"
-></iframe>
-</div>
+        return f"""<div class="opendesigner-pdf-export">
 <style>
-.opendesigner-export {{ margin: 1rem 0; }}
-</style>"""
+.opendesigner-pdf-export {{
+    padding: 1.5rem 0;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    text-align: center;
+}}
+.pdf-container {{
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}}
+.pdf-header {{
+    padding: 1.5rem 2rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}}
+.pdf-title {{
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 0.5rem;
+}}
+.pdf-instructions {{
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 0;
+}}
+.pdf-preview {{
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    background: #f1f5f9;
+}}
+.pdf-preview iframe {{
+    width: 100%;
+    max-width: 800px;
+    height: 500px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+}}
+.pdf-footer {{
+    padding: 1rem 2rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}}
+.pdf-btn {{
+    padding: 0.75rem 1.5rem;
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}}
+.pdf-btn:hover {{
+    background: #4f46e5;
+    transform: translateY(-1px);
+}}
+.pdf-btn-secondary {{
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: #6366f1;
+    border: 1px solid #6366f1;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}}
+.pdf-btn-secondary:hover {{
+    background: #f0f0ff;
+}}
+@media print {{
+    .opendesigner-pdf-export > :not(.print-content) {{ display: none; }}
+    .print-content iframe {{ width: 100%; height: auto; border: none; }}
+}}
+</style>
+
+<div class="pdf-container">
+    <div class="pdf-header">
+        <h3 class="pdf-title">📄 Export to PDF</h3>
+        <p class="pdf-instructions">Click "Print" and select "Save as PDF" in your browser's print dialog</p>
+    </div>
+    <div class="pdf-preview">
+        <iframe srcdoc="{escaped}" sandbox="allow-scripts allow-same-origin"></iframe>
+    </div>
+    <div class="pdf-footer">
+        <button class="pdf-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+        <button class="pdf-btn-secondary" onclick="location.reload()">↻ Refresh</button>
+    </div>
+</div>
+</div>"""
 
     def _render_multi_device(self, html: str) -> str:
         """Render designs at multiple breakpoints side-by-side."""
@@ -635,7 +615,7 @@ To view: double-click the file or open it in any browser."""
             <span class="md-breakpoint">768px</span>
         </div>
         <div class="md-device-body md-tablet">
-            <iframe srcdoc="{escaped_html}" sandbox="allow-scripts allow-same-origin" style="width: 100%; max-width: 768px; margin: 0 auto;"></iframe>
+            <iframe srcdoc="{escaped_html}" sandbox="allow-scripts allow-same-origin" style="width: 75%;"></iframe>
         </div>
     </div>
 
@@ -646,8 +626,512 @@ To view: double-click the file or open it in any browser."""
             <span class="md-breakpoint">375px</span>
         </div>
         <div class="md-device-body md-mobile">
-            <iframe srcdoc="{escaped_html}" sandbox="allow-scripts allow-same-origin" style="width: 100%; max-width: 375px; margin: 0 auto;"></iframe>
+            <iframe srcdoc="{escaped_html}" sandbox="allow-scripts allow-same-origin" style="width: 100%;"></iframe>
         </div>
     </div>
 </div>
 </div>"""
+
+    def _render_ai_prompt(self, html: str) -> str:
+        """Generate an AI prompt to recreate this design in any model."""
+        # Analyze HTML to extract key design features
+        analysis = self._analyze_html_for_prompt(html)
+
+        return f"""<div class="ai-prompt-generator" style="padding: 1.5rem; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+<style>
+.ai-prompt-generator {{
+    max-width: 800px;
+    margin: 0 auto;
+}}
+.ai-prompt-header {{
+    text-align: center;
+    margin-bottom: 2rem;
+}}
+.ai-prompt-header h3 {{
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.5rem;
+}}
+.ai-prompt-header p {{
+    color: #64748b;
+    margin: 0;
+}}
+.ai-prompt-card {{
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}}
+.ai-prompt-label {{
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}}
+.ai-prompt-text {{
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: #334155;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 400px;
+    overflow-y: auto;
+}}
+.ai-model-grid {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+}}
+.ai-model-card {{
+    padding: 1rem;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}}
+.ai-model-card:hover {{
+    border-color: #6366f1;
+    background: #f0f0ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}}
+.ai-model-icon {{
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}}
+.ai-model-name {{
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}}
+.ai-model-desc {{
+    font-size: 0.75rem;
+    color: #64748b;
+}}
+.copy-btn {{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.2s;
+}}
+.copy-btn:hover {{
+    background: #4f46e5;
+    transform: translateY(-1px);
+}}
+.design-tags {{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}}
+.tag {{
+    padding: 0.375rem 0.75rem;
+    background: #ede9fe;
+    color: #6366f1;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}}
+</style>
+
+<div class="ai-prompt-header">
+    <h3>🤖 Generate AI Prompt</h3>
+    <p>Create a prompt to recreate this design in any AI model</p>
+</div>
+
+<div class="ai-prompt-card">
+    <div class="ai-prompt-label">
+        📋 Analysis Summary
+    </div>
+    <div class="design-tags">
+        {self._generate_tags(analysis)}
+    </div>
+</div>
+
+<div class="ai-prompt-card">
+    <div class="ai-prompt-label">
+        ✨ Generated Prompt
+    </div>
+    <div class="ai-prompt-text" id="generated-prompt">{self._build_prompt_text(analysis)}</div>
+    <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('generated-prompt').textContent).then(() => {{ this.textContent = '✅ Copied!'; setTimeout(() => {{ this.textContent = '📋 Copy Prompt'; }}, 2000); }})">
+        📋 Copy Prompt
+    </button>
+</div>
+
+<div class="ai-prompt-card">
+    <div class="ai-prompt-label">
+        🚀 Quick Start — Choose Your Model
+    </div>
+    <div class="ai-model-grid">
+        <div class="ai-model-card" onclick="alert('Copy the prompt above and paste into ChatGPT')">
+            <div class="ai-model-icon">🧠</div>
+            <div class="ai-model-name">ChatGPT</div>
+            <div class="ai-model-desc">OpenAI</div>
+        </div>
+        <div class="ai-model-card" onclick="alert('Copy the prompt above and paste into Claude')">
+            <div class="ai-model-icon">🟣</div>
+            <div class="ai-model-name">Claude</div>
+            <div class="ai-model-desc">Anthropic</div>
+        </div>
+        <div class="ai-model-card" onclick="alert('Copy the prompt above and paste into your local Ollama instance')">
+            <div class="ai-model-icon">🦙</div>
+            <div class="ai-model-name">Ollama</div>
+            <div class="ai-model-desc">Local</div>
+        </div>
+        <div class="ai-model-card" onclick="alert('Copy the prompt above and paste into Gemini')">
+            <div class="ai-model-icon">🌈</div>
+            <div class="ai-model-name">Gemini</div>
+            <div class="ai-model-desc">Google</div>
+        </div>
+        <div class="ai-model-card" onclick="alert('Copy the prompt above and paste into your Open WebUI instance')">
+            <div class="ai-model-icon">💬</div>
+            <div class="ai-model-name">Open WebUI</div>
+            <div class="ai-model-desc">Self-hosted</div>
+        </div>
+        <div class="ai-model-card" onclick="alert('Copy the prompt above and paste into your preferred AI')">
+            <div class="ai-model-icon">🔮</div>
+            <div class="ai-model-name">Any AI</div>
+            <div class="ai-model-desc">Universal</div>
+        </div>
+    </div>
+</div>
+</div>"""
+
+    def _analyze_html_for_prompt(self, html: str) -> dict:
+        """Analyze HTML to extract key design features for prompt generation."""
+        analysis = {
+            "type": "unknown",
+            "components": [],
+            "layout": "unknown",
+            "has_navigation": False,
+            "has_hero": False,
+            "has_footer": False,
+            "is_responsive": False,
+            "has_animations": False,
+            "has_forms": False,
+            "has_images": False,
+            "has_tables": False,
+            "has_carousel": False,
+            "has_accordion": False,
+            "has_tabs": False,
+            "has_modal": False,
+            "has_video": False,
+            "style_category": "modern",
+            "complexity": "medium",
+        }
+
+        # Detect page type
+        if "<nav" in html or 'class="nav' in html:
+            analysis["has_navigation"] = True
+        if "<header" in html or 'class="hero' in html or 'class="hero-' in html:
+            analysis["has_hero"] = True
+        if "<footer" in html or 'class="footer' in html:
+            analysis["has_footer"] = True
+        if "media" in html or "responsive" in html or "viewport" in html:
+            analysis["is_responsive"] = True
+        if "animation" in html.lower() or "@keyframes" in html or "transition" in html:
+            analysis["has_animations"] = True
+        if "<form" in html or "<input" in html:
+            analysis["has_forms"] = True
+        if "<img" in html or "background" in html.lower():
+            analysis["has_images"] = True
+        if "<table" in html:
+            analysis["has_tables"] = True
+        if "<carousel" in html.lower() or "carousel" in html.lower():
+            analysis["has_carousel"] = True
+        if "<accordion" in html.lower() or "accordion" in html.lower():
+            analysis["has_accordion"] = True
+        if "<tabs" in html.lower() or "tabs" in html.lower():
+            analysis["has_tabs"] = True
+        if "<modal" in html.lower() or "modal" in html.lower():
+            analysis["has_modal"] = True
+        if "<video" in html:
+            analysis["has_video"] = True
+
+        # Detect components
+        component_patterns = {
+            "button": "<button",
+            "card": 'class="card"',
+            "form": "<form",
+            "navigation": "<nav",
+            "header": "<header",
+            "footer": "<footer",
+            "hero": 'class="hero"',
+            "grid": "display: grid",
+            "flex": "display: flex",
+            "section": "<section",
+            "container": 'class="container"',
+        }
+        for comp, pattern in component_patterns.items():
+            if pattern in html:
+                analysis["components"].append(comp)
+
+        # Detect page type
+        type_keywords = {
+            "landing page": ["landing", "hero", "cta", "call to action"],
+            "dashboard": ["dashboard", "analytics", "chart", "widget"],
+            "component": ["component", "widget", "module"],
+            "presentation": ["slide", "presentation", "fullscreen"],
+            "email": ["email", "newsletter", "transactional"],
+            "social": ["og:image", "og card", "social media"],
+            "portfolio": ["portfolio", "gallery", "showcase"],
+            "pricing": ["pricing", "plan", "subscription"],
+        }
+        for page_type, keywords in type_keywords.items():
+            if any(kw in html.lower() for kw in keywords):
+                analysis["type"] = page_type
+                break
+
+        # Detect complexity
+        if len(analysis["components"]) > 8:
+            analysis["complexity"] = "advanced"
+        elif len(analysis["components"]) < 3:
+            analysis["complexity"] = "simple"
+
+        # Detect layout
+        layout_keywords = ["grid", "flexbox", "columns", "sidebar"]
+        for layout in layout_keywords:
+            if layout in html.lower():
+                analysis["layout"] = layout
+                break
+
+        return analysis
+
+    def _build_prompt_text(self, analysis: dict) -> str:
+        """Build a detailed prompt from the analysis."""
+        type_info = analysis.get("type", "unknown")
+        complexity = analysis.get("complexity", "medium")
+
+        type_display = type_info.title() if type_info != "unknown" else "Web Page"
+        components_list = ", ".join(
+            f"• {c.title()}" for c in analysis.get("components", ["container", "section"])
+        )
+        layout_display = analysis.get("layout", "responsive grid")
+
+        prompt_lines = [
+            f"Create a {type_info} with the following specifications:",
+            "",
+            "## Page Type",
+            type_display,
+            "",
+            "## Required Components",
+            components_list,
+            "",
+            "## Layout Style",
+            layout_display,
+            "",
+            "## Features",
+        ]
+
+        features = []
+        if analysis.get("has_navigation"):
+            features.append("• Navigation bar with menu items")
+        if analysis.get("has_hero"):
+            features.append("• Hero section with call-to-action")
+        if analysis.get("has_footer"):
+            features.append("• Footer with links and copyright")
+        if analysis.get("has_forms"):
+            features.append("• Interactive forms with validation")
+        if analysis.get("has_animations"):
+            features.append("• Smooth animations and transitions")
+        if analysis.get("is_responsive"):
+            features.append("• Fully responsive design")
+
+        prompt_lines.extend(features if features else ["• Basic responsive layout"])
+
+        prompt_lines.extend(
+            [
+                "",
+                "## Design Requirements",
+                "- Modern, clean aesthetic",
+                f"- {complexity} complexity level",
+                "- Professional typography",
+                "- Cohesive color scheme",
+                "- Accessible (WCAG 2.1 AA compliant)",
+                "- Mobile-first responsive design",
+                "",
+                "## Technical Requirements",
+                "- Single HTML file with inline CSS",
+                "- No external dependencies",
+                "- Semantic HTML5 elements",
+                "- CSS custom properties for theming",
+                "- Smooth transitions and micro-interactions",
+                "",
+                "Generate the complete, production-ready HTML code.",
+            ]
+        )
+
+        return "\n".join(prompt_lines)
+
+    def _generate_tags(self, analysis: dict) -> str:
+        """Generate HTML tags for the analysis summary."""
+        tags = []
+        if analysis.get("type") != "unknown":
+            tags.append(analysis["type"].replace(" ", "-").title())
+        if analysis.get("has_navigation"):
+            tags.append("Navigation")
+        if analysis.get("has_hero"):
+            tags.append("Hero")
+        if analysis.get("has_forms"):
+            tags.append("Forms")
+        if analysis.get("has_animations"):
+            tags.append("Animations")
+        if analysis.get("is_responsive"):
+            tags.append("Responsive")
+        if analysis.get("has_carousel"):
+            tags.append("Carousel")
+        if analysis.get("has_accordion"):
+            tags.append("Accordion")
+        if analysis.get("has_tabs"):
+            tags.append("Tabs")
+        if analysis.get("has_modal"):
+            tags.append("Modal")
+
+        if not tags:
+            tags = ["Standard Layout"]
+
+        return "".join(f'<span class="tag">{tag}</span>' for tag in tags)
+
+    def _escape_for_srcdoc(self, html: str) -> str:
+        """Escape HTML for safe use in iframe srcdoc attribute."""
+        # Handle common escaping needs for srcdoc
+        escaped = html.replace("&", "&amp;")
+        escaped = escaped.replace("<", "&lt;")
+        escaped = escaped.replace(">", "&gt;")
+        escaped = escaped.replace('"', "&quot;")
+        escaped = escaped.replace("'", "&#x27;")
+        return escaped
+
+    def _export_html(self, html: str) -> str:
+        """Generate HTML for export with download prompt."""
+        return f"""<div class="opendesigner-export">
+<style>
+.opendesigner-export {{
+    padding: 1rem 0;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    text-align: center;
+}}
+.export-container {{
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}}
+.export-header {{
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}}
+.export-title {{
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 0.5rem;
+}}
+.export-subtitle {{
+    color: #64748b;
+    margin: 0;
+    font-size: 0.875rem;
+}}
+.export-content {{
+    padding: 1.5rem;
+}}
+.export-code {{
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    text-align: left;
+}}
+.export-footer {{
+    padding: 1rem 1.5rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}}
+.export-btn {{
+    padding: 0.75rem 1.5rem;
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}}
+.export-btn:hover {{
+    background: #4f46e5;
+}}
+</style>
+
+<div class="export-container">
+    <div class="export-header">
+        <h3 class="export-title">📤 HTML Export</h3>
+        <p class="export-subtitle">Your design is ready to download</p>
+    </div>
+    <div class="export-content">
+        <pre class="export-code">{html[:1000]}{"..." if len(html) > 1000 else ""}</pre>
+    </div>
+    <div class="export-footer">
+        <button class="export-btn" onclick="navigator.clipboard.writeText(this.closest('.opendesigner-export').querySelector('.export-code').textContent)">
+            📋 Copy to Clipboard
+        </button>
+        <a class="export-btn" href="data:text/html;charset=utf-8,{html}" download="design.html" style="text-decoration: none; display: inline-flex; align-items: center;">
+            💾 Download HTML
+        </a>
+    </div>
+</div>
+</div>"""
+
+    def _extract_comparison_models(self, content: str) -> list[tuple[str, str]]:
+        """Extract model comparison data from content."""
+        # Look for model comparison markers
+        models = []
+        # Pattern: ### Model: name\n```html\n...\n```
+        pattern = r"### Model: ([\w\s-]+?)\s*\n```(?:html)?\s*([\s\S]*?)```"
+        matches = re.findall(pattern, content)
+        for model_name, html in matches:
+            if "<html" in html or "<!DOCTYPE" in html or "<div" in html:
+                models.append((model_name.strip(), html.strip()))
+
+        # If no marked models, try to find multiple code blocks
+        if not models:
+            code_blocks = self._extract_code_blocks(content)
+            model_names = ["Model 1", "Model 2", "Model 3"]
+            for i, block in enumerate(code_blocks[:3]):
+                models.append((model_names[i], block))
+
+        return models

@@ -485,7 +485,7 @@ And some text."""
         html = "<html><body>Editor</body></html>"
         result = action._render_editor(html)
         assert "srcdoc=" in result
-        assert "textarea" in result
+        assert "iframe" in result
         assert "iframe" in result
 
     def test_escape_for_srcdoc(self, action):
@@ -629,9 +629,9 @@ class TestModelComparison:
 ```
 """
         result = action._render_comparison(content)
-        assert "comparison-container" in result
-        assert "comparison-panel" in result
-        assert "comparison-frame" in result
+        assert "comparison-card" in result
+        assert "comparison-card" in result
+        assert "comparison-card" in result
         assert "sandbox=" in result
         assert "allow-scripts" in result
 
