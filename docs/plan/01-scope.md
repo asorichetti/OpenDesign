@@ -1,8 +1,8 @@
 # Scope
 
-## What OpenDesign Does
+## What OpenDesigner Does
 
-OpenDesign turns natural language into deployable visual output. Describe what you want to build and receive:
+OpenDesigner turns natural language into deployable visual output. Describe what you want to build and receive:
 
 1. **HTML prototypes** — Complete, self-contained web pages (landing pages, dashboards, forms, navigation)
 2. **UI components** — Buttons, cards, modals, tables, data grids, navbars
@@ -11,14 +11,14 @@ OpenDesign turns natural language into deployable visual output. Describe what y
 5. **Social media assets** — Hero banners, card previews, OG images
 6. **Iterative refinement** — Conversational editing: "make the header darker", "add a pricing section"
 
-## What OpenDesign Is
+## What OpenDesigner Is
 
 - An **Open WebUI plugin** (Pipe + Action + Filter functions in Python)
 - **Model-agnostic** — works with any LLM backend Open WebUI supports (Ollama, OpenAI, Anthropic, etc.)
 - **Self-hostable** — runs entirely on your infrastructure
 - **Extensible** — add templates, design systems, and output types without touching core code
 
-## What OpenDesign Is Not
+## What OpenDesigner Is Not
 
 - A drag-and-drop visual editor (that's a different product category)
 - A replacement for design tools (Figma, Sketch, Framer)

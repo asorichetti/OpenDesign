@@ -4,7 +4,7 @@
 
 ### "OpenWebUI data directory not found"
 
-**Cause**: OpenDesign can't find the OpenWebUI data directory.
+**Cause**: OpenDesigner can't find the OpenWebUI data directory.
 
 **Solution**:
 
@@ -26,7 +26,7 @@
 
 3. Or use the installer script:
    ```bash
-   ./install-opendesign.sh /path/to/openwebui/data
+   ./install-opendesigner.sh /path/to/openwebui/data
    ```
 
 ### "Plugin not appearing in OpenWebUI"
@@ -37,7 +37,7 @@
 
 1. Check plugin structure:
    ```
-   plugins/opendesign/
+   plugins/opendesigner/
    ├── plugin.json
    ├── functions/
    │   ├── design_studio.py
@@ -49,8 +49,8 @@
 2. Verify plugin.json:
    ```json
    {
-     "name": "OpenDesign Studio",
-     "slug": "opendesign",
+     "name": "OpenDesigner Studio",
+     "slug": "opendesigner",
      "version": "0.2.0",
      "functions": [...]
    }
@@ -308,7 +308,7 @@
 ```python
 import logging
 
-logging.getLogger("opendesign").setLevel(logging.DEBUG)
+logging.getLogger("opendesigner").setLevel(logging.DEBUG)
 ```
 
 ### Check Valves Configuration
@@ -393,21 +393,21 @@ systemctl restart ollama
 ### Before Asking for Help
 
 1. **Check logs**: Look for error messages
-2. **Verify versions**: Use latest OpenDesign version
+2. **Verify versions**: Use latest OpenDesigner version
 3. **Test basic case**: Try "Create a button"
 4. **Read docs**: Check API.md and INSTALL.md
 
 ### Where to Get Help
 
-- **GitHub Issues**: [opendesign/issues](https://github.com/asorichetti/OpenDesign/issues)
-- **GitHub Discussions**: [opendesign/discussions](https://github.com/asorichetti/OpenDesign/discussions)
-- **Email**: support@opendesign.dev
+- **GitHub Issues**: [opendesigner/issues](https://github.com/asorichetti/OpenDesigner/issues)
+- **GitHub Discussions**: [opendesigner/discussions](https://github.com/asorichetti/OpenDesigner/discussions)
+- **Email**: support@opendesigner.dev
 
 ### What to Include
 
 ```markdown
 ## Environment
-- OpenDesign version: 0.2.0
+- OpenDesigner version: 0.2.0
 - OpenWebUI version: 0.5.0
 - Python version: 3.12.0
 - Deployment: Docker/Native
@@ -485,4 +485,4 @@ make check
 
 ---
 
-**Still having issues?** [Create a GitHub Issue](https://github.com/asorichetti/OpenDesign/issues) with the troubleshooting template above.
+**Still having issues?** [Create a GitHub Issue](https://github.com/asorichetti/OpenDesigner/issues) with the troubleshooting template above.

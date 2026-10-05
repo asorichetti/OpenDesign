@@ -1,7 +1,7 @@
 """
-title: OpenDesign Template Marketplace
+title: OpenDesigner Template Marketplace
 author: asorichetti
-author_url: https://github.com/asorichetti/OpenDesign
+author_url: https://github.com/asorichetti/OpenDesigner
 version: 0.1.0
 required_open_webui_version: 0.10.0
 """
@@ -84,7 +84,9 @@ class TemplateStore:
 
     def __init__(self, data_dir: Path | None = None):
         self._data_dir = data_dir
-        self._templates_dir = data_dir / "opendesign" / "community_templates" if data_dir else None
+        self._templates_dir = (
+            data_dir / "opendesigner" / "community_templates" if data_dir else None
+        )
 
     def get_user_templates(self, user_id: str) -> list[dict]:
         """Get all templates for a user."""
@@ -273,9 +275,9 @@ class MarketplaceUI:
             by_type.setdefault(ttype, []).append(t)
 
         # Build HTML
-        html = """<div class="opendesign-marketplace">
+        html = """<div class="opendesigner-marketplace">
 <style>
-.opendesign-marketplace { padding: 1rem; }
+.opendesigner-marketplace { padding: 1rem; }
 .template-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin: 1rem 0; }
 .template-card { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; background: white; transition: all 0.2s; }
 .template-card:hover { border-color: #6366f1; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15); }

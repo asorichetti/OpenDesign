@@ -1,4 +1,4 @@
-"""OpenDesign — Unit Tests
+"""OpenDesigner — Unit Tests
 
 Tests for core functionality:
 - Intent detection
@@ -33,9 +33,9 @@ def _run_async(coro):
 @pytest.fixture
 def data_dir(tmp_path):
     """Create a temporary data directory for testing."""
-    designs_dir = tmp_path / "opendesign" / "designs"
+    designs_dir = tmp_path / "opendesigner" / "designs"
     designs_dir.mkdir(parents=True)
-    settings_dir = tmp_path / "opendesign" / "settings"
+    settings_dir = tmp_path / "opendesigner" / "settings"
     settings_dir.mkdir(parents=True)
     return tmp_path
 
@@ -75,7 +75,7 @@ class TestIntentDetection:
     @pytest.fixture
     def pipe(self):
         """Create a Pipe instance for testing."""
-        from functions.design_studio.design_studio import Pipe
+        from functions.designer_studio.designer_studio import Pipe
 
         pipe = object.__new__(Pipe)
         pipe._templates_cache = {}
@@ -153,7 +153,7 @@ class TestTemplateLoading:
 
     @pytest.fixture
     def pipe(self):
-        from functions.design_studio.design_studio import Pipe
+        from functions.designer_studio.designer_studio import Pipe
 
         pipe = object.__new__(Pipe)
         pipe._templates_cache = {}
@@ -214,7 +214,7 @@ class TestPromptConstruction:
 
     @pytest.fixture
     def pipe(self):
-        from functions.design_studio.design_studio import Pipe
+        from functions.designer_studio.designer_studio import Pipe
 
         pipe = object.__new__(Pipe)
         pipe._templates_cache = {}
@@ -279,7 +279,7 @@ class TestHTMLExtraction:
 
     @pytest.fixture
     def pipe(self):
-        from functions.design_studio.design_studio import Pipe
+        from functions.designer_studio.designer_studio import Pipe
 
         pipe = object.__new__(Pipe)
         pipe._templates_cache = {}
@@ -358,7 +358,7 @@ class TestVersionPersistence:
 
     @pytest.fixture
     def pipe(self, data_dir):
-        from functions.design_studio.design_studio import Pipe
+        from functions.designer_studio.designer_studio import Pipe
 
         pipe = object.__new__(Pipe)
         pipe._data_dir = data_dir
@@ -377,7 +377,7 @@ class TestVersionPersistence:
         # Verify file was created
         user_id = pipe._get_user_id(mock_user)
         history_path = (
-            pipe._data_dir / "opendesign" / "designs" / user_id / design_id / "history.json"
+            pipe._data_dir / "opendesigner" / "designs" / user_id / design_id / "history.json"
         )
         assert history_path.exists()
 
@@ -394,7 +394,7 @@ class TestVersionPersistence:
 
         user_id = pipe._get_user_id(mock_user)
         history_path = (
-            pipe._data_dir / "opendesign" / "designs" / user_id / design_id / "history.json"
+            pipe._data_dir / "opendesigner" / "designs" / user_id / design_id / "history.json"
         )
         history = json.loads(history_path.read_text())
         assert len(history) == 2
@@ -411,7 +411,7 @@ class TestVersionPersistence:
         """Should load user settings from disk."""
         user_id = "settings_user"
         settings = {"template": "landing/hero", "design_system": "dark"}
-        settings_path = data_dir / "opendesign" / "settings" / f"{user_id}.json"
+        settings_path = data_dir / "opendesigner" / "settings" / f"{user_id}.json"
         settings_path.parent.mkdir(parents=True, exist_ok=True)
         settings_path.write_text(json.dumps(settings))
 
@@ -547,8 +547,8 @@ class TestPromptEnhancer:
             ],
         }
         result = _run_async(filter.outlet(body))
-        assert "opendesign" in result.get("metadata", {})
-        assert result["metadata"]["opendesign"]["source"] == "opendesign"
+        assert "opendesigner" in result.get("metadata", {})
+        assert result["metadata"]["opendesigner"]["source"] == "opendesigner"
 
 
 # ---------------------------------------------------------------------------
@@ -561,7 +561,7 @@ class TestModelComparison:
 
     def test_manifold_includes_compare_models(self):
         """Compare Models should be in the manifold."""
-        from functions.design_studio.design_studio import Pipe
+        from functions.designer_studio.designer_studio import Pipe
 
         pipe = object.__new__(Pipe)
         models = pipe.pipes()
@@ -572,7 +572,7 @@ class TestModelComparison:
 
     def test_detect_comparison_mode(self):
         """Should detect compare mode from model id."""
-        from functions.design_studio.design_studio import Pipe
+        from functions.designer_studio.designer_studio import Pipe
 
         pipe = object.__new__(Pipe)
         assert pipe._detect_mode("compare-models") == "compare"
@@ -646,7 +646,7 @@ class TestTemplateValidation:
 
     def test_valid_template_passes(self):
         """Valid HTML templates should pass validation."""
-        from functions.design_studio.template_marketplace import TemplateValidator
+        from functions.designer_studio.template_marketplace import TemplateValidator
 
         html = "<!DOCTYPE html><html><head><title>Test</title></head><body><div>Hello</div></body></html>"
         is_valid, errors = TemplateValidator.validate_template(html)
@@ -655,7 +655,7 @@ class TestTemplateValidation:
 
     def test_invalid_template_rejected(self):
         """Templates with dangerous patterns should be rejected."""
-        from functions.design_studio.template_marketplace import TemplateValidator
+        from functions.designer_studio.template_marketplace import TemplateValidator
 
         html = "<script>eval(userInput)</script>"
         is_valid, errors = TemplateValidator.validate_template(html)
@@ -664,7 +664,7 @@ class TestTemplateValidation:
 
     def test_external_script_rejected(self):
         """Templates with external scripts should be rejected."""
-        from functions.design_studio.template_marketplace import TemplateValidator
+        from functions.designer_studio.template_marketplace import TemplateValidator
 
         html = '<script src="https://evil.com/malware.js"></script>'
         is_valid, errors = TemplateValidator.validate_template(html)
@@ -672,14 +672,14 @@ class TestTemplateValidation:
 
     def test_empty_template_rejected(self):
         """Empty templates should be rejected."""
-        from functions.design_studio.template_marketplace import TemplateValidator
+        from functions.designer_studio.template_marketplace import TemplateValidator
 
         is_valid, errors = TemplateValidator.validate_template("")
         assert not is_valid
 
     def test_template_store_saves(self, tmp_path):
         """Template store should save templates correctly."""
-        from functions.design_studio.template_marketplace import TemplateStore
+        from functions.designer_studio.template_marketplace import TemplateStore
 
         store = TemplateStore(tmp_path)
         result = store.save_template(
@@ -695,7 +695,7 @@ class TestTemplateValidation:
 
     def test_template_version_increments(self, tmp_path):
         """Template versions should increment on re-save."""
-        from functions.design_studio.template_marketplace import TemplateStore
+        from functions.designer_studio.template_marketplace import TemplateStore
 
         store = TemplateStore(tmp_path)
         store.save_template(
@@ -714,7 +714,7 @@ class TestTemplateValidation:
 
     def test_template_loads(self, tmp_path):
         """Templates should be loadable by slug."""
-        from functions.design_studio.template_marketplace import TemplateStore
+        from functions.designer_studio.template_marketplace import TemplateStore
 
         store = TemplateStore(tmp_path)
         store.save_template(
@@ -729,7 +729,7 @@ class TestTemplateValidation:
 
     def test_marketplace_ui_rendered(self):
         """Marketplace UI should render correctly."""
-        from functions.design_studio.template_marketplace import MarketplaceUI
+        from functions.designer_studio.template_marketplace import MarketplaceUI
 
         templates = [
             {
@@ -751,7 +751,7 @@ class TestTemplateValidation:
         """Imported templates should be validated."""
         from unittest.mock import AsyncMock, MagicMock, patch
 
-        from functions.design_studio.template_marketplace import TemplateImporter
+        from functions.designer_studio.template_marketplace import TemplateImporter
 
         async def test():
             # Create mock response
@@ -779,7 +779,7 @@ class TestTemplateValidation:
 
     def test_template_actions_exist(self):
         """TemplateActions should have correct actions."""
-        from functions.design_studio.template_marketplace import TemplateActions
+        from functions.designer_studio.template_marketplace import TemplateActions
 
         actions = TemplateActions()
         action_list = actions.actions()

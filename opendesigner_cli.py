@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-OpenDesign CLI — Standalone test runner for the generation pipeline.
+OpenDesigner CLI — Standalone test runner for the generation pipeline.
 
 Run all tests:
     python opendesign_cli.py
@@ -21,7 +21,8 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from functions.design_studio.design_studio import Pipe
+from functions.designer_studio.design_studio import Pipe
+
 from functions.preview_generator.preview_generator import Action as PreviewGenerator
 from functions.prompt_enhancer.prompt_enhancer import Filter as PromptEnhancer
 
@@ -42,7 +43,7 @@ class C:
 def banner():
     print(f"""
 {C.CYAN}{C.BOLD}╔══════════════════════════════════════════╗{C.RESET}
-{C.CYAN}{C.BOLD}║        OpenDesign CLI — Test Runner      ║{C.RESET}
+{C.CYAN}{C.BOLD}║        OpenDesigner CLI — Test Runner      ║{C.RESET}
 {C.CYAN}{C.BOLD}╠══════════════════════════════════════════╣{C.RESET}
 {C.CYAN}{C.BOLD}║        Standalone Pipeline Demo          ║{C.RESET}
 {C.CYAN}{C.BOLD}╠══════════════════════════════════════════╣{C.RESET}
@@ -212,7 +213,7 @@ def test_version_persistence():
 
     # Create a temp data directory for testing
     with tempfile.TemporaryDirectory() as tmpdir:
-        data_dir = Path(tmpdir) / "opendesign"
+        data_dir = Path(tmpdir) / "opendesigner"
         data_dir.mkdir()
 
         # Set data dir

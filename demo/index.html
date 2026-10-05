@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenDesign — Live Demo</title>
+    <title>OpenDesigner — Live Demo</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: system-ui, -apple-system, sans-serif; background: #0f0f1a; color: #e8e8ed; }
@@ -98,7 +98,7 @@
 <body>
     <div class="demo-container">
         <aside class="sidebar">
-            <h1>🎨 OpenDesign</h1>
+            <h1>🎨 OpenDesigner</h1>
             <div class="version">v0.1.0 — Live Demo</div>
 
             <div class="section-title">Templates</div>
@@ -243,7 +243,7 @@
                     <div style="flex: 1; display: flex; flex-direction: column;">
                         <div style="background: #1a1a2e; padding: 0.5rem 1rem; font-size: 0.75rem; color: #737373; border-bottom: 1px solid #2a2a3e;">✏️ Code</div>
                         <textarea id="editor-code" style="flex: 1; background: #1e1e2e; color: #a6adc8; border: none; padding: 1rem; font-family: 'Fira Code', monospace; font-size: 0.75rem; resize: none; outline: none;" spellcheck="false">&lt;div style="padding: 2rem; text-align: center;"&gt;
-  &lt;h1 style="color: #1a1a2e;"&gt;Hello OpenDesign!&lt;/h1&gt;
+  &lt;h1 style="color: #1a1a2e;"&gt;Hello OpenDesigner!&lt;/h1&gt;
   &lt;p style="color: #6b6b6b;"&gt;Edit this and see the preview update...&lt;/p&gt;
   &lt;button style="padding: 0.5rem 1rem; background: #0f3460; color: white; border: none; border-radius: 6px;"&gt;Click Me&lt;/button&gt;
 &lt;/div&gt;</textarea>
@@ -293,7 +293,7 @@
 
     <div class="status-bar">
         <div><span class="status-dot"></span> 14 templates loaded · 37 tests passing</div>
-        <div>OpenDesign v0.1.0 · Open WebUI Extension</div>
+        <div>OpenDesigner v0.1.0 · Open WebUI Extension</div>
     </div>
 
     <!-- Template Data -->
@@ -311,8 +311,8 @@
             'presentation/sections': `<html><head><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif}body{background:#fff;color:#1a1a1a}.slide{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:4rem;text-align:center}.slide.title{background:linear-gradient(135deg,#1a1a2e,#0f3460);color:#fff}h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;margin-bottom:1rem}.subtitle{font-size:1.25rem;opacity:0.8}.slide.content h2{font-size:2rem;margin-bottom:1.5rem;color:#1a1a2e}.slide.content li{font-size:1.125rem;padding:0.5rem 0;padding-left:1.5rem}.slide.content ul{list-style:none;text-align:left}footer{padding:2rem;text-align:center;color:#999;font-size:0.875rem}</style></head><body><section class="slide title"><h1>Project Phoenix</h1><p class="subtitle">Rebuilding the future, one pixel at a time</p></section><section class="slide content"><h2>Our Mission</h2><ul><li>Design tools that anyone can use</li><li>Bridge the gap between ideas and implementation</li><li>Make beautiful things accessible</li></ul></section><section class="slide title"><h1>Thank You</h1><p class="subtitle">Questions?</p></section><footer>Press ← → to navigate · P for presenter mode · F for fullscreen</footer></body></html>`,
             'email/newsletter': `<html><body style="margin:0;padding:0;background:#f4f4f5;font-family:system-ui,sans-serif"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:2rem 1rem"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden"><tr><td style="padding:2rem;background:#1a1a2b;text-align:center"><h1 style="color:#fff;font-size:1.5rem;margin:0">The Weekly Digest</h1></td></tr><tr><td style="padding:2rem"><p style="color:#6b6b6b;font-size:1rem;line-height:1.6">Hey there! Here's what happened this week in the world of design and development.</p><table role="presentation" cellpadding="0" cellspacing="0" style="margin:1.5rem auto"><tr><td style="border-radius:6px;background:#1a1a2b;text-align:center"><a href="#" style="display:inline-block;padding:0.75rem 2rem;color:#fff;text-decoration:none;font-weight:500">Read Full Article</a></td></tr></table></td></tr><tr><td style="padding:1.5rem 2rem;text-align:center;border-top:1px solid #e0e0e0"><p style="color:#999;font-size:0.75rem">© 2025 Design Digest · Unsubscribe</p></td></tr></table></td></tr></table></body></html>`,
             'email/transactional': `<html><body style="margin:0;padding:0;background:#f4f4f5;font-family:system-ui,sans-serif"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:2rem 1rem"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden"><tr><td style="padding:2rem;text-align:center"><h2 style="color:#1a1a1a;margin-bottom:0.5rem">Order Confirmed!</h2><p style="color:#6b6b6b">Order #12345 · $89.99</p></td></tr><tr><td style="padding:0 2rem 2rem"><div style="padding:1rem;background:#f7f7f8;border-radius:6px;margin-bottom:1rem"><p style="color:#1a1a1a;font-weight:500">Delivery: Jan 20, 2025</p><p style="color:#6b6b6b;font-size:0.875rem">123 Main St, Anytown, USA</p></div></td></tr><tr><td style="padding:0 2rem 2rem;text-align:center"><a href="#" style="display:inline-block;padding:0.75rem 2rem;background:#1a1a2b;color:#fff;text-decoration:none;border-radius:6px;font-weight:500">Track Order</a></td></tr></table></td></tr></table></body></html>`,
-            'social/hero-banner': `<html><body style="margin:0"><div style="width:1200px;height:630px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:4rem;text-align:center;color:#fff;font-family:system-ui,sans-serif"><h1 style="font-size:3.5rem;font-weight:800;margin-bottom:1rem">Design Studio</h1><p style="font-size:1.5rem;opacity:0.9">Generate beautiful websites from natural language</p><div style="position:absolute;bottom:2rem;left:2rem;font-size:1.25rem;font-weight:600">🎨 OpenDesign</div></div></body></html>`,
-            'social/og-card': `<html><body style="margin:0;padding:2rem;background:#f4f4f5;font-family:system-ui,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh"><div style="width:500px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1)"><div style="height:250px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;justify-content:center;align-items:center"><span style="color:#fff;font-size:3rem">🎨</span></div><div style="padding:1.5rem"><h2 style="font-size:1.5rem;color:#1a1a1a;margin-bottom:0.5rem">OpenDesign</h2><p style="font-size:1rem;color:#6b6b6b;line-height:1.5">Generate beautiful, functional websites from natural language descriptions.</p></div><div style="padding:1rem 1.5rem;border-top:1px solid #e0e0e0;font-size:0.875rem;color:#999">🎨 OpenDesign · opendesign.app</div></div></body></html>`
+            'social/hero-banner': `<html><body style="margin:0"><div style="width:1200px;height:630px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:4rem;text-align:center;color:#fff;font-family:system-ui,sans-serif"><h1 style="font-size:3.5rem;font-weight:800;margin-bottom:1rem">Design Studio</h1><p style="font-size:1.5rem;opacity:0.9">Generate beautiful websites from natural language</p><div style="position:absolute;bottom:2rem;left:2rem;font-size:1.25rem;font-weight:600">🎨 OpenDesigner</div></div></body></html>`,
+            'social/og-card': `<html><body style="margin:0;padding:2rem;background:#f4f4f5;font-family:system-ui,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh"><div style="width:500px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1)"><div style="height:250px;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;justify-content:center;align-items:center"><span style="color:#fff;font-size:3rem">🎨</span></div><div style="padding:1.5rem"><h2 style="font-size:1.5rem;color:#1a1a1a;margin-bottom:0.5rem">OpenDesigner</h2><p style="font-size:1rem;color:#6b6b6b;line-height:1.5">Generate beautiful, functional websites from natural language descriptions.</p></div><div style="padding:1rem 1.5rem;border-top:1px solid #e0e0e0;font-size:0.875rem;color:#999">🎨 OpenDesigner · opendesigner.app</div></div></body></html>`
         };
 
         // Navigation

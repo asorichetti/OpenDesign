@@ -1,8 +1,8 @@
-# OpenDesign API Reference
+# OpenDesigner API Reference
 
 ## Overview
 
-OpenDesign is a collection of Open WebUI plugin functions that work together to create an AI-powered design generation platform.
+OpenDesigner is a collection of Open WebUI plugin functions that work together to create an AI-powered design generation platform.
 
 ## Architecture
 
@@ -181,7 +181,7 @@ Templates use Jinja2-style variable substitution:
 ### Design History
 
 ```json
-// <data_dir>/opendesign/designs/<user_id>/<design_id>/history.json
+// <data_dir>/opendesigner/designs/<user_id>/<design_id>/history.json
 [
   {
     "id": "design-uuid",
@@ -198,7 +198,7 @@ Templates use Jinja2-style variable substitution:
 ### Template Manifest
 
 ```json
-// <data_dir>/opendesign/community_templates/<user_id>/<slug>/manifest.json
+// <data_dir>/opendesigner/community_templates/<user_id>/<slug>/manifest.json
 {
   "slug": "my-cool-template",
   "title": "My Cool Template",
@@ -285,7 +285,7 @@ All previews use strict iframe sandboxing:
 ### Existing OpenWebUI Instance
 
 ```bash
-./install-opendesign.sh https://ai.s8i.app
+./install-opendesigner.sh https://ai.s8i.app
 ```
 
 ### Docker

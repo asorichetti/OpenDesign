@@ -2,7 +2,7 @@
 
 ## Overview
 
-OpenDesign is an open-source, self-hostable design generation platform built as an Open WebUI extension. It takes conversational prompts and produces visual outputs — HTML prototypes, UI components, slide decks, email templates, and more — all rendered as interactive previews directly in chat.
+OpenDesigner is an open-source, self-hostable design generation platform built as an Open WebUI extension. It takes conversational prompts and produces visual outputs — HTML prototypes, UI components, slide decks, email templates, and more — all rendered as interactive previews directly in chat.
 
 ## Chapters
 

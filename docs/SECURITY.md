@@ -2,7 +2,7 @@
 
 ## Overview
 
-OpenDesign takes security seriously. This document outlines our security practices, threat model, and how to report vulnerabilities.
+OpenDesigner takes security seriously. This document outlines our security practices, threat model, and how to report vulnerabilities.
 
 ## Security Features
 
@@ -74,8 +74,8 @@ Templates cannot load external resources:
 ### 5. File-based Storage
 
 All user data is stored locally:
-- Design files: `<data_dir>/opendesign/designs/<user_id>/<design_id>/`
-- Templates: `<data_dir>/opendesign/community_templates/<user_id>/<slug>/`
+- Design files: `<data_dir>/opendesigner/designs/<user_id>/<design_id>/`
+- Templates: `<data_dir>/opendesigner/community_templates/<user_id>/<slug>/`
 - Metadata: `history.json` and `manifest.json` files
 
 ## Threat Model
@@ -153,7 +153,7 @@ CUSTOM_PATTERNS = [
 
 ### How to Report
 
-1. **Email**: security@opendesign.dev
+1. **Email**: security@opendesigner.dev
 2. **GitHub**: Use GitHub Security Advisories
 3. **Discord**: Private message to maintainers
 
@@ -213,7 +213,7 @@ python scripts/check_security.py
 
 ### GDPR
 
-OpenDesign is designed to be GDPR-compliant by default:
+OpenDesigner is designed to be GDPR-compliant by default:
 - All data stored locally
 - No data collection or telemetry
 - User data easily deletable
@@ -284,7 +284,7 @@ logging.basicConfig(
 
 ### Contact
 
-- **Primary**: security@opendesign.dev
+- **Primary**: security@opendesigner.dev
 - **Secondary**: GitHub Security Advisories
 - **Emergency**: Discord DM to @asorichetti
 

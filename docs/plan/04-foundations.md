@@ -38,9 +38,9 @@ Following Open WebUI's plugin patterns:
 
 ```python
 """
-title: OpenDesign Design Studio
+title: OpenDesigner Design Studio
 author: asorichetti
-author_url: https://github.com/asorichetti/OpenDesign
+author_url: https://github.com/asorichetti/OpenDesigner
 version: 0.1.0
 icon_url: https://example.com/icon.svg
 required_open_webui_version: 0.10.0

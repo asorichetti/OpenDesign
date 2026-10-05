@@ -1,14 +1,14 @@
 """
-title: OpenDesign Prompt Enhancer
+title: OpenDesigner Prompt Enhancer
 author: asorichetti
-author_url: https://github.com/asorichetti/OpenDesign
+author_url: https://github.com/asorichetti/OpenDesigner
 version: 0.1.0
 required_open_webui_version: 0.10.0
 """
 
 
 class Filter:
-    """OpenDesign Prompt Enhancer — injects design context into prompts.
+    """OpenDesigner Prompt Enhancer — injects design context into prompts.
 
     This filter runs in the inlet phase, adding design-specific guidance
     to prompts that are design-related. It also enhances outlet responses
@@ -85,14 +85,14 @@ class Filter:
         if last_ai and self._has_code_block(last_ai):
             # Add design metadata to assistant message
             metadata = {
-                "source": "opendesign",
+                "source": "opendesigner",
                 "type": "design_generation",
             }
 
             # Store metadata in the response
             if "metadata" not in body:
                 body["metadata"] = {}
-            body["metadata"]["opendesign"] = metadata
+            body["metadata"]["opendesigner"] = metadata
 
         return body
 

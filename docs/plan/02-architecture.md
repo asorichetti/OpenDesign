@@ -2,7 +2,7 @@
 
 ## What This Is
 
-OpenDesign is a **collection of Open WebUI plugin functions** that, when installed on any Open WebUI instance, enable AI-powered design generation:
+OpenDesigner is a **collection of Open WebUI plugin functions** that, when installed on any Open WebUI instance, enable AI-powered design generation:
 
 1. **Pipe Function** — Registers as a "Design Studio" model. When a user chats with it, the pipe orchestrates design generation using an underlying LLM.
 2. **Action Function** — Adds "Generate Preview", "Export", and "Open Editor" buttons to chat messages.
@@ -50,7 +50,7 @@ OpenDesign is a **collection of Open WebUI plugin functions** that, when install
 ## Plugin Structure
 
 ```
-OpenDesign/
+OpenDesigner/
 ├── README.md
 ├── pyproject.toml
 ├── LICENSE
@@ -127,7 +127,7 @@ OpenDesign/
 
 ```bash
 # In Open WebUI Admin Panel > Functions > Import From Link
-# Point to: https://raw.githubusercontent.com/asorichetti/OpenDesign/main/functions/design_studio/design_studio.py
+# Point to: https://raw.githubusercontent.com/asorichetti/OpenDesigner/main/functions/design_studio/design_studio.py
 # Repeat for preview_generator and prompt_enhancer
 ```
 
@@ -135,5 +135,5 @@ OpenDesign/
 
 ```bash
 docker compose up -d
-# Open WebUI starts with OpenDesign functions pre-installed
+# Open WebUI starts with OpenDesigner functions pre-installed
 ```

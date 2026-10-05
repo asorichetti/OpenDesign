@@ -1,17 +1,17 @@
-# 🎨 OpenDesign Studio
+# 🎨 OpenDesigner Studio
 
 > Generate beautiful, functional websites from natural language. Open-source design generation platform for [Open WebUI](https://github.com/open-webui/open-webui).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Open WebUI](https://img.shields.io/badge/OpenWebUI-0.10.0+-green.svg)](https://github.com/open-webui/open-webui)
-[![Tests](https://github.com/asorichetti/OpenDesign/actions/workflows/tests.yml/badge.svg)](https://github.com/asorichetti/OpenDesign/actions)
+[![Tests](https://github.com/asorichetti/OpenDesigner/actions/workflows/tests.yml/badge.svg)](https://github.com/asorichetti/OpenDesigner/actions)
 
 ---
 
-## ✨ What is OpenDesign?
+## ✨ What is OpenDesigner?
 
-OpenDesign is an open-source design generation platform that lives inside [Open WebUI](https://github.com/open-webui/open-webui). It transforms conversational prompts into working HTML prototypes — landing pages, dashboards, components, presentations, emails, and social media assets.
+OpenDesigner is an open-source design generation platform that lives inside [Open WebUI](https://github.com/open-webui/open-webui). It transforms conversational prompts into working HTML prototypes — landing pages, dashboards, components, presentations, emails, and social media assets.
 
 ### Key Features
 
@@ -32,8 +32,8 @@ OpenDesign is an open-source design generation platform that lives inside [Open 
 ### Method 1: Docker Compose (Easiest)
 
 ```bash
-git clone https://github.com/asorichetti/OpenDesign.git
-cd OpenDesign/docker
+git clone https://github.com/asorichetti/OpenDesigner.git
+cd OpenDesigner/docker
 docker compose up -d
 ```
 
@@ -42,8 +42,8 @@ Open [http://localhost:3000](http://localhost:3000) and start chatting.
 ### Method 2: Manual Install
 
 ```bash
-git clone https://github.com/asorichetti/OpenDesign.git
-cd OpenDesign
+git clone https://github.com/asorichetti/OpenDesigner.git
+cd OpenDesigner
 chmod +x setup.sh
 ./setup.sh
 ```
@@ -116,7 +116,7 @@ Design a button component with primary and secondary variants
 
 ### Available Modes
 
-OpenDesign exposes 4 models through the OpenWebUI manifold:
+OpenDesigner exposes 4 models through the OpenWebUI manifold:
 
 1. **Design Studio** — Generate new designs from prompts
 2. **Compare Models** — Parallel LLM generation, side-by-side comparison
@@ -224,7 +224,7 @@ python opendesign_cli.py
 
 ## 🎨 Templates
 
-OpenDesign includes 14 templates across 6 categories:
+OpenDesigner includes 14 templates across 6 categories:
 
 ### Landing Pages
 - `landing/minimal` — Clean, distraction-free
@@ -257,7 +257,7 @@ OpenDesign includes 14 templates across 6 categories:
 ## 📁 Project Structure
 
 ```
-OpenDesign/
+OpenDesigner/
 ├── functions/
 │   ├── design_studio/          # Pipe: Design generation
 │   │   ├── design_studio.py    # Main pipe logic
@@ -340,11 +340,11 @@ MIT License — See [LICENSE](LICENSE) for details.
 
 ## 🔗 Links
 
-- [Repository](https://github.com/asorichetti/OpenDesign)
+- [Repository](https://github.com/asorichetti/OpenDesigner)
 - [API Reference](docs/API.md)
 - [Installation Guide](docs/INSTALL.md)
 - [Contributing Guide](docs/CONTRIBUTING.md)
 - [Security Policy](docs/SECURITY.md)
 - [FAQ & Troubleshooting](docs/FAQ.md)
-- [Issue Tracker](https://github.com/asorichetti/OpenDesign/issues)
-- [Discussions](https://github.com/asorichetti/OpenDesign/discussions)
+- [Issue Tracker](https://github.com/asorichetti/OpenDesigner/issues)
+- [Discussions](https://github.com/asorichetti/OpenDesigner/discussions)

@@ -1,10 +1,10 @@
-# OpenDesign — Docker Compose Configuration
+# OpenDesigner — Docker Compose Configuration
 #
 # Usage:
 #   Production: docker compose up -d
 #   Development: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 #
-# The production build pre-installs OpenDesign.
+# The production build pre-installs OpenDesigner.
 # The development mode mounts local files for hot reloading.
 
 services:
@@ -22,7 +22,7 @@ services:
       # Optional: configure OpenAI
       # - OPENAI_API_KEY=sk-your-key-here
     volumes:
-      # Persistent data for Open WebUI (including OpenDesign functions)
+      # Persistent data for Open WebUI (including OpenDesigner functions)
       - openwebui_data:/app/backend/data
     restart: unless-stopped
     healthcheck:

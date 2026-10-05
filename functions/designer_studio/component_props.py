@@ -1,7 +1,7 @@
 """
-title: OpenDesign Component Props
+title: OpenDesigner Component Props
 author: asorichetti
-author_url: https://github.com/asorichetti/OpenDesign
+author_url: https://github.com/asorichetti/OpenDesigner
 version: 0.1.0
 """
 

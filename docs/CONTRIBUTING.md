@@ -1,6 +1,6 @@
-# Contributing to OpenDesign
+# Contributing to OpenDesigner
 
-Thank you for your interest in contributing to OpenDesign! This guide will help you get started.
+Thank you for your interest in contributing to OpenDesigner! This guide will help you get started.
 
 ## Code of Conduct
 
@@ -18,8 +18,8 @@ Be respectful, inclusive, and constructive. Harassment of any kind will not be t
 
 ```bash
 # Clone the repository
-git clone https://github.com/asorichetti/OpenDesign.git
-cd OpenDesign
+git clone https://github.com/asorichetti/OpenDesigner.git
+cd OpenDesigner
 
 # Create virtual environment
 python -m venv .venv
@@ -39,7 +39,7 @@ ruff format --check .
 ## Project Structure
 
 ```
-OpenDesign/
+OpenDesigner/
 ├── functions/
 │   ├── design_studio/           # Core generation engine
 │   │   ├── design_studio.py     # Pipe function
@@ -339,10 +339,10 @@ git push origin v0.2.0
 
 ## Getting Help
 
-- **Issues**: [GitHub Issues](https://github.com/asorichetti/OpenDesign/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/asorichetti/OpenDesign/discussions)
-- **Email**: [OpenDesign Contributors](mailto:contributors@opendesign.dev)
+- **Issues**: [GitHub Issues](https://github.com/asorichetti/OpenDesigner/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/asorichetti/OpenDesigner/discussions)
+- **Email**: [OpenDesigner Contributors](mailto:contributors@opendesigner.dev)
 
 ## Thank You!
 
-Every contribution helps make OpenDesign better. We appreciate your time and effort! 🎉
+Every contribution helps make OpenDesigner better. We appreciate your time and effort! 🎉

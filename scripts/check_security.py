@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Security check for OpenDesign templates and Python code.
+"""Security check for OpenDesigner templates and Python code.
 
 Scans for:
 - Hardcoded API keys / secrets

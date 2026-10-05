@@ -2,12 +2,12 @@
 
 ## Storage Strategy
 
-OpenDesign uses **file-based storage** within Open WebUI's data directory. No separate database required.
+OpenDesigner uses **file-based storage** within Open WebUI's data directory. No separate database required.
 
 ## Directory Structure
 
 ```
-<openwebui_data_dir>/opendesign/
+<openwebui_data_dir>/opendesigner/
 ├── designs/                    # User design files
 │   ├── <user_id>/
 │   │   ├── <design_id>.json    # Design metadata + history

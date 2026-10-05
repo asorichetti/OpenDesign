@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# OpenDesign Installer — Sets up functions in OpenWebUI
+# OpenDesigner Installer — Sets up functions in OpenWebUI
 # Usage: ./setup.sh
 
 RED='\033[0;31m'
@@ -11,7 +11,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}╔══════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║        OpenDesign Installer              ║${NC}"
+echo -e "${BLUE}║        OpenDesigner Installer              ║${NC}"
 echo -e "${BLUE}╠══════════════════════════════════════════╣${NC}"
 echo -e "${BLUE}║        OpenWebUI Plugin Setup            ║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════╝${NC}"
@@ -62,7 +62,7 @@ fi
 # Create functions directory
 echo ""
 echo -e "${BLUE}Step 2: Setting up functions directory...${NC}"
-FUNCTIONS_DIR="$OPENWEBUI_DATA/functions/opendesign"
+FUNCTIONS_DIR="$OPENWEBUI_DATA/functions/opendesigner"
 mkdir -p "$FUNCTIONS_DIR"
 echo -e "  ${GREEN}✓${NC} Created: ${FUNCTIONS_DIR}"
 
@@ -85,7 +85,7 @@ echo -e "    ${GREEN}✓${NC} prompt_enhancer.py"
 # Create templates directory
 echo ""
 echo -e "${BLUE}Step 4: Installing templates...${NC}"
-TEMPLATES_DIR="$OPENWEBUI_DATA/opendesign/templates"
+TEMPLATES_DIR="$OPENWEBUI_DATA/opendesigner/templates"
 mkdir -p "$TEMPLATES_DIR/landing"
 mkdir -p "$TEMPLATES_DIR/dashboard"
 mkdir -p "$TEMPLATES_DIR/component"
@@ -132,7 +132,7 @@ done
 # Copy assets
 echo ""
 echo -e "${BLUE}Step 5: Installing design system assets...${NC}"
-ASSETS_DIR="$OPENWEBUI_DATA/opendesign/assets"
+ASSETS_DIR="$OPENWEBUI_DATA/opendesigner/assets"
 mkdir -p "$ASSETS_DIR"
 cp "$SCRIPT_DIR/functions/design_studio/assets/light.css" "$ASSETS_DIR/"
 cp "$SCRIPT_DIR/functions/design_studio/assets/dark.css" "$ASSETS_DIR/"
@@ -142,7 +142,7 @@ echo -e "  ${GREEN}✓${NC} dark.css"
 # Copy prompts
 echo ""
 echo -e "${BLUE}Step 6: Installing prompt templates...${NC}"
-PROMPTS_DIR="$OPENWEBUI_DATA/opendesign/prompts"
+PROMPTS_DIR="$OPENWEBUI_DATA/opendesigner/prompts"
 mkdir -p "$PROMPTS_DIR"
 cp "$SCRIPT_DIR/functions/design_studio/prompts/"*.md "$PROMPTS_DIR/"
 for f in "$PROMPTS_DIR"/*.md; do

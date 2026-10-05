@@ -1,4 +1,4 @@
-# OpenDesign — Development Docker Compose
+# OpenDesigner — Development Docker Compose
 # Mounts local files for hot reloading
 # Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
@@ -6,10 +6,10 @@ services:
   openwebui:
     volumes:
       # Mount local functions for development
-      - ../functions:/app/backend/data/functions/opendesign:ro
+      - ../functions:/app/backend/data/functions/opendesigner:ro
       # Mount local templates
-      - ../functions/design_studio/templates:/app/backend/data/opendesign/templates:ro
+      - ../functions/design_studio/templates:/app/backend/data/opendesigner/templates:ro
       # Mount local assets
-      - ../functions/design_studio/assets:/app/backend/data/opendesign/assets:ro
+      - ../functions/design_studio/assets:/app/backend/data/opendesigner/assets:ro
       # Mount local prompts
-      - ../functions/design_studio/prompts:/app/backend/data/opendesign/prompts:ro
+      - ../functions/design_studio/prompts:/app/backend/data/opendesigner/prompts:ro

@@ -1,4 +1,4 @@
-# OpenDesign Studio — Installation Guide
+# OpenDesigner Studio — Installation Guide
 
 Open-source design generation platform for [Open WebUI](https://github.com/open-webui/open-webui).
 
@@ -10,8 +10,8 @@ Generate beautiful, functional websites from natural language. Works as a plugin
 
 ```bash
 # Clone the repository
-git clone https://github.com/asorichetti/OpenDesign.git
-cd OpenDesign
+git clone https://github.com/asorichetti/OpenDesigner.git
+cd OpenDesigner
 
 # Run the installer
 chmod +x setup.sh
@@ -25,8 +25,8 @@ docker compose restart
 
 ```bash
 # Clone the repository
-git clone https://github.com/asorichetti/OpenDesign.git
-cd OpenDesign/docker
+git clone https://github.com/asorichetti/OpenDesigner.git
+cd OpenDesigner/docker
 
 # Start everything
 docker compose up -d
@@ -61,24 +61,24 @@ Coming soon — one-click install from Open WebUI community plugin repository.
 2. **Create the functions directory**
 
    ```bash
-   mkdir -p $OPENWEBUI_DATA_DIR/functions/opendesign
+   mkdir -p $OPENWEBUI_DATA_DIR/functions/opendesigner
    ```
 
 3. **Copy the function files**
 
    ```bash
-   cp functions/design_studio/design_studio.py $OPENWEBUI_DATA_DIR/functions/opendesign/
-   cp functions/preview_generator/preview_generator.py $OPENWEBUI_DATA_DIR/functions/opendesign/
-   cp functions/prompt_enhancer/prompt_enhancer.py $OPENWEBUI_DATA_DIR/functions/opendesign/
+   cp functions/design_studio/design_studio.py $OPENWEBUI_DATA_DIR/functions/opendesigner/
+   cp functions/preview_generator/preview_generator.py $OPENWEBUI_DATA_DIR/functions/opendesigner/
+   cp functions/prompt_enhancer/prompt_enhancer.py $OPENWEBUI_DATA_DIR/functions/opendesigner/
    ```
 
 4. **Copy templates and assets**
 
    ```bash
-   mkdir -p $OPENWEBUI_DATA_DIR/opendesign/{templates/{landing,dashboard,component,presentation,email,social},assets,prompts}
-   cp -r functions/design_studio/templates/* $OPENWEBUI_DATA_DIR/opendesign/templates/
-   cp functions/design_studio/assets/* $OPENWEBUI_DATA_DIR/opendesign/assets/
-   cp functions/design_studio/prompts/* $OPENWEBUI_DATA_DIR/opendesign/prompts/
+   mkdir -p $OPENWEBUI_DATA_DIR/opendesigner/{templates/{landing,dashboard,component,presentation,email,social},assets,prompts}
+   cp -r functions/design_studio/templates/* $OPENWEBUI_DATA_DIR/opendesigner/templates/
+   cp functions/design_studio/assets/* $OPENWEBUI_DATA_DIR/opendesigner/assets/
+   cp functions/design_studio/prompts/* $OPENWEBUI_DATA_DIR/opendesigner/prompts/
    ```
 
 5. **Install dependencies**
@@ -98,7 +98,7 @@ Coming soon — one-click install from Open WebUI community plugin repository.
 
 ### Docker Compose Install
 
-The `docker/` directory contains a complete OpenWebUI setup with OpenDesign pre-installed:
+The `docker/` directory contains a complete OpenWebUI setup with OpenDesigner pre-installed:
 
 ```yaml
 # docker/docker-compose.yml
@@ -107,10 +107,10 @@ services:
     image: ghcr.io/open-webui/open-webui:main
     volumes:
       - open-webui-data:/app/backend/data
-      - ./functions:/app/backend/data/functions/opendesign:ro
-      - ./templates:/app/backend/data/opendesign/templates:ro
-      - ./assets:/app/backend/data/opendesign/assets:ro
-      - ./prompts:/app/backend/data/opendesign/prompts:ro
+      - ./functions:/app/backend/data/functions/opendesigner:ro
+      - ./templates:/app/backend/data/opendesigner/templates:ro
+      - ./assets:/app/backend/data/opendesigner/assets:ro
+      - ./prompts:/app/backend/data/opendesigner/prompts:ro
     ports:
       - "3000:8080"
     environment:
@@ -198,7 +198,7 @@ Accessible from the Design Studio pipe settings:
 
 1. Check file permissions:
    ```bash
-   ls -la $OPENWEBUI_DATA_DIR/functions/opendesign/
+   ls -la $OPENWEBUI_DATA_DIR/functions/opendesigner/
    ```
 
 2. Verify Python dependencies:
@@ -215,7 +215,7 @@ Accessible from the Design Studio pipe settings:
 
 1. Verify template files exist:
    ```bash
-   ls $OPENWEBUI_DATA_DIR/opendesign/templates/landing/
+   ls $OPENWEBUI_DATA_DIR/opendesigner/templates/landing/
    ```
 
 2. Check the CLI test:
@@ -241,12 +241,12 @@ The Design Studio pipe calls OpenWebUI's internal API. Make sure:
 
 ## Uninstall
 
-To remove OpenDesign:
+To remove OpenDesigner:
 
 ```bash
 # Remove function files
-rm -rf $OPENWEBUI_DATA_DIR/functions/opendesign/
-rm -rf $OPENWEBUI_DATA_DIR/opendesign/
+rm -rf $OPENWEBUI_DATA_DIR/functions/opendesigner/
+rm -rf $OPENWEBUI_DATA_DIR/opendesigner/
 
 # Restart OpenWebUI
 docker compose restart

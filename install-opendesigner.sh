@@ -1,11 +1,11 @@
 #!/bin/bash
-# OpenDesign Installer for existing OpenWebUI instance
-# Usage: ./install-opendesign.sh [OPENWEBUI_DATA_DIR]
+# OpenDesigner Installer for existing OpenWebUI instance
+# Usage: ./install-opendesigner.sh [OPENWEBUI_DATA_DIR]
 #
 # Examples:
-#   ./install-opendesign.sh
-#   ./install-opendesign.sh /path/to/openwebui/data
-#   ./install-opendesign.sh docker
+#   ./install-opendesigner.sh
+#   ./install-opendesigner.sh /path/to/openwebui/data
+#   ./install-opendesigner.sh docker
 
 set -e
 
@@ -16,7 +16,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 echo -e "${BLUE}╔══════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║        OpenDesign Installer              ║${NC}"
+echo -e "${BLUE}║        OpenDesigner Installer              ║${NC}"
 echo -e "${BLUE}║        For: https://ai.s8i.app           ║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════╝${NC}"
 echo ""
@@ -69,10 +69,10 @@ fi
 echo ""
 echo -e "${BLUE}Step 2: Creating directory structure...${NC}"
 
-FUNCTIONS_DIR="$DATA_DIR/functions/opendesign"
-TEMPLATES_DIR="$DATA_DIR/opendesign/templates"
-ASSETS_DIR="$DATA_DIR/opendesign/assets"
-PROMPTS_DIR="$DATA_DIR/opendesign/prompts"
+FUNCTIONS_DIR="$DATA_DIR/functions/opendesigner"
+TEMPLATES_DIR="$DATA_DIR/opendesigner/templates"
+ASSETS_DIR="$DATA_DIR/opendesigner/assets"
+PROMPTS_DIR="$DATA_DIR/opendesigner/prompts"
 
 mkdir -p "$FUNCTIONS_DIR"
 mkdir -p "$TEMPLATES_DIR/landing"

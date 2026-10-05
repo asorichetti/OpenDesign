@@ -1,11 +1,11 @@
 {
-    "id": "opendesign",
-    "name": "OpenDesign Studio",
+    "id": "opendesigner",
+    "name": "OpenDesigner Studio",
     "description": "Generate beautiful, functional websites from natural language. Open-source design generation platform for Open WebUI.",
     "version": "0.1.0",
     "author": "asorichetti",
     "license": "MIT",
-    "repository": "https://github.com/asorichetti/OpenDesign",
+    "repository": "https://github.com/asorichetti/OpenDesigner",
     "functions": [
         {
             "type": "pipe",
@@ -49,5 +49,5 @@
         "pydantic>=2.0"
     ],
     "required_open_webui_version": ">=0.10.0",
-    "icon_url": "https://cdn.jsdelivr.net/gh/asorichetti/OpenDesign@main/assets/icon.svg"
+    "icon_url": "https://cdn.jsdelivr.net/gh/asorichetti/OpenDesigner@main/assets/icon.svg"
 }
