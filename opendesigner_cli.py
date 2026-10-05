@@ -188,12 +188,12 @@ def test_sanitization():
 
     # Sanitization is done by the Pipe, test via _validate_html
     # Check that dangerous patterns are flagged
-    dangerous_patterns = ["onclick", "javascript:", "eval(", "onerror="]
-    for pattern in dangerous_patterns:
+    dangerous_patterns = ["onclick", "javascript:", "eval(", "onerror="]  # security:allow
+    for pattern in dangerous_patterns:  # security:allow
         test_htmls = [
             '<div onclick="alert(1)">',
             "href=javascript:alert(1)",
-            "eval(code)",
+            "eval(code)",  # security:allow
             '<img onerror="x">',
         ]
         for html in test_htmls:
