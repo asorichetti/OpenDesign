@@ -6,7 +6,6 @@ version: 0.1.0
 required_open_webui_version: 0.10.0
 """
 
-import difflib
 from pathlib import Path
 from typing import Any
 
@@ -21,6 +20,7 @@ class VersionControl:
     def _resolve_data_dir(self) -> Path:
         """Resolve data directory."""
         import os
+
         webui_data = os.environ.get("OPENWEBUI_DATA_DIR")
         if webui_data:
             return Path(webui_data) / "opendesigner"
@@ -29,9 +29,21 @@ class VersionControl:
     def actions(self) -> list[dict[str, str]]:
         """Return available actions."""
         return [
-            {"name": "Version History", "description": "View version history and compare versions", "icon": "git-branch"},
-            {"name": "Compare Versions", "description": "Compare two versions side-by-side", "icon": "columns"},
-            {"name": "Rollback to Previous", "description": "Revert to the previous version", "icon": "undo-2"},
+            {
+                "name": "Version History",
+                "description": "View version history and compare versions",
+                "icon": "git-branch",
+            },
+            {
+                "name": "Compare Versions",
+                "description": "Compare two versions side-by-side",
+                "icon": "columns",
+            },
+            {
+                "name": "Rollback to Previous",
+                "description": "Revert to the previous version",
+                "icon": "undo-2",
+            },
         ]
 
     async def action(

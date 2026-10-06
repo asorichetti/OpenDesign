@@ -59,9 +59,9 @@ class ComponentLibrary:
         for comp in components:
             categories_str = ", ".join(comp["categories"])
             components_html += f"""
-            <div class="component-card" onclick="alert('Insert {comp['name']} component')">
-                <div class="component-icon">{comp['icon']}</div>
-                <div class="component-name">{comp['name']}</div>
+            <div class="component-card" onclick="alert('Insert {comp["name"]} component')">
+                <div class="component-icon">{comp["icon"]}</div>
+                <div class="component-name">{comp["name"]}</div>
                 <div class="component-categories">{categories_str}</div>
             </div>
             """

@@ -112,9 +112,7 @@ class TutorialFilter:
 
         return body
 
-    async def _provide_help(
-        self, prompt: str, __event_emitter__: Any | None = None
-    ) -> dict:
+    async def _provide_help(self, prompt: str, __event_emitter__: Any | None = None) -> dict:
         """Provide help/tutorial based on user request."""
         help_responses = {
             "first time": self.tutorials["first_time"],
@@ -205,7 +203,7 @@ class TutorialFilter:
 
             <div class="tutorial-header">
                 <h2>{tutorial["title"]}</h2>
-                <p>{len(tutorial['steps'])} steps to get started</p>
+                <p>{len(tutorial["steps"])} steps to get started</p>
             </div>
 
             {steps_html}

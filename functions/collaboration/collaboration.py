@@ -28,12 +28,9 @@ class Collaboration:
         if messages:
             last_message = messages[-1].get("content", "").lower()
             if any(
-                phrase in last_message
-                for phrase in ["collaborate", "share", "co-edit", "invite"]
+                phrase in last_message for phrase in ["collaborate", "share", "co-edit", "invite"]
             ):
-                return await self._handle_collaboration(
-                    last_message, __event_emitter__
-                )
+                return await self._handle_collaboration(last_message, __event_emitter__)
         return body
 
     async def _handle_collaboration(

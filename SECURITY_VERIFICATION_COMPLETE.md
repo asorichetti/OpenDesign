@@ -37,10 +37,10 @@ All sensitive data is loaded securely from environment:
 
 ```python
 # ✅ SECURE - From environment
-os.environ['__token__']
-os.environ.get('OPENWEBUI_BASE_URL', 'http://localhost:8080')
-os.environ.get('OLLAMA_BASE_URL', 'http://localhost:11434')
-os.environ.get('OPENWEBUI_DATA_DIR')
+os.environ["__token__"]
+os.environ.get("OPENWEBUI_BASE_URL", "http://localhost:8080")
+os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+os.environ.get("OPENWEBUI_DATA_DIR")
 ```
 
 ### 2. Placeholder Values Only
@@ -49,6 +49,7 @@ All examples use safe placeholders:
 ```python
 # ✅ SAFE - Placeholder values
 "your-api-key-here"
+
 "CHANGE_ME"
 "placeholder"
 "user@example.com"  # Example email only

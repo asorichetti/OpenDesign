@@ -87,11 +87,9 @@ class ErrorHandler:
         # Check for error patterns
         import re
 
-        for pattern_name, error_info in self.error_patterns.items():
+        for _pattern_name, error_info in self.error_patterns.items():
             if re.search(error_info["pattern"], response, re.IGNORECASE):
-                return await self._handle_error(
-                    error_info, __event_emitter__, response
-                )
+                return await self._handle_error(error_info, __event_emitter__, response)
 
         return body
 
