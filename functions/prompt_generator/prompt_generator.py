@@ -42,107 +42,24 @@ class PromptGenerator:
 
     def _generate_prompt(self, content: str) -> str:
         """Generate AI prompt from design content."""
-        return f"""
+        return """
         <div class="prompt-generator" style="padding: 1.5rem; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
             <style>
-                .prompt-generator {{
-                    max-width: 800px;
-                    margin: 0 auto;
-                }}
-                .prompt-header {{
-                    text-align: center;
-                    margin-bottom: 2rem;
-                }}
-                .prompt-header h3 {{
-                    font-size: 1.5rem;
-                    font-weight: 700;
-                    color: #1e293b;
-                    margin: 0 0 0.5rem;
-                }}
-                .prompt-header p {{
-                    color: #64748b;
-                    margin: 0;
-                }}
-                .prompt-card {{
-                    background: #f8fafc;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 12px;
-                    padding: 1.5rem;
-                    margin-bottom: 1.5rem;
-                }}
-                .prompt-label {{
-                    font-size: 0.875rem;
-                    font-weight: 600;
-                    color: #475569;
-                    margin-bottom: 0.75rem;
-                }}
-                .prompt-text {{
-                    background: white;
-                    border: 1px solid #e2e8f0;
-                    border-radius: 8px;
-                    padding: 1rem;
-                    font-family: 'JetBrains Mono', 'Fira Code', monospace;
-                    font-size: 0.8125rem;
-                    line-height: 1.7;
-                    color: #334155;
-                    white-space: pre-wrap;
-                    word-wrap: break-word;
-                    max-height: 400px;
-                    overflow-y: auto;
-                }}
-                .model-grid {{
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                    gap: 0.75rem;
-                    margin-top: 1rem;
-                }}
-                .model-card {{
-                    padding: 1rem;
-                    background: white;
-                    border: 2px solid #e2e8f0;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                    text-align: center;
-                }}
-                .model-card:hover {{
-                    border-color: #6366f1;
-                    background: #f0f0ff;
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
-                }}
-                .model-icon {{
-                    font-size: 1.75rem;
-                    margin-bottom: 0.5rem;
-                }}
-                .model-name {{
-                    font-weight: 600;
-                    color: #1e293b;
-                    margin-bottom: 0.25rem;
-                }}
-                .model-desc {{
-                    font-size: 0.75rem;
-                    color: #64748b;
-                }}
-                .copy-btn {{
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    padding: 0.625rem 1.25rem;
-                    background: #6366f1;
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    font-size: 0.875rem;
-                    font-weight: 600;
-                    cursor: pointer;
-                    margin-top: 1rem;
-                    transition: all 0.2s;
-                }}
-                .copy-btn:hover {{
-                    background: #4f46e5;
-                    transform: translateY(-1px);
-                }}
+                .prompt-generator { max-width: 800px; margin: 0 auto; }
+                .prompt-header { text-align: center; margin-bottom: 2rem; }
+                .prompt-header h3 { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0 0 0.5rem; }
+                .prompt-header p { color: #64748b; margin: 0; }
+                .prompt-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+                .prompt-label { font-size: 0.875rem; font-weight: 600; color: #475569; margin-bottom: 0.75rem; }
+                .prompt-text { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; line-height: 1.7; color: #334155; white-space: pre-wrap; word-wrap: break-word; max-height: 400px; overflow-y: auto; }
+                .model-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+                .model-card { padding: 1rem; background: white; border: 2px solid #e2e8f0; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; text-align: center; }
+                .model-card:hover { border-color: #6366f1; background: #f0f0ff; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15); }
+                .model-icon { font-size: 1.75rem; margin-bottom: 0.5rem; }
+                .model-name { font-weight: 600; color: #1e293b; margin-bottom: 0.25rem; }
+                .model-desc { font-size: 0.75rem; color: #64748b; }
+                .copy-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.625rem 1.25rem; background: #6366f1; color: white; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; margin-top: 1rem; transition: all 0.2s; }
+                .copy-btn:hover { background: #4f46e5; transform: translateY(-1px); }
             </style>
 
             <div class="prompt-header">
@@ -179,7 +96,7 @@ Landing Page
 - Smooth transitions and micro-interactions
 
 Generate the complete, production-ready HTML code.</div>
-                <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('generated-prompt').textContent).then(() => {{ this.textContent = '✅ Copied!'; setTimeout(() => {{ this.textContent = '📋 Copy Prompt'; }}, 2000); }})">
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('generated-prompt').textContent).then(() => { this.textContent = '✅ Copied!'; setTimeout(() => { this.textContent = '📋 Copy Prompt'; }, 2000); })">
                     📋 Copy Prompt
                 </button>
             </div>

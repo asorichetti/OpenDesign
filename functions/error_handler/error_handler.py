@@ -85,13 +85,11 @@ class ErrorHandler:
             return body
 
         # Check for error patterns
-        for pattern_name, error_info in self.error_patterns.items():
-            import re
+        import re
 
+        for _pattern_name, error_info in self.error_patterns.items():
             if re.search(error_info["pattern"], response, re.IGNORECASE):
-                return await self._handle_error(
-                    error_info, __event_emitter__, response
-                )
+                return await self._handle_error(error_info, __event_emitter__, response)
 
         return body
 
