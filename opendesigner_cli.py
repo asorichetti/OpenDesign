@@ -13,7 +13,6 @@ Run a specific test:
 Shows the generation pipeline working end-to-end without needing OpenWebUI.
 """
 
-import json
 import os
 import sys
 from pathlib import Path
@@ -28,19 +27,19 @@ from functions.prompt_enhancer.prompt_enhancer import Filter as PromptEnhancer
 
 # ANSI colors
 class Colors:
-    RED = '\033[0;31m'
-    GREEN = '\033[0;32m'
-    YELLOW = '\033[1;33m'
-    BLUE = '\033[0;34m'
-    CYAN = '\033[0;36m'
-    BOLD = '\033[1m'
-    NC = '\033[0m'  # No Color
+    RED = "\033[0;31m"
+    GREEN = "\033[0;32m"
+    YELLOW = "\033[1;33m"
+    BLUE = "\033[0;34m"
+    CYAN = "\033[0;36m"
+    BOLD = "\033[1m"
+    NC = "\033[0m"  # No Color
 
 
 def print_header(title):
-    print(f"\n{Colors.BLUE}{'='*60}{Colors.NC}")
+    print(f"\n{Colors.BLUE}{'=' * 60}{Colors.NC}")
     print(f"{Colors.BLUE}{Colors.BOLD}  {title}{Colors.NC}")
-    print(f"{Colors.BLUE}{'='*60}{Colors.NC}\n")
+    print(f"{Colors.BLUE}{'=' * 60}{Colors.NC}\n")
 
 
 def print_test(name):
@@ -85,19 +84,19 @@ def test_intent_detection():
 
     # Test 1: Design keyword detected
     messages = [{"role": "user", "content": "Create a landing page for my startup"}]
-    assert pipe.detect_intent(messages) == True, "Should detect design intent"
+    assert pipe.detect_intent(messages), "Should detect design intent"
 
     # Test 2: Non-design message ignored
     messages = [{"role": "user", "content": "What's the weather today?"}]
-    assert pipe.detect_intent(messages) == False, "Should not detect design intent"
+    assert not pipe.detect_intent(messages), "Should not detect design intent"
 
     # Test 3: Multiple messages - last one counts
     messages = [
         {"role": "user", "content": "Hello"},
         {"role": "assistant", "content": "Hi there!"},
-        {"role": "user", "content": "Generate a dashboard"}
+        {"role": "user", "content": "Generate a dashboard"},
     ]
-    assert pipe.detect_intent(messages) == True, "Should detect in last message"
+    assert pipe.detect_intent(messages), "Should detect in last message"
 
     return True
 
@@ -227,7 +226,9 @@ def test_preview_generation():
 
     # Test 3: Render editor
     editor_html = preview.render_editor(html)
-    assert "textarea" in editor_html.lower() or "code" in editor_html.lower(), "Should create editor"
+    assert "textarea" in editor_html.lower() or "code" in editor_html.lower(), (
+        "Should create editor"
+    )
 
     return True
 
@@ -287,7 +288,7 @@ def test_end_to_end_generation():
 
     # Step 1: Detect intent
     messages = [{"role": "user", "content": "Generate a dashboard"}]
-    assert pipe.detect_intent(messages) == True, "Intent detection should work"
+    assert pipe.detect_intent(messages), "Intent detection should work"
 
     # Step 2: Load template
     template = pipe.load_template("dashboard/analytics.html")
@@ -347,7 +348,9 @@ def main():
     # Summary
     print_header("📊 TEST RESULTS")
     print(f"  {Colors.GREEN}Passed: {Colors.BOLD}{runner.passed}{Colors.NC}")
-    print(f"  {Colors.RED if runner.failed > 0 else Colors.GREEN}Failed: {Colors.BOLD}{runner.failed}{Colors.NC}")
+    print(
+        f"  {Colors.RED if runner.failed > 0 else Colors.GREEN}Failed: {Colors.BOLD}{runner.failed}{Colors.NC}"
+    )
     print(f"  Total:  {runner.passed + runner.failed}")
 
     if runner.failed == 0:
