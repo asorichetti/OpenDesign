@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Form</title>
+    <style>
+        :root { --primary: #6366f1; --primary-hover: #4f46e5; --text: #1e293b; --text-secondary: #64748b; --border: #e2e8f0; --bg: #ffffff; --radius: 12px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text); line-height: 1.6; }
+        .container { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .form-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; }
+        .contact-info { padding: 2rem; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: var(--radius); color: white; }
+        .contact-info h2 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+        .contact-item { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .contact-icon { width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+        .contact-item div p:first-child { font-weight: 600; }
+        .contact-item div p:last-child { opacity: 0.9; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; font-family: inherit; }
+        .form-group textarea { min-height: 120px; resize: vertical; }
+        .submit-btn { width: 100%; padding: 1rem; background: var(--primary); color: white; border: none; border-radius: var(--radius); font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .submit-btn:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-grid">
+            <div class="contact-info">
+                <h2>Get in Touch</h2>
+                <p style="margin-bottom: 2rem; opacity: 0.9;">We'd love to hear from you. Fill out the form and we'll get back to you within 24 hours.</p>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">📧</div>
+                    <div>
+                        <p>Email</p>
+                        <p>hello@example.com</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">📞</div>
+                    <div>
+                        <p>Phone</p>
+                        <p>+1 (555) 123-4567</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">📍</div>
+                    <div>
+                        <p>Address</p>
+                        <p>123 Main St, SF, CA 94105</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <form>
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" placeholder="john@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <select id="subject" required>
+                            <option value="">Select a topic</option>
+                            <option>General Inquiry</option>
+                            <option>Technical Support</option>
+                            <option>Sales</option>
+                            <option>Partnership</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" placeholder="Tell us what you need..." required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Send Message →</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

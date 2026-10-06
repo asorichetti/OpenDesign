@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Component</title>
+    <style>
+        :root { --primary: #6366f1; --primary-light: #e0e7ff; --text: #1e293b; --text-secondary: #64748b; --border: #e2e8f0; --bg: #ffffff; --radius: 12px; --success: #22c55e; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text); }
+        .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        .calendar-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .calendar-header h2 { font-size: 1.5rem; font-weight: 700; }
+        .calendar-nav { display: flex; gap: 0.5rem; }
+        .nav-btn { width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 8px; background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .nav-btn:hover { background: #f8fafc; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
+        .day-header { text-align: center; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); padding: 0.5rem; }
+        .day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; font-size: 0.875rem; transition: all 0.2s; }
+        .day:hover { background: #f8fafc; }
+        .day.today { background: var(--primary); color: white; font-weight: 600; }
+        .day.has-event { position: relative; }
+        .day.has-event::after { content: ''; position: absolute; bottom: 4px; width: 4px; height: 4px; background: var(--success); border-radius: 50%; }
+        .day.other-month { color: var(--text-secondary); opacity: 0.5; }
+        .events-sidebar { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .events-sidebar h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; }
+        .event-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: 8px; margin-bottom: 0.5rem; }
+        .event-color { width: 4px; height: 40px; border-radius: 2px; background: var(--primary); }
+        .event-details h4 { font-size: 0.875rem; font-weight: 600; }
+        .event-details p { font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="calendar-card">
+            <div class="calendar-header">
+                <h2>January 2024</h2>
+                <div class="calendar-nav">
+                    <button class="nav-btn">←</button>
+                    <button class="nav-btn">→</button>
+                </div>
+            </div>
+
+            <div class="calendar-grid">
+                <div class="day-header">Sun</div>
+                <div class="day-header">Mon</div>
+                <div class="day-header">Tue</div>
+                <div class="day-header">Wed</div>
+                <div class="day-header">Thu</div>
+                <div class="day-header">Fri</div>
+                <div class="day-header">Sat</div>
+
+                <div class="day other-month">31</div>
+                <div class="day">1</div>
+                <div class="day">2</div>
+                <div class="day">3</div>
+                <div class="day">4</div>
+                <div class="day">5</div>
+                <div class="day">6</div>
+                <div class="day">7</div>
+                <div class="day">8</div>
+                <div class="day">9</div>
+                <div class="day">10</div>
+                <div class="day">11</div>
+                <div class="day">12</div>
+                <div class="day">13</div>
+                <div class="day">14</div>
+                <div class="day">15</div>
+                <div class="day">16</div>
+                <div class="day">17</div>
+                <div class="day">18</div>
+                <div class="day">19</div>
+                <div class="day">20</div>
+                <div class="day">21</div>
+                <div class="day">22</div>
+                <div class="day">23</div>
+                <div class="day today">24</div>
+                <div class="day has-event">25</div>
+                <div class="day">26</div>
+                <div class="day">27</div>
+                <div class="day has-event">28</div>
+                <div class="day">29</div>
+                <div class="day">30</div>
+                <div class="day">31</div>
+                <div class="day other-month">1</div>
+            </div>
+
+            <div class="events-sidebar">
+                <h3>📅 Today's Events</h3>
+                <div class="event-item">
+                    <div class="event-color" style="background: #6366f1;"></div>
+                    <div class="event-details">
+                        <h4>Team Meeting</h4>
+                        <p>10:00 AM - 11:00 AM</p>
+                    </div>
+                </div>
+                <div class="event-item">
+                    <div class="event-color" style="background: #22c55e;"></div>
+                    <div class="event-details">
+                        <h4>Design Review</h4>
+                        <p>2:00 PM - 3:00 PM</p>
+                    </div>
+                </div>
+                <div class="event-item">
+                    <div class="event-color" style="background: #f59e0b;"></div>
+                    <div class="event-details">
+                        <h4>Client Call</h4>
+                        <p>4:30 PM - 5:00 PM</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
