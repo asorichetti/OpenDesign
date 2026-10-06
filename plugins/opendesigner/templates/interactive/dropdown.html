@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Dropdown") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .dropdowns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .dropdown {
+            position: relative;
+            min-width: 200px;
+        }
+
+        .dropdown-toggle {
+            width: 100%;
+            padding: 0.625rem 1rem;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .dropdown-toggle:hover {
+            border-color: #1a1a1a;
+        }
+
+        .dropdown-toggle.active {
+            border-color: #1a1a1a;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        .dropdown-arrow {
+            transition: transform 0.2s;
+            font-size: 0.75rem;
+        }
+
+        .dropdown-toggle.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #1a1a1a;
+            border-top: none;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-height: 300px;
+            overflow-y: auto;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-5px);
+            transition: all 0.2s;
+            z-index: 100;
+        }
+
+        .dropdown.open .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            padding: 0.625rem 1rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background 0.15s;
+        }
+
+        .dropdown-item:hover,
+        .dropdown-item.focused {
+            background: #f7f7f8;
+        }
+
+        .dropdown-item.selected {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 0.25rem 0;
+        }
+
+        .dropdown-search {
+            padding: 0.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .dropdown-search input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .dropdowns { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dropdowns">
+        {% for dropdown in dropdowns %}
+        <div class="dropdown" id="dropdown-{{ loop.index }}">
+            <button class="dropdown-toggle" onclick="dropdown.toggle('{{ loop.index }}')">
+                <span>{{ dropdown.selected | default("Select option") }}</span>
+                <span class="dropdown-arrow">▾</span>
+            </button>
+            <div class="dropdown-menu">
+                {% if dropdown.search %}
+                <div class="dropdown-search">
+                    <input type="text" placeholder="Search..." onkeyup="dropdown.filter(this, '{{ loop.index }}')">
+                </div>
+                {% endif %}
+                {% for item in dropdown.items %}
+                <div class="dropdown-item {% if item.selected %}selected{% endif %}"
+                     onclick="dropdown.select('{{ loop.parent.index }}', {{ loop.index - 1 }})">
+                    {{ item.label }}
+                </div>
+                {% if loop.next and item.divider %}
+                <div class="dropdown-divider"></div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        const dropdown = (() => {
+            const openDropdowns = new Set();
+
+            function toggle(index) {
+                const el = document.getElementById(`dropdown-${index}`);
+                if (openDropdowns.has(index)) {
+                    close(index);
+                } else {
+                    // Close others
+                    openDropdowns.forEach(i => close(i));
+                    openDropdowns.add(index);
+                    el.classList.add('open');
+                    el.querySelector('.dropdown-toggle').classList.add('active');
+                    // Focus first item
+                    const items = el.querySelectorAll('.dropdown-item');
+                    if (items.length) items[0].focus();
+                }
+            }
+
+            function close(index) {
+                const el = document.getElementById(`dropdown-${index}`);
+                if (el) {
+                    el.classList.remove('open');
+                    el.querySelector('.dropdown-toggle').classList.remove('active');
+                }
+                openDropdowns.delete(index);
+            }
+
+            function select(dropdownIndex, itemIndex) {
+                const el = document.getElementById(`dropdown-${dropdownIndex}`);
+                const items = el.querySelectorAll('.dropdown-item');
+                const selected = items[itemIndex];
+
+                // Update selected state
+                items.forEach(item => item.classList.remove('selected'));
+                selected.classList.add('selected');
+
+                // Update toggle text
+                const toggle = el.querySelector('.dropdown-toggle span:first-child');
+                toggle.textContent = selected.textContent;
+
+                close(dropdownIndex);
+            }
+
+            function filter(input, dropdownIndex) {
+                const el = document.getElementById(`dropdown-${dropdownIndex}`);
+                const query = input.value.toLowerCase();
+                const items = el.querySelectorAll('.dropdown-item');
+
+                items.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = text.includes(query) ? '' : 'none';
+                });
+            }
+
+            // Close on outside click
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.dropdown')) {
+                    openDropdowns.forEach(i => close(i));
+                }
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (!openDropdowns.size) return;
+                const current = [...openDropdowns].pop();
+                const el = document.getElementById(`dropdown-${current}`);
+                const items = [...el.querySelectorAll('.dropdown-item:not([style*="display: none"])')];
+                const focused = items.findIndex(i => i.classList.contains('focused'));
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (focused < items.length - 1) {
+                        items[focused].classList.remove('focused');
+                        items[focused + 1].classList.add('focused');
+                        items[focused + 1].scrollIntoView({ block: 'nearest' });
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (focused > 0) {
+                        items[focused].classList.remove('focused');
+                        items[focused - 1].classList.add('focused');
+                        items[focused - 1].scrollIntoView({ block: 'nearest' });
+                    }
+                } else if (e.key === 'Enter' && focused >= 0) {
+                    items[focused].click();
+                } else if (e.key === 'Escape') {
+                    close(current);
+                }
+            });
+
+            return { toggle, close, select, filter };
+        })();
+
+        window.opendesignDropdowns = dropdown;
+    </script>
+</body>
+</html>

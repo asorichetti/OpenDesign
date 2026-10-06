@@ -8,6 +8,7 @@ required_open_webui_version: 0.10.0
 requirements: jinja2, aiohttp
 """
 
+import asyncio
 import json
 import os
 import re
@@ -18,6 +19,8 @@ from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
+
+from .template_marketplace import TemplateActions, TemplateStore
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -62,10 +65,11 @@ class UserValves(BaseModel):
 class Pipe:
     """OpenDesigner Design Studio — generates HTML prototypes from chat prompts.
 
-    Manifold exposes three models:
-    - Design Studio: General design generation (landing pages, dashboards, etc.)
-    - Design Editor (Live): Split-pane code editor mode (Phase 5)
-    - Design Library: Browse and load saved designs
+    Manifold exposes models:
+    - Design Studio: General design generation
+    - Design Editor (Live): Split-pane code editor mode
+    - Design Library: Browse saved designs and templates
+    - Compare Models: Parallel LLM comparison
     """
 
     def __init__(self):
@@ -76,6 +80,9 @@ class Pipe:
         self._templates_cache: dict[str, str] = {}
         self._prompts_cache: dict[str, str] = {}
         self._data_dir = self._resolve_data_dir()
+        self._template_store = TemplateStore(self._data_dir)
+        self._template_actions = TemplateActions()
+        self._template_actions.store = self._template_store
 
     # ------------------------------------------------------------------
     # Manifold — exposes multiple models
@@ -87,6 +94,7 @@ class Pipe:
             {"id": "design-studio", "name": "Design Studio"},
             {"id": "design-editor", "name": "Design Editor (Live)"},
             {"id": "design-library", "name": "Design Library"},
+            {"id": "compare-models", "name": "Compare Models"},
         ]
 
     # ------------------------------------------------------------------
@@ -119,6 +127,18 @@ class Pipe:
         # --- Design Library mode ---
         if mode == "library":
             return await self._handle_library_mode(__user__)
+
+        # --- Compare Models mode ---
+        if mode == "compare":
+            if self._is_design_prompt(last_user):
+                return await self._handle_comparison_mode(
+                    body=body,
+                    user_message=last_user,
+                    __user__=__user__,
+                    __event_emitter__=__event_emitter__,
+                )
+            # Non-design: forward to base model
+            return await self._forward_to_base_model(body, __event_emitter__)
 
         # --- Design Studio mode ---
         if self._is_design_prompt(last_user):
@@ -193,6 +213,8 @@ class Pipe:
             return "editor"
         elif model_id in ("design-library", "design library"):
             return "library"
+        elif model_id in ("compare-models", "compare models"):
+            return "compare"
         return "generate"
 
     # ------------------------------------------------------------------
@@ -283,57 +305,228 @@ class Pipe:
     # ------------------------------------------------------------------
 
     async def _handle_library_mode(self, __user__: dict | None) -> str:
-        """List saved designs for the user."""
+        """List saved designs and templates for the user."""
         user_id = __user__.get("id") if __user__ else "anonymous"
+
+        # Collect designs
         designs_dir = (
             self._data_dir / "opendesigner" / "designs" / user_id if self._data_dir else None
         )
-
-        if not designs_dir or not designs_dir.exists():
-            return (
-                "📚 *Your Design Library*\n\n"
-                "You haven't created any designs yet. "
-                "Use **Design Studio** to create your first one!\n\n"
-                'Try: *"Create a landing page for a coffee shop"*'
-            )
-
-        # Collect all designs
         designs = []
-        for design_path in sorted(designs_dir.iterdir()):
-            if design_path.is_dir():
-                history_path = design_path / "history.json"
-                if history_path.exists():
-                    history = json.loads(history_path.read_text())
-                    if history:
-                        designs.append(
-                            {
-                                "id": design_path.name,
-                                "title": history[0].get("prompt", "Untitled"),
-                                "versions": len(history),
-                                "last_modified": history[-1].get("created_at", ""),
-                            }
-                        )
+        if designs_dir and designs_dir.exists():
+            for design_path in sorted(designs_dir.iterdir()):
+                if design_path.is_dir():
+                    history_path = design_path / "history.json"
+                    if history_path.exists():
+                        history = json.loads(history_path.read_text())
+                        if history:
+                            designs.append(
+                                {
+                                    "id": design_path.name,
+                                    "title": history[0].get("prompt", "Untitled"),
+                                    "versions": len(history),
+                                    "last_modified": history[-1].get("created_at", ""),
+                                }
+                            )
 
-        if not designs:
-            return "📚 *Your Design Library*\n\nNo saved designs found."
+        # Collect templates
+        templates = self._template_store.get_user_templates(user_id)
 
-        # Format as markdown table
+        # Build response
         lines = [
             "📚 *Your Design Library*",
             "",
-            "| Design | Versions | Last Modified |",
-            "|--------|----------|---------------|",
+            "## Designs",
+            "",
         ]
-        for d in designs:
-            title = d["title"][:30] + "..." if len(d["title"]) > 30 else d["title"]
-            lines.append(
-                f"| {title} | {d['versions']} | {d['last_modified'][:10] if d['last_modified'] else 'N/A'} |"
-            )
+
+        if designs:
+            lines.append("| Design | Versions | Last Modified |")
+            lines.append("|--------|----------|---------------|")
+            for d in designs:
+                title = d["title"][:30] + "..." if len(d["title"]) > 30 else d["title"]
+                lines.append(
+                    f"| {title} | {d['versions']} | {d['last_modified'][:10] if d['last_modified'] else 'N/A'} |"
+                )
+        else:
+            lines.append("*No designs yet.*")
+
+        lines.append("")
+        lines.append("## Templates")
+        lines.append("")
+
+        if templates:
+            lines.append("| Template | Type | Version |")
+            lines.append("|----------|------|---------|")
+            for t in templates:
+                lines.append(
+                    f"| {t.get('title', 'Untitled')} | {t.get('template_type', 'custom')} | {t.get('version', '1.0')} |"
+                )
+        else:
+            lines.append("*No templates yet.*")
 
         lines.append("")
         lines.append(
-            "*Use **Design Studio** to create new designs, or **Generate Preview** to view saved designs.*"
+            "**Actions**: Submit a design as a template, import from URL, or browse the marketplace."
         )
+        lines.append("*Use **Design Studio** to create new designs.*")
+
+        return "\n".join(lines)
+
+    # ------------------------------------------------------------------
+    # Multi-model comparison handler
+    # ------------------------------------------------------------------
+
+    async def _handle_comparison_mode(
+        self,
+        body: dict,
+        user_message: str,
+        __user__: dict | None,
+        __event_emitter__: Any | None,
+    ) -> str:
+        """Generate designs using multiple models in parallel and display side-by-side."""
+        import time
+
+        user_id = __user__.get("id") if __user__ else None
+        user_settings = self._load_user_settings(user_id)
+        template_name = user_settings.get("template", self.user_valves.template)
+        design_system = user_settings.get("design_system", self.user_valves.design_system)
+
+        template_html = self._load_template(template_name)
+        prompt_template = self._load_prompt("generate_html")
+
+        final_prompt = self._build_prompt(
+            prompt_template=prompt_template,
+            template_html=template_html,
+            design_system=design_system,
+            user_message=user_message,
+        )
+
+        # Emit progress event
+        if __event_emitter__:
+            await __event_emitter__(
+                "event.message",
+                {"type": "generating", "content": "🔄 Comparing models in parallel..."},
+            )
+
+        # Determine models to compare
+        models_to_compare = self._get_comparison_models(body)
+        if not models_to_compare:
+            models_to_compare = ["gpt-4o", "claude-3.5-sonnet", "llama-3.1-70b"]
+
+        # Build generation bodies for each model
+        generation_bodies = []
+        for model in models_to_compare:
+            gen_body = self._build_generation_body(body, final_prompt)
+            gen_body["model"] = model
+            generation_bodies.append((model, gen_body))
+
+        # Make parallel LLM calls
+        start_time = time.time()
+        tasks = []
+        for _model, gen_body in generation_bodies:
+            tasks.append(self._call_llm_with_model(gen_body, __event_emitter__))
+
+        try:
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+        except Exception as exc:
+            return f"⚠️ *Comparison failed: {exc}*"
+
+        elapsed = time.time() - start_time
+
+        # Parse results
+        parsed_results = []
+        for (model, _), result in zip(generation_bodies, results, strict=False):
+            if isinstance(result, Exception):
+                parsed_results.append({"model": model, "html": None, "error": str(result)})
+            else:
+                parsed = self._parse_response(result)
+                parsed_results.append({"model": model, "html": parsed["html"], "error": None})
+
+        # Build comparison display
+        display = self._build_comparison_display(parsed_results, models_to_compare, elapsed)
+
+        return display
+
+    def _get_comparison_models(self, body: dict) -> list[str]:
+        """Get list of models to compare from the request."""
+        # Check for custom models in options or valves
+        options = body.get("options", {})
+        if isinstance(options, dict) and "compare_models" in options:
+            return options["compare_models"]
+
+        # Default: use the current model and 2 others
+        current = self._extract_model_name(body)
+        defaults = ["gpt-4o", "claude-3.5-sonnet", "llama-3.1-70b"]
+        if current not in defaults:
+            defaults[0] = current
+        return defaults[:3]
+
+    async def _call_llm_with_model(self, body: dict, __event_emitter__: Any | None = None) -> str:
+        """Call LLM with a specific model configuration."""
+        # Temporarily set the model
+        original_model = body.get("model", "")
+        try:
+            result = await self._call_llm(body, __event_emitter__)
+            return result
+        finally:
+            body["model"] = original_model
+
+    def _build_comparison_display(
+        self,
+        results: list[dict],
+        models: list[str],
+        elapsed: float,
+    ) -> str:
+        """Build markdown display for model comparison."""
+        lines = ["🔄 *Model Comparison Complete*", ""]
+        lines.append(f"*Generated in {elapsed:.1f}s using {len(results)} models.*")
+        lines.append("")
+
+        for _i, result in enumerate(results):
+            model = result["model"]
+            if result["error"]:
+                lines.append(f"**{model}:** ❌ Failed — {result['error']}")
+            elif result["html"]:
+                lines.append(f"**{model}:** ✅ Generated")
+            else:
+                lines.append(f"**{model}:** ⚠️ No HTML output")
+
+        lines.append("")
+        lines.append("💡 *Click **Generate Preview** to view the comparison side-by-side.*")
+        lines.append("")
+        lines.append("```html")
+        lines.append("<div class='comparison-container'>")
+        lines.append("<style>")
+        lines.append(
+            ".comparison-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; padding: 1rem; }"
+        )
+        lines.append(
+            ".comparison-panel { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }"
+        )
+        lines.append(
+            ".comparison-header { padding: 0.75rem; background: #f3f4f6; font-weight: 600; border-bottom: 1px solid #e5e7eb; }"
+        )
+        lines.append(".comparison-frame { width: 100%; height: 400px; border: none; }")
+        lines.append("</style>")
+        lines.append("")
+
+        for result in results:
+            if result["html"]:
+                lines.append("<div class='comparison-panel'>")
+                lines.append(f"<div class='comparison-header'>{result['model']}</div>")
+                lines.append(
+                    "<iframe class='comparison-frame' sandbox='allow-scripts allow-same-origin'></iframe>"
+                )
+                lines.append("</div>")
+
+        lines.append("</div>")
+        lines.append("```")
+        lines.append("")
+        lines.append(
+            "*Use the **Open Editor** action on any model to select and continue editing.*"
+        )
+
         return "\n".join(lines)
 
     # ------------------------------------------------------------------

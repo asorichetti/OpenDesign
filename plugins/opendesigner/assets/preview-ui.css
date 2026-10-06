@@ -1,0 +1,431 @@
+/**
+ * OpenDesigner Preview UI
+ * 
+ * A stunning preview interface that blends:
+ * - Open WebUI's clean, minimal aesthetic
+ * - Claude Design's polished, sophisticated feel
+ * - Smooth animations and transitions
+ * - Professional typography and spacing
+ */
+
+/* ==========================================================
+   BASE STYLES
+   ========================================================== */
+
+.opendesigner-preview-container {
+  font-family: var(--od-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--od-neutral-50);
+  color: var(--od-neutral-900);
+  line-height: var(--od-leading-normal);
+}
+
+/* ==========================================================
+   PREVIEW HEADER
+   Claude Design-inspired header with glass morphism
+   ========================================================== */
+
+.od-preview-header {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: var(--od-backdrop-blur-lg);
+  -webkit-backdrop-filter: var(--od-backdrop-blur-lg);
+  border-bottom: 1px solid var(--od-neutral-200);
+  padding: var(--od-space-4) var(--od-space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: var(--od-z-sticky);
+}
+
+.od-preview-title {
+  font-size: var(--od-text-lg);
+  font-weight: var(--od-font-semibold);
+  color: var(--od-neutral-900);
+  letter-spacing: var(--od-tracking-tight);
+  margin: 0;
+}
+
+.od-preview-subtitle {
+  font-size: var(--od-text-sm);
+  color: var(--od-neutral-500);
+  margin: 0;
+  font-weight: var(--od-font-normal);
+}
+
+/* ==========================================================
+   TOOLBAR
+   Refined toolbar with hover effects
+   ========================================================== */
+
+.od-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--od-space-2);
+}
+
+.od-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--od-space-2);
+  padding: var(--od-space-2) var(--od-space-4);
+  border: 1px solid var(--od-neutral-200);
+  border-radius: var(--od-radius-lg);
+  background: white;
+  color: var(--od-neutral-700);
+  font-size: var(--od-text-sm);
+  font-weight: var(--od-font-medium);
+  cursor: pointer;
+  transition: all var(--od-transition-fast);
+  user-select: none;
+}
+
+.od-toolbar-btn:hover {
+  background: var(--od-neutral-50);
+  border-color: var(--od-neutral-300);
+  color: var(--od-neutral-900);
+  transform: translateY(-1px);
+  box-shadow: var(--od-shadow-sm);
+}
+
+.od-toolbar-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.od-toolbar-btn.active {
+  background: var(--od-brand-primary);
+  border-color: var(--od-brand-primary);
+  color: white;
+}
+
+.od-toolbar-btn.active:hover {
+  background: var(--od-brand-primary-dark);
+  border-color: var(--od-brand-primary-dark);
+}
+
+.od-toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background: var(--od-neutral-200);
+  margin: 0 var(--od-space-2);
+}
+
+/* ==========================================================
+   PREVIEW AREA
+   Clean, spacious preview with subtle shadow
+   ========================================================== */
+
+.od-preview-area {
+  padding: var(--od-space-6);
+  background: linear-gradient(180deg, var(--od-neutral-50) 0%, var(--od-neutral-100) 100%);
+  min-height: 60vh;
+}
+
+.od-preview-frame-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  background: white;
+  border-radius: var(--od-radius-2xl);
+  box-shadow: var(--od-shadow-xl);
+  overflow: hidden;
+  transition: all var(--od-transition-slow);
+}
+
+.od-preview-frame-wrapper:hover {
+  box-shadow: var(--od-shadow-2xl);
+  transform: translateY(-2px);
+}
+
+.od-preview-iframe {
+  width: 100%;
+  border: none;
+  display: block;
+  background: white;
+}
+
+/* ==========================================================
+   RESPONSIVE PREVIEW
+   Claude Design-inspired device frames
+   ========================================================== */
+
+.od-device-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--od-space-6);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .od-device-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.od-device-card {
+  background: white;
+  border-radius: var(--od-radius-2xl);
+  overflow: hidden;
+  box-shadow: var(--od-shadow-lg);
+  transition: all var(--od-transition-base);
+}
+
+.od-device-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--od-shadow-2xl);
+}
+
+.od-device-header {
+  padding: var(--od-space-4) var(--od-space-6);
+  background: var(--od-neutral-50);
+  border-bottom: 1px solid var(--od-neutral-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.od-device-label {
+  font-size: var(--od-text-sm);
+  font-weight: var(--od-font-semibold);
+  color: var(--od-neutral-700);
+  display: flex;
+  align-items: center;
+  gap: var(--od-space-2);
+}
+
+.od-device-badge {
+  font-size: var(--od-text-xs);
+  padding: var(--od-space-1) var(--od-space-2);
+  background: var(--od-brand-primary-alpha);
+  color: var(--od-brand-primary);
+  border-radius: var(--od-radius-full);
+  font-weight: var(--od-font-medium);
+}
+
+.od-device-body {
+  padding: var(--od-space-4);
+  background: var(--od-neutral-100);
+}
+
+.od-device-body iframe {
+  width: 100%;
+  border: none;
+  border-radius: var(--od-radius-lg);
+  background: white;
+  box-shadow: var(--od-shadow-inner);
+}
+
+/* ==========================================================
+   EXPORT PANEL
+   Clean, professional export UI
+   ========================================================== */
+
+.od-export-panel {
+  max-width: 800px;
+  margin: var(--od-space-8) auto;
+  padding: var(--od-space-8);
+  background: white;
+  border-radius: var(--od-radius-2xl);
+  box-shadow: var(--od-shadow-xl);
+}
+
+.od-export-title {
+  font-size: var(--od-text-2xl);
+  font-weight: var(--od-font-bold);
+  color: var(--od-neutral-900);
+  margin: 0 0 var(--od-space-2);
+  letter-spacing: var(--od-tracking-tight);
+}
+
+.od-export-subtitle {
+  font-size: var(--od-text-base);
+  color: var(--od-neutral-500);
+  margin: 0 0 var(--od-space-8);
+}
+
+.od-export-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--od-space-4);
+}
+
+@media (max-width: 768px) {
+  .od-export-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.od-export-card {
+  padding: var(--od-space-6);
+  border: 2px solid var(--od-neutral-200);
+  border-radius: var(--od-radius-xl);
+  background: white;
+  cursor: pointer;
+  transition: all var(--od-transition-base);
+  text-align: center;
+}
+
+.od-export-card:hover {
+  border-color: var(--od-brand-primary);
+  background: var(--od-brand-primary-alpha);
+  transform: translateY(-2px);
+  box-shadow: var(--od-shadow-lg);
+}
+
+.od-export-icon {
+  font-size: var(--od-text-4xl);
+  margin-bottom: var(--od-space-4);
+}
+
+.od-export-label {
+  font-size: var(--od-text-lg);
+  font-weight: var(--od-font-semibold);
+  color: var(--od-neutral-900);
+  margin: 0 0 var(--od-space-2);
+}
+
+.od-export-desc {
+  font-size: var(--od-text-sm);
+  color: var(--od-neutral-500);
+  margin: 0;
+}
+
+/* ==========================================================
+   EDITOR PANEL
+   Professional split-pane editor
+   ========================================================== */
+
+.od-editor-panel {
+  display: flex;
+  height: 80vh;
+  background: white;
+  border-radius: var(--od-radius-2xl);
+  overflow: hidden;
+  box-shadow: var(--od-shadow-xl);
+}
+
+.od-editor-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.od-editor-header {
+  padding: var(--od-space-3) var(--od-space-4);
+  background: var(--od-neutral-50);
+  border-bottom: 1px solid var(--od-neutral-200);
+  font-size: var(--od-text-sm);
+  font-weight: var(--od-font-medium);
+  color: var(--od-neutral-600);
+  display: flex;
+  align-items: center;
+  gap: var(--od-space-2);
+}
+
+.od-editor-content {
+  flex: 1;
+  overflow: auto;
+}
+
+.od-editor-content iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.od-editor-gutter {
+  width: 4px;
+  background: var(--od-neutral-200);
+  cursor: col-resize;
+  transition: background var(--od-transition-fast);
+}
+
+.od-editor-gutter:hover {
+  background: var(--od-brand-primary);
+}
+
+/* ==========================================================
+   ANIMATIONS
+   Smooth, polished animations
+   ========================================================== */
+
+@keyframes od-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes od-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes od-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.od-animate-fade {
+  animation: od-fade-in var(--od-transition-slow) ease-out;
+}
+
+.od-animate-slide {
+  animation: od-slide-in var(--od-transition-base) ease-out;
+}
+
+.od-animate-scale {
+  animation: od-scale-in var(--od-transition-base) ease-out;
+}
+
+/* ==========================================================
+   UTILITIES
+   ========================================================== */
+
+.od-text-gradient {
+  background: var(--od-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.od-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: var(--od-backdrop-blur);
+  -webkit-backdrop-filter: var(--od-backdrop-blur);
+}
+
+.od-border-gradient {
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+}
+
+.od-border-gradient::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: var(--od-gradient-primary);
+  z-index: -1;
+}

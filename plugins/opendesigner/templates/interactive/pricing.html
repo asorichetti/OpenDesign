@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Pricing") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .pricing-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .pricing-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-header p {
+            color: #6b6b6b;
+            font-size: 1rem;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        @media (min-width: 768px) {
+            .pricing-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* Pricing Card */
+        .pricing-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .pricing-card.featured {
+            border: 2px solid #1a1a1a;
+            transform: scale(1.05);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-4px);
+        }
+
+        .pricing-popular {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 16px;
+            background: #1a1a1a;
+            color: white;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .pricing-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-description {
+            color: #6b6b6b;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pricing-price {
+            display: flex;
+            align-items: baseline;
+            gap: 0.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pricing-currency {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .pricing-amount {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            line-height: 1;
+        }
+
+        .pricing-period {
+            color: #6b6b6b;
+            font-size: 0.875rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .pricing-features li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #6b6b6b;
+            font-size: 0.875rem;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #48bb78;
+            font-weight: 700;
+        }
+
+        .pricing-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: opacity 0.2s;
+        }
+
+        .pricing-btn:hover {
+            opacity: 0.9;
+        }
+
+        .pricing-btn-primary {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .pricing-btn-secondary {
+            background: #f0f0f0;
+            color: #1a1a1a;
+        }
+
+        /* Toggle */
+        .pricing-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .pricing-toggle-label {
+            color: #6b6b6b;
+            font-size: 0.875rem;
+        }
+
+        .pricing-toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+        }
+
+        .pricing-toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .pricing-toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: #e0e0e0;
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+
+        .pricing-toggle-slider:before {
+            content: '';
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .pricing-toggle-switch input:checked + .pricing-toggle-slider {
+            background: #1a1a1a;
+        }
+
+        .pricing-toggle-switch input:checked + .pricing-toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        .pricing-save {
+            padding: 4px 12px;
+            background: #f0fdf4;
+            color: #48bb78;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="pricing-container">
+        <div class="pricing-header">
+            <h2>{{ title | default("Simple Pricing") }}</h2>
+            <p>Choose the plan that's right for you.</p>
+        </div>
+
+        <div class="pricing-grid">
+            {% for plan in plans | default([{'name': 'Starter', 'description': 'Perfect for side projects', 'price': 0, 'features': ['1 project', 'Basic analytics', 'Community support']}, {'name': 'Pro', 'description': 'For growing teams', 'price': 29, 'features': ['Unlimited projects', 'Advanced analytics', 'Priority support', 'Custom domains']}, {'name': 'Enterprise', 'description': 'For large organizations', 'price': 99, 'features': ['Everything in Pro', 'SSO & SAML', 'Dedicated support', 'SLA guarantee']},]) %}
+            <div class="pricing-card {% if loop.index == 2 %}featured{% endif %}">
+                {% if loop.index == 2 %}
+                <div class="pricing-popular">Most Popular</div>
+                {% endif %}
+                <h3 class="pricing-name">{{ plan.name }}</h3>
+                <p class="pricing-description">{{ plan.description }}</p>
+                <div class="pricing-price">
+                    <span class="pricing-currency">$</span>
+                    <span class="pricing-amount">{{ plan.price }}</span>
+                    <span class="pricing-period">/mo</span>
+                </div>
+                <ul class="pricing-features">
+                    {% for feature in plan.features %}
+                    <li>{{ feature }}</li>
+                    {% endfor %}
+                </ul>
+                <button class="pricing-btn {% if loop.index == 2 %}pricing-btn-primary{% else %}pricing-btn-secondary{% endif %}">
+                    {% if plan.price == 0 %}Get Started{% else %}Start Free Trial{% endif %}
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

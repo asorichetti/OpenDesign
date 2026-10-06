@@ -1,0 +1,31 @@
+/* OpenDesigner Dark Theme */
+/* Deep, rich — Claude Design inspired with Open WebUI polish */
+
+[data-theme="dark"] {
+    /* Background */
+    --od-bg-primary: #0a0a0f;
+    --od-bg-secondary: #12121a;
+    --od-bg-tertiary: #1a1a2e;
+    --od-bg-elevated: #1e1e2e;
+    --od-bg-hover: #22223a;
+    --od-bg-active: #2a2a3e;
+
+    /* Text */
+    --od-text-primary: #f0f0f5;
+    --od-text-secondary: #a1a1b5;
+    --od-text-tertiary: #636380;
+    --od-text-inverse: #0a0a0f;
+
+    /* Borders */
+    --od-border-light: #2a2a3e;
+    --od-border-medium: #3a3a4e;
+    --od-border-dark: #4a4a5e;
+
+    /* Code */
+    --od-color-code-bg: #1a1a2e;
+
+    /* Shadows */
+    --od-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --od-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --od-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --od-color-primary: #1a1a2e;
+            --od-color-secondary: #16213e;
+            --od-color-accent: #0f3460;
+            --od-color-text: #1a1a1a;
+            --od-color-text-light: #6b6b6b;
+            --od-color-bg: #ffffff;
+            --od-color-bg-alt: #f7f7f8;
+            --od-color-border: #e0e0e0;
+            --od-radius: 8px;
+            --od-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --od-transition: 0.2s ease;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--od-color-bg);
+            color: var(--od-color-text);
+        }
+
+        /* Navigation */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--od-color-bg);
+            border-bottom: 1px solid var(--od-color-border);
+            padding: 0 2rem;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+
+        .nav-logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--od-color-primary);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--od-color-text-light);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color var(--od-transition);
+            position: relative;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--od-color-primary);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--od-color-primary);
+        }
+
+        .nav-cta {
+            padding: 0.5rem 1rem;
+            background: var(--od-color-primary);
+            color: white !important;
+            border-radius: var(--od-radius);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: opacity var(--od-transition);
+        }
+
+        .nav-cta:hover {
+            opacity: 0.9;
+        }
+
+        /* Mobile Menu Button */
+        .nav-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .nav-toggle span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--od-color-text);
+            transition: all 0.3s ease;
+        }
+
+        .nav-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .nav-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .nav-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        /* Dropdown */
+        .nav-dropdown {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .dropdown-arrow {
+            transition: transform 0.2s ease;
+            font-size: 0.75rem;
+        }
+
+        .nav-dropdown:hover .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--od-color-bg);
+            border: 1px solid var(--od-color-border);
+            border-radius: var(--od-radius);
+            box-shadow: var(--od-shadow);
+            padding: 0.5rem;
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.2s ease;
+            list-style: none;
+        }
+
+        .nav-dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            color: var(--od-color-text-light);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: 4px;
+            transition: all var(--od-transition);
+        }
+
+        .dropdown-item:hover {
+            background: var(--od-color-bg-alt);
+            color: var(--od-color-primary);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-toggle {
+                display: flex;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 64px;
+                left: 0;
+                right: 0;
+                background: var(--od-color-bg);
+                flex-direction: column;
+                padding: 2rem;
+                gap: 1.5rem;
+                border-bottom: 1px solid var(--od-color-border);
+                transform: translateY(-100%);
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+
+            .nav-links.active {
+                transform: translateY(0);
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .dropdown-menu {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                box-shadow: none;
+                border: none;
+                padding: 0.5rem 0 0.5rem 1rem;
+                display: none;
+            }
+
+            .nav-dropdown.open .dropdown-menu {
+                display: block;
+            }
+
+            .nav-link.active::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">{{ logo_text | default("Brand") }}</a>
+
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#" class="nav-link active">{{ item1 | default("Home") }}</a></li>
+                <li class="nav-dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">
+                        {{ item2 | default("Products") }} <span class="dropdown-arrow">▾</span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="#" class="dropdown-item" role="menuitem">{{ subitem1 | default("Feature A") }}</a></li>
+                        <li><a href="#" class="dropdown-item" role="menuitem">{{ subitem2 | default("Feature B") }}</a></li>
+                        <li><a href="#" class="dropdown-item" role="menuitem">{{ subitem3 | default("Feature C") }}</a></li>
+                    </ul>
+                </li>
+                <li><a href="#" class="nav-link">{{ item3 | default("Pricing") }}</a></li>
+                <li><a href="#" class="nav-link">{{ item4 | default("About") }}</a></li>
+                <li><a href="#" class="nav-cta">{{ cta_text | default("Get Started") }}</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <script>
+        const toggle = document.getElementById('navToggle');
+        const links = document.getElementById('navLinks');
+        const dropdowns = document.querySelectorAll('.nav-dropdown');
+
+        // Mobile menu toggle
+        toggle.addEventListener('click', () => {
+            const isOpen = links.classList.toggle('active');
+            toggle.classList.toggle('active');
+            toggle.setAttribute('aria-expanded', isOpen);
+        });
+
+        // Mobile dropdown toggle
+        dropdowns.forEach(dropdown => {
+            const toggleLink = dropdown.querySelector('.dropdown-toggle');
+            toggleLink.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
+                    dropdown.classList.toggle('open');
+                }
+            });
+        });
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.navbar')) {
+                links.classList.remove('active');
+                toggle.classList.remove('active');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Close on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                links.classList.remove('active');
+                toggle.classList.remove('active');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Sticky shadow on scroll
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            navbar.style.boxShadow = window.scrollY > 10 ? '0 2px 8px rgba(0,0,0,0.1)' : 'none';
+        });
+    </script>
+</body>
+</html>

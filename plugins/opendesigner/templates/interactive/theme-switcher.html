@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Theme Switcher") }}</title>
+    <link rel="stylesheet" href="/assets/design-tokens.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--od-bg-secondary);
+            padding: 2rem;
+            transition: background var(--od-transition-slow);
+        }
+
+        .theme-switcher {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--od-bg-primary);
+            border-radius: var(--od-radius-xl);
+            padding: 2rem;
+            box-shadow: var(--od-shadow-lg);
+        }
+
+        .theme-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .theme-header h2 {
+            font-size: var(--od-font-size-2xl);
+            font-weight: var(--od-font-weight-bold);
+            color: var(--od-text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .theme-header p {
+            color: var(--od-text-secondary);
+            font-size: var(--od-font-size-base);
+        }
+
+        .theme-preview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .theme-card {
+            border: 2px solid var(--od-border-light);
+            border-radius: var(--od-radius-lg);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all var(--od-transition-base);
+            text-align: center;
+        }
+
+        .theme-card:hover {
+            border-color: var(--od-text-tertiary);
+            transform: translateY(-2px);
+        }
+
+        .theme-card.active {
+            border-color: var(--od-color-primary-500);
+            box-shadow: 0 0 0 3px rgba(51, 121, 255, 0.2);
+        }
+
+        .theme-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .theme-name {
+            font-weight: var(--od-font-weight-semibold);
+            color: var(--od-text-primary);
+        }
+
+        .theme-description {
+            font-size: var(--od-font-size-sm);
+            color: var(--od-text-secondary);
+        }
+
+        .theme-colors {
+            display: flex;
+            gap: 0.25rem;
+            justify-content: center;
+            margin-top: 0.75rem;
+        }
+
+        .color-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--od-bg-primary);
+        }
+
+        .color-primary { background: var(--od-color-primary-500); }
+        .color-secondary { background: var(--od-color-secondary-500); }
+        .color-neutral { background: var(--od-color-neutral-500); }
+
+        /* Preview Components */
+        .preview-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--od-border-light);
+        }
+
+        .preview-section h3 {
+            font-size: var(--od-font-size-lg);
+            font-weight: var(--od-font-weight-semibold);
+            color: var(--od-text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .preview-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .preview-btn {
+            padding: 0.5rem 1rem;
+            background: var(--od-color-primary-500);
+            color: white;
+            border: none;
+            border-radius: var(--od-radius-md);
+            font-size: var(--od-font-size-sm);
+            font-weight: var(--od-font-weight-medium);
+        }
+
+        .preview-btn-secondary {
+            background: var(--od-bg-tertiary);
+            color: var(--od-text-primary);
+        }
+
+        .preview-badge {
+            padding: 0.25rem 0.5rem;
+            background: var(--od-color-success);
+            color: white;
+            border-radius: var(--od-radius-full);
+            font-size: var(--od-font-size-xs);
+            font-weight: var(--od-font-weight-medium);
+        }
+
+        .preview-input {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--od-border-medium);
+            border-radius: var(--od-radius-md);
+            background: var(--od-bg-primary);
+            color: var(--od-text-primary);
+            font-size: var(--od-font-size-sm);
+            flex: 1;
+            min-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-switcher">
+        <div class="theme-header">
+            <h2>{{ title | default("Theme Switcher") }}</h2>
+            <p>Choose your preferred theme. Your selection is saved locally.</p>
+        </div>
+
+        <div class="theme-preview">
+            <div class="theme-card {% if theme == 'light' or not theme %}active{% endif %}" onclick="themeSwitcher.set('light')">
+                <div class="theme-icon">☀️</div>
+                <div class="theme-name">Light</div>
+                <div class="theme-description">Clean and bright</div>
+                <div class="theme-colors">
+                    <div class="color-dot color-primary"></div>
+                    <div class="color-dot color-secondary"></div>
+                    <div class="color-dot color-neutral"></div>
+                </div>
+            </div>
+
+            <div class="theme-card {% if theme == 'dark' %}active{% endif %}" onclick="themeSwitcher.set('dark')">
+                <div class="theme-icon">🌙</div>
+                <div class="theme-name">Dark</div>
+                <div class="theme-description">Easy on the eyes</div>
+                <div class="theme-colors">
+                    <div class="color-dot color-primary"></div>
+                    <div class="color-dot color-secondary"></div>
+                    <div class="color-dot color-neutral"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <h3>Component Preview</h3>
+            <div class="preview-row">
+                <button class="preview-btn">Primary</button>
+                <button class="preview-btn preview-btn-secondary">Secondary</button>
+                <span class="preview-badge">Success</span>
+            </div>
+            <div class="preview-row">
+                <input type="text" class="preview-input" placeholder="Type something...">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const themeSwitcher = (() => {
+            const STORAGE_KEY = 'opendesigner-theme';
+            const html = document.documentElement;
+
+            // Initialize theme
+            function init() {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    set(saved);
+                } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    set('dark');
+                }
+            }
+
+            function set(theme) {
+                html.setAttribute('data-theme', theme);
+                localStorage.setItem(STORAGE_KEY, theme);
+
+                // Update active state
+                document.querySelectorAll('.theme-card').forEach(card => {
+                    card.classList.remove('active');
+                });
+                event.target.closest('.theme-card').classList.add('active');
+            }
+
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                if (!localStorage.getItem(STORAGE_KEY)) {
+                    set(e.matches ? 'dark' : 'light');
+                }
+            });
+
+            return { init, set };
+        })();
+
+        themeSwitcher.init();
+    </script>
+</body>
+</html>

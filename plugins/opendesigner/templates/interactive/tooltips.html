@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Tooltips") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .tooltip-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .tooltip-trigger {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip-content {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(5px);
+            background: #1a1a1a;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .tooltip-content::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #1a1a1a;
+        }
+
+        .tooltip-trigger:hover .tooltip-content,
+        .tooltip-trigger:focus .tooltip-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .tooltip-trigger:focus {
+            outline: 2px solid #1a1a1a;
+            outline-offset: 2px;
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            border-color: #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+    <div class="tooltip-demo">
+        {% for tip in tooltips %}
+        <div class="tooltip-trigger" tabindex="0" role="button"
+             aria-label="{{ tip.label | default('Show tooltip') }}">
+            <button class="btn">{{ tip.label | default("Hover me") }}</button>
+            <span class="tooltip-content" role="tooltip">
+                {{ tip.text | default("This is a tooltip!") }}
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Keyboard support
+        document.querySelectorAll('.tooltip-trigger').forEach(trigger => {
+            trigger.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    trigger.focus();
+                }
+            });
+            trigger.addEventListener('blur', () => {
+                // Tooltip hides automatically on blur via CSS
+            });
+        });
+    </script>
+</body>
+</html>

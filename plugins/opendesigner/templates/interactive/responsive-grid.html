@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Responsive Grid") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .grid-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .grid-header {
+            margin-bottom: 2rem;
+        }
+
+        .grid-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .grid-header p {
+            color: #6b6b6b;
+            font-size: 0.875rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (min-width: 1024px) {
+            .grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .grid-item {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .grid-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        .grid-item-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .grid-item h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .grid-item p {
+            font-size: 0.875rem;
+            color: #6b6b6b;
+            line-height: 1.5;
+        }
+
+        .grid-item-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: #f0f0f0;
+            color: #6b6b6b;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            align-self: flex-start;
+            margin-top: 1rem;
+        }
+
+        /* Grid Variants */
+        .grid-variant {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .grid-variant h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 1rem;
+        }
+
+        .grid-asymmetric {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid-asymmetric {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+
+        .grid-asymmetric .grid-item:first-child {
+            grid-column: 1 / -1;
+        }
+
+        @media (min-width: 1024px) {
+            .grid-asymmetric {
+                grid-template-columns: 2fr 1fr 1fr;
+            }
+        }
+
+        .grid-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .grid-list .grid-item {
+            flex-direction: row;
+            align-items: center;
+            min-height: auto;
+            padding: 1rem 1.5rem;
+        }
+
+        .grid-list .grid-item-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0;
+            margin-right: 1rem;
+        }
+
+        .grid-list .grid-item-badge {
+            margin-top: 0;
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-container">
+        <div class="grid-header">
+            <h2>{{ title | default("Responsive Grid") }}</h2>
+            <p>A flexible grid system that adapts to any screen size.</p>
+        </div>
+
+        <!-- Standard Grid -->
+        <div class="grid">
+            {% for item in grid_items | default([{'icon': '📊', 'title': 'Analytics', 'description': 'Track and analyze your design metrics.', 'badge': 'Stats'}]) %}
+            <div class="grid-item">
+                <div>
+                    <div class="grid-item-icon">{{ item.icon | default('📦') }}</div>
+                    <h3>{{ item.title | default("Item") }}</h3>
+                    <p>{{ item.description | default("Grid item content goes here.") }}</p>
+                </div>
+                <span class="grid-item-badge">{{ item.badge | default("New") }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Asymmetric Grid -->
+        <div class="grid-variant">
+            <h3>Asymmetric Layout</h3>
+            <div class="grid-asymmetric">
+                <div class="grid-item">
+                    <div>
+                        <div class="grid-item-icon">🚀</div>
+                        <h3>Featured</h3>
+                        <p>This item spans the full width on larger screens for emphasis.</p>
+                    </div>
+                    <span class="grid-item-badge">Featured</span>
+                </div>
+                <div class="grid-item">
+                    <div>
+                        <div class="grid-item-icon">📝</div>
+                        <h3>Notes</h3>
+                        <p>Quick notes.</p>
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div>
+                        <div class="grid-item-icon">⚡</div>
+                        <h3>Quick</h3>
+                        <p>Actions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- List Grid -->
+        <div class="grid-variant">
+            <h3>List View</h3>
+            <div class="grid-list">
+                <div class="grid-item">
+                    <div class="grid-item-icon">📋</div>
+                    <div>
+                        <h3>Task One</h3>
+                        <p>Description of task one.</p>
+                    </div>
+                    <span class="grid-item-badge">Pending</span>
+                </div>
+                <div class="grid-item">
+                    <div class="grid-item-icon">✅</div>
+                    <div>
+                        <h3>Task Two</h3>
+                        <p>Description of task two.</p>
+                    </div>
+                    <span class="grid-item-badge">Done</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

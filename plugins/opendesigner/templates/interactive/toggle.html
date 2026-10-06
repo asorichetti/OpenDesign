@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Toggle Switches") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .toggles {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .toggle-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .toggle-item:last-child {
+            border-bottom: none;
+        }
+
+        .toggle-info h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.125rem;
+        }
+
+        .toggle-info p {
+            font-size: 0.75rem;
+            color: #6b6b6b;
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            position: relative;
+            width: 48px;
+            height: 26px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: #e0e0e0;
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider:before {
+            content: '';
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle input:checked + .toggle-slider {
+            background: #1a1a1a;
+        }
+
+        .toggle input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+
+        .toggle input:focus + .toggle-slider {
+            box-shadow: 0 0 0 3px rgba(26,26,26,0.1);
+        }
+
+        /* Toggle sizes */
+        .toggle.sm { width: 36px; height: 20px; }
+        .toggle.sm .toggle-slider:before { height: 14px; width: 14px; }
+        .toggle.sm input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+        .toggle.lg { width: 56px; height: 30px; }
+        .toggle.lg .toggle-slider:before { height: 24px; width: 24px; }
+        .toggle.lg input:checked + .toggle-slider:before { transform: translateX(26px); }
+
+        /* Color variants */
+        .toggle.green input:checked + .toggle-slider { background: #48bb78; }
+        .toggle.blue input:checked + .toggle-slider { background: #4299e1; }
+        .toggle.red input:checked + .toggle-slider { background: #e53e3e; }
+        .toggle.purple input:checked + .toggle-slider { background: #9f7aea; }
+    </style>
+</head>
+<body>
+    <div class="toggles">
+        {% for toggle in toggles %}
+        <div class="toggle-item">
+            <div class="toggle-info">
+                <h4>{{ toggle.label | default("Toggle") }}</h4>
+                <p>{{ toggle.description | default("") }}</p>
+            </div>
+            <label class="toggle {{ toggle.size | default('md') }} {{ toggle.color | default('') }}">
+                <input type="checkbox" {% if toggle.checked %}checked{% endif %}
+                       aria-label="{{ toggle.label }}">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Toggle change handler
+        document.querySelectorAll('.toggle input').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                console.log(`${e.target.ariaLabel}: ${e.target.checked}`);
+                // Add your custom handler here
+            });
+        });
+    </script>
+</body>
+</html>

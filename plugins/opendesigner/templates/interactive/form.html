@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Form") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .form-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-subtitle {
+            color: #6b6b6b;
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 0.375rem;
+        }
+
+        .form-label .required {
+            color: #e53e3e;
+            margin-left: 0.25rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #1a1a1a;
+            box-shadow: 0 0 0 3px rgba(26,26,26,0.1);
+        }
+
+        .form-input.error,
+        .form-select.error,
+        .form-textarea.error {
+            border-color: #e53e3e;
+        }
+
+        .form-input.error:focus,
+        .form-select.error:focus,
+        .form-textarea.error:focus {
+            box-shadow: 0 0 0 3px rgba(229,62,62,0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-error {
+            color: #e53e3e;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .form-error.visible {
+            display: block;
+        }
+
+        .form-hint {
+            color: #6b6b6b;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-checkbox input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .form-checkbox label {
+            font-size: 0.875rem;
+            color: #6b6b6b;
+            cursor: pointer;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #6b6b6b;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .success-message.visible {
+            display: block;
+        }
+
+        .success-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .success-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .success-text {
+            color: #6b6b6b;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <form id="contactForm" novalidate>
+            <h2 class="form-title">{{ title | default("Get in Touch") }}</h2>
+            <p class="form-subtitle">{{ subtitle | default("Fill out the form below and we'll get back to you.") }}</p>
+
+            <div class="form-group">
+                <label class="form-label" for="name">Name <span class="required">*</span></label>
+                <input type="text" id="name" class="form-input" required
+                       placeholder="Your name" data-validate="required">
+                <div class="form-error" id="name-error">Please enter your name</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">Email <span class="required">*</span></label>
+                <input type="email" id="email" class="form-input" required
+                       placeholder="you@example.com" data-validate="email">
+                <div class="form-error" id="email-error">Please enter a valid email</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="subject">Subject</label>
+                <select id="subject" class="form-select">
+                    <option value="">Select a subject</option>
+                    <option value="general">General Inquiry</option>
+                    <option value="support">Support</option>
+                    <option value="feedback">Feedback</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="message">Message <span class="required">*</span></label>
+                <textarea id="message" class="form-textarea" required
+                          placeholder="Your message..." data-validate="required"
+                          rows="4"></textarea>
+                <div class="form-error" id="message-error">Please enter your message</div>
+            </div>
+
+            <div class="form-group">
+                <div class="form-checkbox">
+                    <input type="checkbox" id="agree">
+                    <label for="agree">I agree to the <a href="#">terms and conditions</a></label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="submitBtn">Send Message</button>
+                <button type="reset" class="btn btn-secondary">Clear</button>
+            </div>
+        </form>
+
+        <div class="success-message" id="successMessage">
+            <div class="success-icon">✓</div>
+            <h3 class="success-title">Message Sent!</h3>
+            <p class="success-text">Thank you for reaching out. We'll get back to you soon.</p>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('contactForm');
+        const successMessage = document.getElementById('successMessage');
+
+        function validateField(field) {
+            const type = field.dataset.validate;
+            const error = document.getElementById(field.id + '-error');
+            let isValid = true;
+
+            if (type === 'required') {
+                isValid = field.value.trim().length > 0;
+            } else if (type === 'email') {
+                isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value);
+            }
+
+            if (!isValid) {
+                field.classList.add('error');
+                if (error) error.classList.add('visible');
+            } else {
+                field.classList.remove('error');
+                if (error) error.classList.remove('visible');
+            }
+
+            return isValid;
+        }
+
+        // Real-time validation on blur
+        form.querySelectorAll('[data-validate]').forEach(field => {
+            field.addEventListener('blur', () => validateField(field));
+            field.addEventListener('input', () => {
+                if (field.classList.contains('error')) {
+                    validateField(field);
+                }
+            });
+        });
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            let isValid = true;
+
+            form.querySelectorAll('[data-validate]').forEach(field => {
+                if (!validateField(field)) isValid = false;
+            });
+
+            if (isValid) {
+                // Simulate submission
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Sending...';
+
+                setTimeout(() => {
+                    form.style.display = 'none';
+                    successMessage.classList.add('visible');
+                }, 1000);
+            }
+        });
+
+        // Reset form
+        form.addEventListener('reset', () => {
+            form.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(field => {
+                field.classList.remove('error');
+            });
+            form.querySelectorAll('.form-error').forEach(error => {
+                error.classList.remove('visible');
+            });
+        });
+    </script>
+</body>
+</html>

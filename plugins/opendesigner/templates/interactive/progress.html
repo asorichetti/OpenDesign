@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title | default("Progress Bars") }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #f7f7f8;
+            padding: 2rem;
+        }
+
+        .progress-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .progress-section {
+            margin-bottom: 2rem;
+        }
+
+        .progress-section h3 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 1rem;
+        }
+
+        /* Default Progress */
+        .progress {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #1a1a1a;
+            border-radius: 9999px;
+            transition: width 1s ease;
+        }
+
+        .progress-bar-success { background: #48bb78; }
+        .progress-bar-warning { background: #f59e0b; }
+        .progress-bar-error { background: #e53e3e; }
+        .progress-bar-info { background: #4299e1; }
+
+        /* Progress Sizes */
+        .progress-sm { height: 4px; }
+        .progress-lg { height: 12px; }
+
+        /* Progress with Label */
+        .progress-with-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-label {
+            font-size: 0.875rem;
+            color: #6b6b6b;
+        }
+
+        .progress-percentage {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        /* Animated Progress */
+        .progress-animated .progress-bar {
+            background: linear-gradient(90deg, #1a1a1a, #3379ff, #1a1a1a);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Circular Progress */
+        .circular-progress {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .circular-svg {
+            width: 80px;
+            height: 80px;
+            transform: rotate(-90deg);
+        }
+
+        .circular-bg {
+            fill: none;
+            stroke: #e0e0e0;
+            stroke-width: 8;
+        }
+
+        .circular-fill {
+            fill: none;
+            stroke: #1a1a1a;
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 226;
+            stroke-dashoffset: 226;
+            transition: stroke-dashoffset 1.5s ease;
+        }
+
+        .circular-text {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-container">
+        <div class="progress-section">
+            <h3>Default</h3>
+            <div class="progress-with-label">
+                <span class="progress-label">Storage</span>
+                <span class="progress-percentage">75%</span>
+            </div>
+            <div class="progress">
+                <div class="progress-bar" style="width: 75%;"></div>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <h3>Colors</h3>
+            {% for item in progress_items | default([{'label': 'Success', 'value': 90, 'color': 'success'}, {'label': 'Warning', 'value': 65, 'color': 'warning'}, {'label': 'Error', 'value': 40, 'color': 'error'}]) %}
+            <div class="progress-with-label" style="margin-top: 0.75rem;">
+                <span class="progress-label">{{ item.label }}</span>
+                <span class="progress-percentage">{{ item.value }}%</span>
+            </div>
+            <div class="progress">
+                <div class="progress-bar progress-bar-{{ item.color | default('') }}" style="width: {{ item.value }}%;"></div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="progress-section">
+            <h3>Animated</h3>
+            <div class="progress progress-animated">
+                <div class="progress-bar" style="width: 60%;"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
