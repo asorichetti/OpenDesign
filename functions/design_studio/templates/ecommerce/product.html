@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product_name | default: 'Product Name' }}</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --bg: #ffffff;
+            --bg-secondary: #f8fafc;
+            --success: #22c55e;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text); line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+        .product { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; padding: 3rem 0; }
+        .product-image { background: var(--bg-secondary); border-radius: var(--radius); padding: 2rem; display: flex; align-items: center; justify-content: center; }
+        .product-image img { max-width: 100%; height: auto; border-radius: var(--radius); }
+        .product-info h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .product-price { font-size: 2.5rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem; }
+        .product-description { color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.8; }
+        .product-options { margin-bottom: 2rem; }
+        .option-group { margin-bottom: 1.5rem; }
+        .option-label { font-weight: 600; margin-bottom: 0.5rem; display: block; }
+        .option-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .option-btn { padding: 0.5rem 1rem; border: 2px solid var(--border); border-radius: 8px; background: white; cursor: pointer; transition: all 0.2s; }
+        .option-btn:hover, .option-btn.active { border-color: var(--primary); color: var(--primary); }
+        .quantity-selector { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+        .qty-btn { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 8px; background: white; cursor: pointer; font-size: 1.25rem; }
+        .qty-value { font-size: 1.125rem; font-weight: 600; min-width: 3rem; text-align: center; }
+        .add-to-cart { width: 100%; padding: 1rem; background: var(--primary); color: white; border: none; border-radius: var(--radius); font-size: 1.125rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .add-to-cart:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: var(--shadow); }
+        .product-features { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+        .feature-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .feature { display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); }
+        .feature-icon { color: var(--success); font-size: 1.25rem; }
+        @media (max-width: 768px) { .product { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="product">
+            <div class="product-image">
+                <img src="https://via.placeholder.com/500x500/f8fafc/6366f1?text={{ product_name | default: 'Product' }}" alt="{{ product_name | default: 'Product Image' }}">
+            </div>
+            <div class="product-info">
+                <h1>{{ product_name | default: 'Premium Product Name' }}</h1>
+                <div class="product-price">${{ price | default: '99.99' }}</div>
+                <p class="product-description">{{ description | default: 'This is a premium product with exceptional quality and features. Perfect for professionals and enthusiasts alike.' }}</p>
+                
+                <div class="product-options">
+                    <div class="option-group">
+                        <label class="option-label">Size</label>
+                        <div class="option-buttons">
+                            <button class="option-btn">Small</button>
+                            <button class="option-btn active">Medium</button>
+                            <button class="option-btn">Large</button>
+                        </div>
+                    </div>
+                    <div class="option-group">
+                        <label class="option-label">Color</label>
+                        <div class="option-buttons">
+                            <button class="option-btn" style="background: #1e293b; color: white;">Black</button>
+                            <button class="option-btn" style="background: #6366f1; color: white;">Indigo</button>
+                            <button class="option-btn" style="background: #22c55e; color: white;">Green</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quantity-selector">
+                    <span style="font-weight: 600;">Quantity:</span>
+                    <button class="qty-btn">-</button>
+                    <span class="qty-value">1</span>
+                    <button class="qty-btn">+</button>
+                </div>
+                
+                <button class="add-to-cart">🛒 Add to Cart</button>
+                
+                <div class="product-features">
+                    <h3 style="margin-bottom: 1rem;">Product Features</h3>
+                    <div class="feature-list">
+                        <div class="feature"><span class="feature-icon">✓</span> Free Shipping</div>
+                        <div class="feature"><span class="feature-icon">✓</span> 30-Day Returns</div>
+                        <div class="feature"><span class="feature-icon">✓</span> 2-Year Warranty</div>
+                        <div class="feature"><span class="feature-icon">✓</span> 24/7 Support</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
