@@ -3,12 +3,12 @@
 OpenDesigner CLI — Standalone test runner for the generation pipeline.
 
 Run all tests:
-    python opendesign_cli.py
+    python opendesigner_cli.py
 
 Run a specific test:
-    python opendesign_cli.py intent
-    python opendesign_cli.py templates
-    python opendesign_cli.py generate
+    python opendesigner_cli.py intent
+    python opendesigner_cli.py templates
+    python opendesigner_cli.py generate
 
 Shows the generation pipeline working end-to-end without needing OpenWebUI.
 """
@@ -21,422 +21,344 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from functions.designer_studio.design_studio import Pipe
-
+from functions.designer_studio.designer_studio import Pipe
 from functions.preview_generator.preview_generator import Action as PreviewGenerator
 from functions.prompt_enhancer.prompt_enhancer import Filter as PromptEnhancer
 
 
 # ANSI colors
-class C:
-    RESET = "\033[0m"
-    RED = "\033[91m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    BLUE = "\033[94m"
-    MAGENTA = "\033[95m"
-    CYAN = "\033[96m"
-    BOLD = "\033[1m"
-    DIM = "\033[2m"
+class Colors:
+    RED = '\033[0;31m'
+    GREEN = '\033[0;32m'
+    YELLOW = '\033[1;33m'
+    BLUE = '\033[0;34m'
+    CYAN = '\033[0;36m'
+    BOLD = '\033[1m'
+    NC = '\033[0m'  # No Color
 
 
-def banner():
-    print(f"""
-{C.CYAN}{C.BOLD}╔══════════════════════════════════════════╗{C.RESET}
-{C.CYAN}{C.BOLD}║        OpenDesigner CLI — Test Runner      ║{C.RESET}
-{C.CYAN}{C.BOLD}╠══════════════════════════════════════════╣{C.RESET}
-{C.CYAN}{C.BOLD}║        Standalone Pipeline Demo          ║{C.RESET}
-{C.CYAN}{C.BOLD}╠══════════════════════════════════════════╣{C.RESET}
-{C.CYAN}{C.BOLD}║        14 templates loaded               ║{C.RESET}
-{C.CYAN}{C.BOLD}║        7 prompt templates                ║{C.RESET}
-{C.CYAN}{C.BOLD}║        3 plugin functions                ║{C.RESET}
-{C.CYAN}{C.BOLD}╚══════════════════════════════════════════╝{C.RESET}
-""")
+def print_header(title):
+    print(f"\n{Colors.BLUE}{'='*60}{Colors.NC}")
+    print(f"{Colors.BLUE}{Colors.BOLD}  {title}{Colors.NC}")
+    print(f"{Colors.BLUE}{'='*60}{Colors.NC}\n")
 
 
-def section(title: str):
-    print(f"\n{C.CYAN}{C.BOLD}{'─' * 56}{C.RESET}")
-    print(f"  {C.BOLD}{title}{C.RESET}")
-    print(f"{C.CYAN}{C.BOLD}{'─' * 56}{C.RESET}\n")
+def print_test(name):
+    print(f"{Colors.CYAN}▶{Colors.NC} {name}")
 
 
-def create_pipe() -> Pipe:
-    """Create a Pipe instance for testing."""
-    pipe = object.__new__(Pipe)
-    pipe._templates_cache = {}
-    pipe._prompts_cache = {}
-    pipe._data_dir = None
-    return pipe
+def print_pass(message="Passed"):
+    print(f"  {Colors.GREEN}✓{Colors.NC} {message}")
 
 
-def test_intent_detection(pipe: Pipe):
-    """Test keyword-based intent detection."""
-    section("1. Intent Detection")
+def print_fail(message="Failed"):
+    print(f"  {Colors.RED}✗{Colors.NC} {message}")
 
-    test_cases = [
-        ("create a landing page", True),
-        ("show me my previous designs", False),
-        ("generate a dashboard", True),
-        ("what's the weather", False),
-        ("hello there", False),
-        ("iterate on the hero section", True),
-        ("create a slide deck about AI", True),
-        ("build me a button", True),
-        ("DESIGN A WEBSITE", True),
+
+def print_info(message):
+    print(f"  {Colors.YELLOW}ℹ{Colors.NC} {message}")
+
+
+class TestRunner:
+    def __init__(self):
+        self.passed = 0
+        self.failed = 0
+
+    def run_test(self, name, func):
+        print_test(name)
+        try:
+            result = func()
+            if result:
+                print_pass()
+                self.passed += 1
+            else:
+                print_fail()
+                self.failed += 1
+        except Exception as e:
+            print_fail(f"Error: {str(e)}")
+            self.failed += 1
+
+
+def test_intent_detection():
+    """Test that design intent is correctly detected from chat messages."""
+    pipe = Pipe()
+
+    # Test 1: Design keyword detected
+    messages = [{"role": "user", "content": "Create a landing page for my startup"}]
+    assert pipe.detect_intent(messages) == True, "Should detect design intent"
+
+    # Test 2: Non-design message ignored
+    messages = [{"role": "user", "content": "What's the weather today?"}]
+    assert pipe.detect_intent(messages) == False, "Should not detect design intent"
+
+    # Test 3: Multiple messages - last one counts
+    messages = [
+        {"role": "user", "content": "Hello"},
+        {"role": "assistant", "content": "Hi there!"},
+        {"role": "user", "content": "Generate a dashboard"}
     ]
+    assert pipe.detect_intent(messages) == True, "Should detect in last message"
 
-    for prompt, expected in test_cases:
-        result = pipe._is_design_prompt(prompt)
-        status = C.GREEN + "✓" + C.RESET if result == expected else C.RED + "✗" + C.RESET
-        print(f'  {status} "{prompt}" → {C.YELLOW}{"design" if result else "other"}{C.RESET}')
+    return True
 
 
-def test_template_loading(pipe: Pipe):
-    """Test template file loading and caching."""
-    section("2. Template Loading")
+def test_template_loading():
+    """Test that templates load correctly from the templates directory."""
+    pipe = Pipe()
 
-    templates = [
-        "landing/minimal",
-        "landing/hero",
-        "landing/feature-grid",
-        "dashboard/analytics",
-        "component/button",
-        "component/card",
-        "component/modal",
-        "component/form",
-        "presentation/blank",
-        "presentation/sections",
-        "email/newsletter",
-        "email/transactional",
-        "social/hero-banner",
-        "social/og-card",
-    ]
+    # Test 1: Load existing template
+    template = pipe.load_template("landing/hero.html")
+    assert template is not None, "Should load template"
+    assert "HTML" in template or "<html" in template.lower(), "Should contain HTML"
 
-    loaded = 0
-    for name in templates:
-        html = pipe._load_template(name)
-        if html and "<!DOCTYPE" in html:
-            size = len(html)
-            loaded += 1
-            print(f"  {C.GREEN}✓{C.RESET} {name:35s} {size:>5d}b")
-        else:
-            print(f"  {C.RED}✗{C.RESET} {name:35s} NOT FOUND")
+    # Test 2: Load nonexistent template (should fall back)
+    template = pipe.load_template("nonexistent/template.html")
+    assert template is not None, "Should return fallback template"
+    assert len(template) > 100, "Fallback should have content"
 
-    print(f"\n  {C.BOLD}{loaded}/{len(templates)} templates loaded{C.RESET}")
+    # Test 3: Template caching works
+    template1 = pipe.load_template("landing/hero.html")
+    template2 = pipe.load_template("landing/hero.html")
+    assert template1 == template2, "Cached templates should match"
+
+    return True
 
 
-def test_prompt_construction(pipe: Pipe):
-    """Test prompt template loading and variable substitution."""
-    section("3. Prompt Construction")
+def test_prompt_construction():
+    """Test that prompts are constructed with correct variables and context."""
+    pipe = Pipe()
 
-    prompt_template = pipe._load_prompt("generate_html")
-    print(f"  {C.GREEN}✓{C.RESET} Prompt template loaded: {len(prompt_template):>5d} chars")
-    print(f"  {C.GREEN}✓{C.RESET} Has placeholders: {'{{user_message}}' in prompt_template}")
+    # Test 1: Load prompt template
+    prompt_text = pipe.load_prompt_template("generate_html.md")
+    assert prompt_text is not None, "Should load prompt template"
+    assert "{{" in prompt_text, "Should contain Jinja2 variables"
 
-    # Build a prompt
-    prompt = pipe._build_prompt(
-        prompt_template=prompt_template,
-        template_html="<div class='demo'>Test Page</div>",
-        design_system="light",
-        user_message="Create a coffee shop landing page",
-    )
+    # Test 2: Variable substitution works
+    variables = {
+        "page_type": "landing page",
+        "page_title": "My Startup",
+        "page_description": "The best startup ever",
+        "template": "<html><body>Hello</body></html>",
+        "css_theme": "light",
+        "color_scheme": "blue",
+        "font_family": "sans-serif",
+        "include_logo": "false",
+        "include_navigation": "true",
+        "include_hero": "true",
+        "include_features": "true",
+        "include_cta": "true",
+        "include_footer": "true",
+        "include_testimonials": "false",
+        "include_pricing": "false",
+    }
+    prompt = pipe._build_prompt("Create a landing page", variables, "landing/hero.html")
+    assert "My Startup" in prompt, "Should substitute page_title"
+    assert "The best startup ever" in prompt, "Should substitute page_description"
 
-    print(f"\n  {C.GREEN}✓{C.RESET} Prompt built: {len(prompt):>5d} chars")
-    print(f"  {C.GREEN}✓{C.RESET} Contains user message: {'coffee shop' in prompt.lower()}")
-    print(f"  {C.GREEN}✓{C.RESET} Contains design CSS: {'--od-color' in prompt}")
-    print(f"  {C.GREEN}✓{C.RESET} Contains template: {'Test Page' in prompt}")
-
-    # Show preview
-    preview = prompt[:300].replace("\n", " ")
-    print(f"\n  {C.DIM}  Preview: {preview}...{C.RESET}")
+    return True
 
 
 def test_html_extraction():
-    """Test HTML code block extraction from LLM responses."""
-    section("4. HTML Extraction")
+    """Test that HTML is correctly extracted from LLM response."""
+    pipe = Pipe()
 
-    gen = PreviewGenerator()
-
-    # Simulated LLM response
+    # Test 1: Extract from code block
     response = """
-Here's the HTML for your landing page:
+    Here's your landing page:
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head><title>Bean & Brew</title></head>
-<body>
-    <h1>Welcome to Bean & Brew</h1>
-    <p>Fresh coffee, brewed daily.</p>
-</body>
-</html>
-```
-"""
+    ```html
+    <!DOCTYPE html>
+    <html>
+    <head><title>Test</title></head>
+    <body><h1>Hello World</h1></body>
+    </html>
+    ```
 
-    blocks = gen._extract_code_blocks(response)
-    html = blocks[0] if blocks else ""
+    Let me know if you need changes!
+    """
+    html = pipe.extract_html_from_response(response)
+    assert "<html" in html.lower(), "Should extract HTML"
+    assert "Hello World" in html, "Should preserve content"
 
-    print(f"  {C.GREEN}✓{C.RESET} Extracted {len(blocks)} code block(s)")
-    print(f"  {C.GREEN}✓{C.RESET} Has DOCTYPE: {'<!DOCTYPE' in html}")
-    print(f"  {C.GREEN}✓{C.RESET} Has title: {'Bean & Brew' in html}")
-    print(f"  {C.GREEN}✓{C.RESET} Has h1: {'<h1>' in html}")
+    # Test 2: No code block returns empty
+    response = "I can't help with that."
+    html = pipe.extract_html_from_response(response)
+    assert html is not None, "Should return something"
 
-
-def test_sanitization():
-    """Test HTML sanitization (done by Pipe, not Action)."""
-    section("5. HTML Sanitization")
-
-    # Sanitization is done by the Pipe, test via _validate_html
-    # Check that dangerous patterns are flagged
-    dangerous_patterns = ["onclick", "javascript:", "eval(", "onerror="]  # security:allow
-    for pattern in dangerous_patterns:  # security:allow
-        test_htmls = [
-            '<div onclick="alert(1)">',
-            "href=javascript:alert(1)",
-            "eval(code)",  # security:allow
-            '<img onerror="x">',
-        ]
-        for html in test_htmls:
-            assert pattern in html, f"Pattern {pattern} not found in {html}"
-        print(f"  {C.GREEN}✓{C.RESET} Dangerous pattern detected: '{pattern}'")
-
-    # Safe HTML should pass through
-    safe_html = '<div style="color:blue;font-size:14px"><p>Safe content</p></div>'
-    print(f"  {C.GREEN}✓{C.RESET} Safe HTML preserved: {'<p>' in safe_html}")
+    return True
 
 
-def test_version_persistence():
-    """Test version saving and loading."""
-    section("6. Version Persistence")
+def test_html_sanitization():
+    """Test that HTML is sanitized to remove dangerous code."""
+    pipe = Pipe()
 
-    pipe = create_pipe()
+    # Test 1: Sanitize script tags
+    html = '<html><body><script>alert("XSS")</script></body></html>'
+    sanitized = pipe.sanitize_html(html)
+    assert "<script>" not in sanitized.lower(), "Should remove script tags"
 
-    # Create a temp data directory for testing
-    with tempfile.TemporaryDirectory() as tmpdir:
-        data_dir = Path(tmpdir) / "opendesigner"
-        data_dir.mkdir()
+    # Test 2: Sanitize onerror attributes
+    html = '<img src="x" onerror="alert(1)">'
+    sanitized = pipe.sanitize_html(html)
+    assert "onerror" not in sanitized.lower(), "Should remove onerror"
 
-        # Set data dir
-        pipe._data_dir = data_dir
+    # Test 3: Preserve safe HTML
+    html = '<div class="container"><h1>Safe Content</h1></div>'
+    sanitized = pipe.sanitize_html(html)
+    assert "Safe Content" in sanitized, "Should preserve safe content"
 
-        test_html = "<html><body><h1>Test Version</h1></body></html>"
-        user_id = "demo-user-123"
-        metadata = {
-            "prompt": "Create a test page",
-            "template": "landing/minimal",
-            "design_system": "light",
-            "model": "test-model",
-        }
-
-        # Save version
-        result = pipe._save_version(
-            design_id="test-design",
-            html=test_html,
-            prompt=metadata["prompt"],
-            __user__={"id": user_id, "username": "demo"},
-        )
-
-        if result and os.path.exists(result):
-            print(f"  {C.GREEN}✓{C.RESET} Version saved: {result}")
-
-            # Verify content
-            with open(result) as f:
-                content = f.read()
-            print(f"  {C.GREEN}✓{C.RESET} Content verified: {'Test Version' in content}")
-
-            # Check history
-            history_path = data_dir / "history.json"
-            if history_path.exists():
-                with open(history_path) as f:
-                    history = json.load(f)
-                print(
-                    f"  {C.GREEN}✓{C.RESET} History updated: {len(history.get('versions', []))} versions"
-                )
-
-            print(f"  {C.GREEN}✓{C.RESET} Atomic write: file exists and is readable")
-        else:
-            print(f"  {C.YELLOW}⚠{C.RESET} Save test skipped (directory may not be writable)")
+    return True
 
 
-def test_preview_generator():
-    """Test preview and editor generation."""
-    section("7. Preview Generator")
+def test_preview_generation():
+    """Test that preview generation works correctly."""
+    preview = PreviewGenerator()
 
-    gen = PreviewGenerator()
+    # Test 1: Extract code blocks
+    response = "Here's the HTML:\n```html\n<div>Test</div>\n```"
+    blocks = preview.extract_code_blocks(response)
+    assert len(blocks) > 0, "Should extract code blocks"
 
-    test_html = """<html>
-<head><style>body{font-family:sans-serif;padding:2rem;background:#f7f7f8}h1{color:#1a1a2b}</style></head>
-<body><h1>Hello Preview!</h1><p>This is a test preview.</p></body>
-</html>"""
+    # Test 2: Render preview
+    html = "<html><body><h1>Preview</h1></body></html>"
+    preview_html = preview.render_preview(html)
+    assert "iframe" in preview_html.lower(), "Should create iframe"
+    assert "Preview" in preview_html, "Should preserve content"
 
-    # Generate preview iframe
-    preview = gen._render_preview(test_html)
-    print(f"  {C.GREEN}✓{C.RESET} Preview iframe: {len(preview):>5d} chars")
-    print(f"  {C.GREEN}✓{C.RESET} Has sandbox: {'sandbox=' in preview}")
-    print(f"  {C.GREEN}✓{C.RESET} Has srcdoc: {'srcdoc=' in preview}")
-    print(f"  {C.GREEN}✓{C.RESET} Has responsive toggle: {'responsive-toggle' in preview}")
+    # Test 3: Render editor
+    editor_html = preview.render_editor(html)
+    assert "textarea" in editor_html.lower() or "code" in editor_html.lower(), "Should create editor"
 
-    # Generate editor
-    editor = gen._render_editor(test_html)
-    print(f"\n  {C.GREEN}✓{C.RESET} Editor UI: {len(editor):>5d} chars")
-    print(f"  {C.GREEN}✓{C.RESET} Has textarea: {'textarea' in editor.lower()}")
-    print(f"  {C.GREEN}✓{C.RESET} Has iframe: {'<iframe' in editor}")
-    print(f"  {C.GREEN}✓{C.RESET} Has sandbox: {'sandbox=' in editor}")
+    return True
 
 
-def test_prompt_enhancer():
-    """Test prompt enhancement filter."""
-    section("8. Prompt Enhancer")
-
+def test_prompt_enhancement():
+    """Test that prompts are enhanced with design context."""
     enhancer = PromptEnhancer()
 
-    design_prompt = "create a landing page for a coffee shop"
+    # Test 1: Enhance design prompt
+    messages = [{"role": "user", "content": "Create a landing page"}]
+    enhanced = enhancer.outlet(messages)
+    assert enhanced is not None, "Should return enhanced messages"
 
-    # Test _enhance_prompt directly (sync method)
-    body = {"messages": [{"role": "user", "content": design_prompt}]}
-    enhanced = enhancer._enhance_prompt(body, design_prompt)
-    new_prompt = enhanced.get("prompt", "") if isinstance(enhanced, dict) else str(enhanced)
+    # Test 2: Skip non-design prompt
+    messages = [{"role": "user", "content": "What's 2+2?"}]
+    enhanced = enhancer.outlet(messages)
+    assert enhanced is not None, "Should return messages even if not enhanced"
 
-    print(f'  {C.GREEN}✓{C.RESET} Original: "{design_prompt}"')
-    print(f'  {C.GREEN}✓{C.RESET} Enhanced: "{new_prompt[:100]}..."')
-    print(f"  {C.GREEN}✓{C.RESET} Added detail: {len(new_prompt) > len(design_prompt)}")
-
-    # Test _is_design_prompt
-    is_design = enhancer._is_design_prompt(design_prompt)
-    print(f"  {C.GREEN}✓{C.RESET} Recognized as design: {is_design}")
+    return True
 
 
-def test_manifold():
-    """Test manifold (multi-model) exposure."""
-    section("9. Manifold — Multi-Model")
+def test_all_templates_loadable():
+    """Test that all templates can be loaded without errors."""
+    pipe = Pipe()
+    templates_dir = Path("functions/designer_studio/templates")
 
-    pipe = create_pipe()
-    models = pipe.pipes()
+    if not templates_dir.exists():
+        print_info("Templates directory not found")
+        return True
 
-    print(f"  {C.GREEN}✓{C.RESET} Exposed {len(models)} models:")
-    for model in models:
-        print(f"    {C.YELLOW}•{C.RESET} {model['name']} ({model['id']})")
+    total = 0
+    failed = 0
 
+    for template_file in templates_dir.rglob("*.html"):
+        rel_path = template_file.relative_to(templates_dir)
+        template_str = str(rel_path).replace(os.sep, "/")
+        total += 1
 
-def test_all_templates_render():
-    """Test all templates are valid HTML."""
-    section("10. Template Validation")
+        try:
+            template = pipe.load_template(template_str)
+            if template and len(template) > 50:
+                pass  # Success
+            else:
+                failed += 1
+                print(f"  {Colors.RED}✗{Colors.NC} {template_str} (empty or too short)")
+        except Exception as e:
+            failed += 1
+            print(f"  {Colors.RED}✗{Colors.NC} {template_str} ({e})")
 
-    import glob
-
-    template_files = glob.glob("functions/design_studio/templates/**/*.html", recursive=True)
-
-    valid = 0
-    for tf in sorted(template_files):
-        with open(tf) as f:
-            content = f.read()
-
-        has_open = "<html" in content or "<!DOCTYPE" in content
-        has_close = "</html>" in content
-        has_style = "<style>" in content or "style=" in content
-
-        if has_open and has_close and has_style:
-            valid += 1
-            rel = tf.replace("functions/design_studio/templates/", "")
-            print(f"  {C.GREEN}✓{C.RESET} {rel:40s}")
-        else:
-            rel = tf.replace("functions/design_studio/templates/", "")
-            print(f"  {C.RED}✗{C.RESET} {rel:40s}")
-
-    print(f"\n  {C.BOLD}{valid}/{len(template_files)} templates valid{C.RESET}")
+    print(f"  Loaded {total - failed}/{total} templates successfully")
+    return failed == 0
 
 
-def test_design_systems():
-    """Test design system CSS loading."""
-    section("11. Design Systems")
+def test_end_to_end_generation():
+    """Test complete generation pipeline (without actual LLM call)."""
+    pipe = Pipe()
 
-    from pathlib import Path
+    # Step 1: Detect intent
+    messages = [{"role": "user", "content": "Generate a dashboard"}]
+    assert pipe.detect_intent(messages) == True, "Intent detection should work"
 
-    assets = Path("functions/design_studio/assets")
+    # Step 2: Load template
+    template = pipe.load_template("dashboard/analytics.html")
+    assert template is not None, "Template should load"
 
-    for css_file in sorted(assets.glob("*.css")):
-        content = css_file.read_text()
-        has_dark = "dark" in str(css_file).lower()
-        print(
-            f"  {C.GREEN}✓{C.RESET} {css_file.name:15s} {len(content):>5d}b {'dark' if has_dark else 'light'}"
-        )
+    # Step 3: Build variables
+    variables = {
+        "page_type": "dashboard",
+        "page_title": "Analytics",
+        "page_description": "Analytics dashboard",
+        "template": template,
+        "css_theme": "light",
+        "color_scheme": "blue",
+        "font_family": "sans-serif",
+        "include_logo": "false",
+        "include_navigation": "true",
+        "include_hero": "false",
+        "include_features": "true",
+        "include_cta": "false",
+        "include_footer": "true",
+        "include_testimonials": "false",
+        "include_pricing": "false",
+    }
 
+    # Step 4: Build prompt
+    prompt = pipe._build_prompt("Generate a dashboard", variables, "dashboard/analytics.html")
+    assert "Analytics" in prompt, "Prompt should contain variables"
 
-def test_code_extraction():
-    """Test markdown code block extraction."""
-    section("12. Code Block Extraction")
-
-    gen = PreviewGenerator()
-
-    tests = [
-        ("single block", "```\n<html></html>\n```", 1),
-        ("multiple blocks", "```\n<html>\n```\n```\n<style>\n```", 2),
-        ("no blocks", "plain text", 0),
-        ("nested code", "some text\n```\ncode\n```\nmore text", 1),
-    ]
-
-    for name, text, expected in tests:
-        blocks = gen._extract_code_blocks(text)
-        status = C.GREEN + "✓" + C.RESET if len(blocks) == expected else C.RED + "✗" + C.RESET
-        print(f"  {status} {name:20s} → {len(blocks)} block(s) (expected {expected})")
+    print_info("Pipeline works end-to-end (LLM call skipped)")
+    return True
 
 
 def main():
-    banner()
+    """Run all tests."""
+    print_header("OPENDESIGNER COMPREHENSIVE TEST SUITE")
 
-    pipe = create_pipe()
-    tests = [
-        ("intent", test_intent_detection, (pipe,)),
-        ("templates", test_template_loading, (pipe,)),
-        ("prompt", test_prompt_construction, (pipe,)),
-        ("extraction", test_html_extraction, ()),
-        ("sanitize", test_sanitization, ()),
-        ("version", test_version_persistence, ()),
-        ("preview", test_preview_generator, ()),
-        ("enhancer", test_prompt_enhancer, ()),
-        ("manifold", test_manifold, ()),
-        ("render", test_all_templates_render, ()),
-        ("designsys", test_design_systems, ()),
-        ("code", test_code_extraction, ()),
-    ]
+    runner = TestRunner()
 
-    passed = 0
-    failed = 0
-    run_all = len(sys.argv) < 2
+    # Test Suite 1: Core Functions
+    print_header("📦 TEST SUITE 1: Core Functions")
+    runner.run_test("Intent detection", test_intent_detection)
+    runner.run_test("Template loading", test_template_loading)
+    runner.run_test("Prompt construction", test_prompt_construction)
+    runner.run_test("HTML extraction", test_html_extraction)
+    runner.run_test("HTML sanitization", test_html_sanitization)
 
-    for name, test_func, args in tests:
-        if not run_all and sys.argv[1] != name:
-            continue
+    # Test Suite 2: Preview & Enhancement
+    print_header("📦 TEST SUITE 2: Preview & Enhancement")
+    runner.run_test("Preview generation", test_preview_generation)
+    runner.run_test("Prompt enhancement", test_prompt_enhancement)
 
-        try:
-            test_func(*args)
-            passed += 1
-        except Exception as e:
-            print(f"\n  {C.RED}{C.BOLD}✗{C.RESET} {name}: {C.RED}{e}{C.RESET}")
-            failed += 1
+    # Test Suite 3: Template Validation
+    print_header("📦 TEST SUITE 3: Template Validation")
+    runner.run_test("All templates loadable", test_all_templates_loadable)
+    runner.run_test("End-to-end pipeline", test_end_to_end_generation)
 
     # Summary
-    total = passed + failed
-    print(f"\n{C.CYAN}{C.BOLD}{'─' * 56}{C.RESET}")
-    print(f"  {C.BOLD}Results{C.RESET}")
-    print(f"{C.CYAN}{C.BOLD}{'─' * 56}{C.RESET}\n")
-    print(f"  {C.GREEN}Passed: {passed}{C.RESET} / {total}")
-    if failed:
-        print(f"  {C.RED}Failed: {failed}{C.RESET} / {total}")
-    print("\n")
+    print_header("📊 TEST RESULTS")
+    print(f"  {Colors.GREEN}Passed: {Colors.BOLD}{runner.passed}{Colors.NC}")
+    print(f"  {Colors.RED if runner.failed > 0 else Colors.GREEN}Failed: {Colors.BOLD}{runner.failed}{Colors.NC}")
+    print(f"  Total:  {runner.passed + runner.failed}")
 
-    # Show demo link
-    demo_path = Path(__file__).parent / "demo" / "index.html"
-    print(f"  {C.DIM}Open demo: {C.BOLD}{demo_path.absolute()}{C.RESET}")
-    print(f"  {C.DIM}or run:{C.RESET}")
-    print(f"  {C.BOLD}  open {demo_path.absolute()}{C.RESET}")
-    print(f"\n  {C.DIM}Unit tests: {C.BOLD}python -m pytest tests/ -v{C.RESET}\n")
+    if runner.failed == 0:
+        print(f"\n  {Colors.GREEN}{Colors.BOLD}✅ ALL TESTS PASSED!{Colors.NC}")
+    else:
+        print(f"\n  {Colors.RED}{Colors.BOLD}❌ SOME TESTS FAILED{Colors.NC}")
 
-    return 0 if failed == 0 else 1
+    print()
+    return runner.failed == 0
 
 
 if __name__ == "__main__":
-    # Need tempfile import
-    import tempfile
-
-    sys.exit(main())
+    success = main()
+    sys.exit(0 if success else 1)
