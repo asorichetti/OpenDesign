@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product_name | default: 'SaaS Product' }}</title>
+    <style>
+        :root { --primary: #6366f1; --primary-dark: #4f46e5; --text: #1e293b; --text-secondary: #64748b; --border: #e2e8f0; --bg: #ffffff; --radius: 12px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text); line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+        .nav { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 0; border-bottom: 1px solid var(--border); }
+        .nav-logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-weight: 500; }
+        .nav-links a:hover { color: var(--primary); }
+        .nav-cta { display: flex; gap: 1rem; }
+        .btn { padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .btn-outline { background: white; color: var(--primary); border: 2px solid var(--primary); }
+        .hero { text-align: center; padding: 6rem 0; }
+        .hero h1 { font-size: 4rem; font-weight: 700; margin-bottom: 1.5rem; line-height: 1.1; }
+        .hero p { font-size: 1.5rem; color: var(--text-secondary); max-width: 700px; margin: 0 auto 2rem; }
+        .hero-actions { display: flex; gap: 1rem; justify-content: center; margin-bottom: 3rem; }
+        .hero-image { background: linear-gradient(135deg, #f1f5f9, #e2e8f0); border-radius: var(--radius); padding: 2rem; }
+        .features { padding: 6rem 0; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem; }
+        .feature-card { padding: 2rem; background: white; border: 1px solid var(--border); border-radius: var(--radius); }
+        .feature-icon { width: 48px; height: 48px; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem; }
+        .feature-card h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+        .feature-card p { color: var(--text-secondary); }
+        .testimonials { padding: 6rem 0; background: #f8fafc; }
+        .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem; }
+        .testimonial-card { background: white; padding: 2rem; border-radius: var(--radius); border: 1px solid var(--border); }
+        .testimonial-text { font-size: 1.125rem; margin-bottom: 1.5rem; font-style: italic; }
+        .testimonial-author { display: flex; align-items: center; gap: 1rem; }
+        .testimonial-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        .cta { text-align: center; padding: 6rem 0; }
+        .cta h2 { font-size: 3rem; margin-bottom: 1rem; }
+        .cta p { font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 2rem; }
+        @media (max-width: 768px) { .hero h1 { font-size: 2.5rem; } .nav-links { display: none; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <div class="nav-logo">SaaS</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#testimonials">Testimonials</a>
+            </div>
+            <div class="nav-cta">
+                <a href="#" class="btn btn-outline">Sign In</a>
+                <a href="#" class="btn btn-primary">Get Started</a>
+            </div>
+        </nav>
+
+        <div class="hero">
+            <h1>Build Better Products Faster</h1>
+            <p>The all-in-one platform for modern teams. Streamline your workflow, boost productivity, and ship faster.</p>
+            <div class="hero-actions">
+                <a href="#" class="btn btn-primary">Start Free Trial</a>
+                <a href="#" class="btn btn-outline">Watch Demo</a>
+            </div>
+            <div class="hero-image">
+                <img src="https://via.placeholder.com/1000x500/f8fafc/6366f1?text=Product+Dashboard" alt="Dashboard Preview" style="max-width: 100%; border-radius: 8px;">
+            </div>
+        </div>
+
+        <div class="features" id="features">
+            <h2 style="text-align: center; font-size: 2.5rem;">Everything You Need</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Optimized for speed with sub-second load times and instant interactions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Enterprise Security</h3>
+                    <p>Bank-grade encryption and compliance with SOC 2, GDPR, and HIPAA.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔗</div>
+                    <h3>Integrations</h3>
+                    <p>Connect with 100+ tools including Slack, Jira, GitHub, and more.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Analytics</h3>
+                    <p>Real-time dashboards and insights to make data-driven decisions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Team Collaboration</h3>
+                    <p>Work together seamlessly with real-time editing and comments.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Automated Workflows</h3>
+                    <p>Automate repetitive tasks and focus on what matters most.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonials" id="testimonials">
+            <h2 style="text-align: center; font-size: 2.5rem;">Loved by Teams Worldwide</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"This platform transformed how our team works. We've increased productivity by 40% in just two months."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar">SM</div>
+                        <div><strong>Sarah Mitchell</strong><br><small style="color: var(--text-secondary);">CTO, TechCorp</small></div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"The best investment we've made this year. The ROI was visible within the first week of use."</p>
+                    <div class="testimonial-author">
+                        <div class="testimonial-avatar" style="background: #22c55e;">JC</div>
+                        <div><strong>James Chen</strong><br><small style="color: var(--text-secondary);">PM, StartupXYZ</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta">
+            <h2>Ready to Get Started?</h2>
+            <p>Join 10,000+ teams already using SaaS to build better products.</p>
+            <a href="#" class="btn btn-primary" style="font-size: 1.125rem; padding: 1rem 2rem;">Start Your Free Trial</a>
+        </div>
+    </div>
+</body>
+</html>

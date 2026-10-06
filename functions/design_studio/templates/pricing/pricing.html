@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title | default: 'Pricing' }}</title>
+    <style>
+        :root { --primary: #6366f1; --primary-dark: #4f46e5; --text: #1e293b; --text-secondary: #64748b; --border: #e2e8f0; --bg: #ffffff; --radius: 12px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text); line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+        .pricing-header { text-align: center; padding: 4rem 0; }
+        .pricing-header h1 { font-size: 3rem; font-weight: 700; margin-bottom: 1rem; }
+        .pricing-header p { font-size: 1.25rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto; }
+        .toggle-container { text-align: center; margin: 2rem 0; }
+        .toggle { display: inline-flex; background: #f1f5f9; border-radius: 999px; padding: 0.25rem; }
+        .toggle-btn { padding: 0.5rem 1.5rem; border-radius: 999px; border: none; background: transparent; cursor: pointer; font-weight: 600; }
+        .toggle-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgb(0 0 0 / 0.1); }
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; padding: 2rem 0; }
+        .pricing-card { background: white; border: 2px solid var(--border); border-radius: var(--radius); padding: 2rem; position: relative; transition: all 0.3s; }
+        .pricing-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgb(0 0 0 / 0.1); }
+        .pricing-card.popular { border-color: var(--primary); }
+        .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 0.25rem 1rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600; }
+        .pricing-card h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .pricing-card .description { color: var(--text-secondary); margin-bottom: 1.5rem; }
+        .price { font-size: 3.5rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+        .price span { font-size: 1rem; color: var(--text-secondary); font-weight: 400; }
+        .pricing-features { list-style: none; margin: 2rem 0; }
+        .pricing-features li { padding: 0.75rem 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.75rem; }
+        .pricing-features li::before { content: '✓'; color: var(--primary); font-weight: 700; }
+        .pricing-btn { width: 100%; padding: 1rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .pricing-btn.primary { background: var(--primary); color: white; }
+        .pricing-btn.primary:hover { background: var(--primary-dark); }
+        .pricing-btn.outline { background: white; color: var(--primary); border: 2px solid var(--primary); }
+        @media (max-width: 768px) { .pricing-header h1 { font-size: 2rem; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="pricing-header">
+            <h1>Simple, Transparent Pricing</h1>
+            <p>Choose the plan that's right for your team. No hidden fees.</p>
+        </div>
+
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3>Starter</h3>
+                <p class="description">Perfect for individuals and small projects</p>
+                <div class="price">$9<span>/month</span></div>
+                <ul class="pricing-features">
+                    <li>Up to 5 projects</li>
+                    <li>10 GB storage</li>
+                    <li>Basic analytics</li>
+                    <li>Email support</li>
+                    <li>API access</li>
+                </ul>
+                <button class="pricing-btn outline">Get Started</button>
+            </div>
+
+            <div class="pricing-card popular">
+                <span class="popular-badge">Most Popular</span>
+                <h3>Professional</h3>
+                <p class="description">Best for growing teams and businesses</p>
+                <div class="price">$29<span>/month</span></div>
+                <ul class="pricing-features">
+                    <li>Unlimited projects</li>
+                    <li>100 GB storage</li>
+                    <li>Advanced analytics</li>
+                    <li>Priority support</li>
+                    <li>Custom integrations</li>
+                    <li>Team collaboration</li>
+                </ul>
+                <button class="pricing-btn primary">Get Started</button>
+            </div>
+
+            <div class="pricing-card">
+                <h3>Enterprise</h3>
+                <p class="description">For large organizations with custom needs</p>
+                <div class="price">$99<span>/month</span></div>
+                <ul class="pricing-features">
+                    <li>Everything in Pro</li>
+                    <li>Unlimited storage</li>
+                    <li>Custom analytics</li>
+                    <li>24/7 phone support</li>
+                    <li>Dedicated account manager</li>
+                    <li>SLA guarantee</li>
+                </ul>
+                <button class="pricing-btn outline">Contact Sales</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
