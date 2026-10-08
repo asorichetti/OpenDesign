@@ -20,7 +20,6 @@ import json
 import os
 import re
 import sys
-import time
 from pathlib import Path
 
 import aiohttp
@@ -155,7 +154,7 @@ class OpenDesignerInstaller:
                 if resp.status == 409 or "already exists" in error.lower():
                     return await self.update_function(func_id, content, frontmatter)
                 return False, f"HTTP {resp.status}: {error[:200]}"
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return False, "Request timeout (function content is large, try again)"
         except aiohttp.ClientError as e:
             return False, f"Network error: {e}"
@@ -180,7 +179,7 @@ class OpenDesignerInstaller:
                 if resp.status in (200, 201):
                     return True, "Updated"
                 return False, f"HTTP {resp.status}: {await resp.text()[:200]}"
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return False, "Request timeout during update"
         except aiohttp.ClientError as e:
             return False, f"Network error: {e}"
@@ -209,10 +208,10 @@ class OpenDesignerInstaller:
                     return await self.session.get(url)
                 elif method == "POST":
                     return await self.session.post(url, json=json_data)
-            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+            except (TimeoutError, aiohttp.ClientError) as e:
                 last_exception = e
                 if attempt < max_retries - 1:
-                    wait = 2 ** attempt  # 1s, 2s, 4s
+                    wait = 2**attempt  # 1s, 2s, 4s
                     print(f"   ⏳ Retry {attempt + 1}/{max_retries} after {wait}s: {e}")
                     await asyncio.sleep(wait)
         if last_exception:
@@ -345,7 +344,9 @@ class OpenDesignerInstaller:
                 if fid in func_map and not func_map[fid].get("is_global", False):
                     not_global.append(fid)
             if not_global:
-                failures.append(f"Functions not global (need global): {', '.join(sorted(not_global))}")
+                failures.append(
+                    f"Functions not global (need global): {', '.join(sorted(not_global))}"
+                )
 
         # Count active functions for display
         active_count = sum(1 for f in functions if f.get("is_active", False))
@@ -358,7 +359,7 @@ class OpenDesignerInstaller:
             print("   Status: ✅ PASS")
             return True, []
         else:
-            print(f"   Status: ❌ FAIL")
+            print("   Status: ❌ FAIL")
             for failure in failures:
                 print(f"      ⚠️  {failure}")
             return False, failures
