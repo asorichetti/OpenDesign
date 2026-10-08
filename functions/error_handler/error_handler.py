@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class ErrorHandler:
+class Action:
     """OpenDesigner Error Handler — provides graceful error recovery and suggestions."""
 
     def __init__(self):

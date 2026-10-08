@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class PromptGenerator:
+class Action:
     """OpenDesigner AI Prompt Generator — creates prompts for any AI model."""
 
     def __init__(self):

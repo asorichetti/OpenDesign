@@ -11,7 +11,7 @@ from collections import defaultdict
 from typing import Any
 
 
-class CollaborationEngine:
+class Action:
     """OpenDesigner Real-time Collaboration — WebSocket-based collaborative editing."""
 
     def __init__(self):

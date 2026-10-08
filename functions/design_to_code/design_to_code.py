@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class DesignToCode:
+class Action:
     """Design-to-Code AI — Convert designs to production-ready code with AI."""
 
     def __init__(self):

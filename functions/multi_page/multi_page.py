@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class MultiPageGenerator:
+class Action:
     """Multi-Page Website Generator — Create multi-page websites with consistent design."""
 
     def __init__(self):

@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class TutorialFilter:
+class Filter:
     """OpenDesigner Onboarding — provides interactive tutorials for new users."""
 
     def __init__(self):

@@ -11,7 +11,7 @@ import re
 from typing import Any
 
 
-class ExportFormats:
+class Action:
     """OpenDesigner Export — export designs to multiple formats."""
 
     def __init__(self):

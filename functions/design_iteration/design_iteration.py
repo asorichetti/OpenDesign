@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class DesignIterationEngine:
+class Action:
     """AI Design Iteration Engine — Refine designs through natural language."""
 
     def __init__(self):

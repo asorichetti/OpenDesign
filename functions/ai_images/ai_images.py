@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class AIImageGeneration:
+class Action:
     """AI Image Generation Integration — Generate images for your designs using AI."""
 
     def __init__(self):

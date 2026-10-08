@@ -10,7 +10,7 @@ import time
 from typing import Any
 
 
-class Authentication:
+class Action:
     """OpenDesigner Authentication — secure access control and user management."""
 
     def __init__(self):

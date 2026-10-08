@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class CustomizationPanel:
+class Action:
     """Visual Customization Panel — Tweak designs without touching code."""
 
     def __init__(self):

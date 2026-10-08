@@ -10,7 +10,7 @@ import time
 from typing import Any
 
 
-class PerformanceOptimizer:
+class Action:
     """OpenDesigner Performance — caching, lazy loading, and optimization."""
 
     def __init__(self):

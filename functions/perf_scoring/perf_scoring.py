@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class PerfScoring:
+class Action:
     """Performance Scoring — Analyze and score design performance metrics."""
 
     def __init__(self):

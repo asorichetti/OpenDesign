@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class SEOOptimizer:
+class Action:
     """SEO Optimization Engine — Auto-generate SEO-friendly meta tags and structured data."""
 
     def __init__(self):

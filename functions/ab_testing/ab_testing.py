@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class ABTesting:
+class Action:
     """A/B Testing Mode — Create variants and compare design performance."""
 
     def __init__(self):

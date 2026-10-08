@@ -205,7 +205,7 @@ COMPONENT_PROPS = {
 # ---------------------------------------------------------------------------
 # Props Renderer
 # ---------------------------------------------------------------------------
-class PropsRenderer:
+class Action:
     """Render component props configuration UI."""
 
     @staticmethod
@@ -217,7 +217,7 @@ class PropsRenderer:
         # Build form fields
         fields_html = []
         for name, prop in props.items():
-            field_html = PropsRenderer._render_field(name, prop)
+            field_html = Action._render_field(name, prop)
             fields_html.append(field_html)
         html = f"""<div class="od-props-form">
 <style>

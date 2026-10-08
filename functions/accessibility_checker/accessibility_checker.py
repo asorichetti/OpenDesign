@@ -10,7 +10,7 @@ import re
 from typing import Any
 
 
-class AccessibilityChecker:
+class Action:
     """OpenDesigner Accessibility Checker — WCAG 2.1 AA compliance validation."""
 
     def __init__(self):

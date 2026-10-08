@@ -1,9 +1,9 @@
 {
     "name": "OpenDesigner",
-    "description": "AI-powered design generation platform with 15 features for Open WebUI",
+    "description": "AI-powered design generation platform for Open WebUI. Generates responsive HTML prototypes, dashboards, and UI components.",
     "author": "asorichetti",
     "author_url": "https://github.com/asorichetti",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "required_open_webui_version": "0.10.0",
     "license": "MIT",
     "tags": [
@@ -36,7 +36,7 @@
         "figma_export/figma_export.py",
         "perf_scoring/perf_scoring.py",
         "design_to_code/design_to_code.py",
-        "template_marketplace/template_marketplace.py",
+        "designer_studio/template_marketplace.py",
         "api/api_integrations.py"
     ],
     "templates": [

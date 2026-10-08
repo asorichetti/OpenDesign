@@ -11,7 +11,7 @@ from collections import defaultdict
 from typing import Any
 
 
-class MonitoringAnalytics:
+class Action:
     """OpenDesigner Monitoring — usage stats, error tracking, and insights."""
 
     def __init__(self):

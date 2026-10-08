@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class DesignAnalytics:
+class Action:
     """Design Analytics — Track usage, performance, and insights for your designs."""
 
     def __init__(self):
