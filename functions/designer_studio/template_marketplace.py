@@ -557,3 +557,12 @@ class TemplateActions:
         # This would load from a community templates registry
         # For now, return empty list
         return []
+
+
+# Aliases for backward compatibility
+class TemplateValidator:  # pragma: no cover
+    """Alias for Action — supports existing imports of TemplateValidator."""
+
+    @staticmethod
+    def validate_template(html_content: str) -> tuple[bool, list[str]]:
+        return Action.validate_template(html_content)

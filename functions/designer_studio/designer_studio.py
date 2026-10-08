@@ -9,13 +9,12 @@ requirements: jinja2, aiohttp
 """
 
 import asyncio
-import hashlib
 import json
 import os
 import re
 import uuid
 from collections.abc import AsyncIterator
-from datetime import UTC, datetime
+from datetime import UTC
 from pathlib import Path
 from typing import Any
 
@@ -845,7 +844,10 @@ class Pipe:
         css_path = None
         if data_dir:
             css_path = data_dir / "opendesigner" / "assets" / f"{design_system}.css"
-        design_css = css_path.read_text(encoding="utf-8") if css_path and css_path.exists() else ""
+        if css_path and css_path.exists():
+            design_css = css_path.read_text(encoding="utf-8")
+        else:
+            design_css = self._get_default_css(design_system)
 
         # Simple template substitution (Jinja2-style {{ variable }})
         variables = {
@@ -860,6 +862,36 @@ class Pipe:
             prompt = prompt.replace(f"{{{{{key}}}}}", str(value))
 
         return prompt
+
+    def _get_default_css(self, design_system: str) -> str:
+        """Return embedded default CSS when no disk CSS is available."""
+        defaults = {
+            "light": """:root {
+    --od-bg-primary: #ffffff;
+    --od-bg-secondary: #f8fafc;
+    --od-color-text: #1e293b;
+    --od-color-primary: #6366f1;
+    --od-color-bg: #f8fafc;
+}
+
+body {
+    background-color: var(--od-bg-primary);
+    color: var(--od-color-text);
+}""",
+            "dark": """:root {
+    --od-bg-primary: #0f172a;
+    --od-bg-secondary: #1e293b;
+    --od-color-text: #f8fafc;
+    --od-color-primary: #818cf8;
+    --od-color-bg: #1e293b;
+}
+
+body {
+    background-color: var(--od-bg-primary);
+    color: var(--od-color-text);
+}""",
+        }
+        return defaults.get(design_system, defaults["light"])
 
     # ------------------------------------------------------------------
     # Response parsing & formatting
@@ -1089,7 +1121,7 @@ class Pipe:
     def _get_default_template(self, template_name: str) -> str:
         """Return an embedded default template when no disk templates are available."""
         defaults = {
-            "landing/minimal": '''<!DOCTYPE html>
+            "landing/minimal": """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1142,23 +1174,23 @@ class Pipe:
         </div>
     </footer>
 </body>
-</html>''',
+</html>""",
         }
         return defaults.get(template_name, defaults["landing/minimal"])
 
     def _get_default_prompt(self, mode: str) -> str:
         """Return an embedded default prompt when no disk prompts are available."""
         defaults = {
-            "generate_html": '''You are an expert frontend developer and UI designer. Create a complete, self-contained HTML page based on the user\'s request.
+            "generate_html": """You are an expert frontend developer and UI designer. Create a complete, self-contained HTML page based on the user\'s request.
 
-Design System: {design_system}
+Design System: {{design_system}}
 Design CSS:
-{design_css}
+{{design_css}}
 
 Base Template:
-{template_html}
+{{template_html}}
 
-User Request: {user_message}
+User Request: {{user_message}}
 
 Guidelines:
 1. Return ONLY a complete HTML document
@@ -1171,7 +1203,7 @@ Guidelines:
 8. Add ARIA labels for accessibility
 9. Return the code in a ```html code block
 
-Generate the complete HTML code:''',
+Generate the complete HTML code:""",
         }
         return defaults.get(mode, defaults["generate_html"])
 

@@ -15,14 +15,13 @@ Or with explicit arguments:
 """
 
 import argparse
+import asyncio
 import json
 import os
 import sys
 from pathlib import Path
 
 import aiohttp
-import asyncio
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 PLUGIN_JSON = BASE_DIR / "plugin" / "plugin.json"
@@ -63,7 +62,9 @@ class OpenDesignerInstaller:
         with open(PLUGIN_JSON) as f:
             self.functions_config = json.load(f)
 
-        print(f"📦 Loaded plugin: {self.functions_config['name']} v{self.functions_config['version']}")
+        print(
+            f"📦 Loaded plugin: {self.functions_config['name']} v{self.functions_config['version']}"
+        )
         print(f"   Functions: {len(self.functions_config['functions'])}")
         return self.functions_config
 
@@ -129,9 +130,7 @@ class OpenDesignerInstaller:
 
         # Add requirements if specified
         if frontmatter.get("requirements"):
-            payload["requirements"] = [
-                r.strip() for r in frontmatter["requirements"].split(",")
-            ]
+            payload["requirements"] = [r.strip() for r in frontmatter["requirements"].split(",")]
 
         try:
             async with self.session.post(f"{self.base_url}{API_CREATE}", json=payload) as resp:
@@ -145,7 +144,9 @@ class OpenDesignerInstaller:
         except Exception as e:
             return False, str(e)
 
-    async def update_function(self, func_id: str, content: str, frontmatter: dict) -> tuple[bool, str]:
+    async def update_function(
+        self, func_id: str, content: str, frontmatter: dict
+    ) -> tuple[bool, str]:
         """Update an existing function."""
         payload = {
             "content": content,
@@ -209,12 +210,12 @@ class OpenDesignerInstaller:
         """Run a smoke test to verify installation."""
         functions = await self.list_functions()
         installed = len(functions)
-        print(f"\n🔍 Smoke Test Results:")
+        print("\n🔍 Smoke Test Results:")
         print(f"   Expected functions: {expected_count}")
         print(f"   Installed: {installed}")
 
         if installed >= expected_count:
-            print(f"   Status: ✅ PASS")
+            print("   Status: ✅ PASS")
             return True
         else:
             print(f"   Status: ⚠️  Expected at least {expected_count}, found {installed}")
@@ -223,12 +224,20 @@ class OpenDesignerInstaller:
 
 async def main():
     parser = argparse.ArgumentParser(description="Install OpenDesigner plugin into Open WebUI")
-    parser.add_argument("--url", default=os.environ.get("OPENWEBUI_URL", "http://localhost:3000"),
-                        help="Open WebUI URL")
-    parser.add_argument("--api-key", default=os.environ.get("OPENWEBUI_API_KEY", ""),
-                        help="Open WebUI API key")
-    parser.add_argument("--enable-all", action="store_true", default=True,
-                        help="Enable all functions after installation")
+    parser.add_argument(
+        "--url",
+        default=os.environ.get("OPENWEBUI_URL", "http://localhost:3000"),
+        help="Open WebUI URL",
+    )
+    parser.add_argument(
+        "--api-key", default=os.environ.get("OPENWEBUI_API_KEY", ""), help="Open WebUI API key"
+    )
+    parser.add_argument(
+        "--enable-all",
+        action="store_true",
+        default=True,
+        help="Enable all functions after installation",
+    )
     args = parser.parse_args()
 
     if not args.api_key:
