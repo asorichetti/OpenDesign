@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class DesignSystem:
+class Action:
     """Design System Manager — Create and manage design tokens, components, and styles."""
 
     def __init__(self):

@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class FigmaExport:
+class Action:
     """Export to Figma — Convert designs to Figma-ready formats."""
 
     def __init__(self):

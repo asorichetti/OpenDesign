@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class Collaboration:
+class Action:
     """OpenDesigner Real-time Collaboration — multi-user editing support."""
 
     def __init__(self):

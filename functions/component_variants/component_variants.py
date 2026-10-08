@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class ComponentVariants:
+class Action:
     """Component Variants & States — Add hover, focus, active, disabled, loading states."""
 
     def __init__(self):

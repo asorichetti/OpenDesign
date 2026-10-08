@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 
-class VersionControl:
+class Action:
     """OpenDesigner Version Control — provides diff, rollback, and version history."""
 
     def __init__(self, data_dir: str | None = None):

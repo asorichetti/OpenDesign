@@ -9,18 +9,17 @@ requirements: jinja2, aiohttp
 """
 
 import asyncio
+import hashlib
 import json
 import os
 import re
 import uuid
 from collections.abc import AsyncIterator
-from datetime import UTC
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
-
-from .template_marketplace import TemplateActions, TemplateStore
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -80,9 +79,9 @@ class Pipe:
         self._templates_cache: dict[str, str] = {}
         self._prompts_cache: dict[str, str] = {}
         self._data_dir = self._resolve_data_dir()
-        self._template_store = TemplateStore(self._data_dir)
-        self._template_actions = TemplateActions()
-        self._template_actions.store = self._template_store
+        self._community_templates_dir = (
+            self._data_dir / "opendesigner" / "community_templates" if self._data_dir else None
+        )
 
     # ------------------------------------------------------------------
     # Manifold — exposes multiple models
@@ -330,7 +329,7 @@ class Pipe:
                             )
 
         # Collect templates
-        templates = self._template_store.get_user_templates(user_id)
+        templates = self._get_user_templates(user_id)
 
         # Build response
         lines = [
@@ -776,30 +775,54 @@ class Pipe:
     # ------------------------------------------------------------------
 
     def _load_template(self, template_name: str) -> str:
-        """Load a template HTML file from disk (cached)."""
+        """Load a template HTML file from disk (cached).
+
+        Uses OPENWEBUI_DATA env var to find templates, falling back to
+        embedded default templates.
+        """
         if template_name in self._templates_cache:
             return self._templates_cache[template_name]
 
-        base = Path(__file__).parent / "templates"
-        template_path = base / f"{template_name}.html"
+        # Try data directory for templates
+        data_dir = self._resolve_data_dir()
+        template_path = None
+        if data_dir:
+            template_path = data_dir / "opendesigner" / "templates" / f"{template_name}.html"
+            if not template_path.exists():
+                template_path = data_dir / "opendesigner" / "templates" / "landing" / "minimal.html"
 
-        if not template_path.exists():
-            template_path = base / "landing/minimal.html"
+        # Fallback to embedded templates
+        if not template_path or not template_path.exists():
+            template_html = self._get_default_template(template_name)
+            self._templates_cache[template_name] = template_html
+            return template_html
 
         html = template_path.read_text(encoding="utf-8")
         self._templates_cache[template_name] = html
         return html
 
     def _load_prompt(self, mode: str) -> str:
-        """Load a prompt template from disk (cached)."""
+        """Load a prompt template from disk (cached).
+
+        Uses OPENWEBUI_DATA env var to find prompts, falling back to
+        embedded default prompts.
+        """
         if mode in self._prompts_cache:
             return self._prompts_cache[mode]
 
-        base = Path(__file__).parent / "prompts"
-        prompt_path = base / f"{mode}.md"
+        # Try data directory for prompts
+        data_dir = self._resolve_data_dir()
+        prompt_path = None
+        if data_dir:
+            prompt_path = data_dir / "opendesigner" / "prompts" / f"{mode}.md"
+            if not prompt_path.exists():
+                prompt_path = data_dir / "opendesigner" / "prompts" / "generate_html.md"
 
-        if not prompt_path.exists():
-            prompt_path = base / "generate_html.md"
+        # Fallback to embedded prompts
+        if not prompt_path or not prompt_path.exists():
+            prompt = self._get_default_prompt(mode)
+            self._prompts_cache[mode] = prompt
+            return prompt
 
         prompt = prompt_path.read_text(encoding="utf-8")
         self._prompts_cache[mode] = prompt
@@ -817,10 +840,12 @@ class Pipe:
         user_message: str,
     ) -> str:
         """Build the final prompt for the LLM using Jinja2-style substitution."""
-        # Load design system CSS
-        assets_dir = Path(__file__).parent / "assets"
-        css_path = assets_dir / f"{design_system}.css"
-        design_css = css_path.read_text(encoding="utf-8") if css_path.exists() else ""
+        # Load design system CSS from data dir or use embedded default
+        data_dir = self._resolve_data_dir()
+        css_path = None
+        if data_dir:
+            css_path = data_dir / "opendesigner" / "assets" / f"{design_system}.css"
+        design_css = css_path.read_text(encoding="utf-8") if css_path and css_path.exists() else ""
 
         # Simple template substitution (Jinja2-style {{ variable }})
         variables = {
@@ -1042,6 +1067,113 @@ class Pipe:
         except (OSError, json.JSONDecodeError):
             pass
         return {}
+
+    def _get_user_templates(self, user_id: str) -> list[dict]:
+        """Get all community templates for a user (inline version of TemplateStore.get_user_templates)."""
+        if not self._community_templates_dir:
+            return []
+
+        user_dir = self._community_templates_dir / user_id
+        if not user_dir.exists():
+            return []
+
+        templates = []
+        for template_dir in sorted(user_dir.iterdir()):
+            if template_dir.is_dir():
+                manifest = template_dir / "manifest.json"
+                if manifest.exists():
+                    templates.append(json.loads(manifest.read_text()))
+
+        return templates
+
+    def _get_default_template(self, template_name: str) -> str:
+        """Return an embedded default template when no disk templates are available."""
+        defaults = {
+            "landing/minimal": '''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Landing Page</title>
+    <style>
+        :root {
+            --color-bg: #FFFFFF;
+            --color-text: #1A1A1A;
+            --color-accent: #6366F1;
+            --color-border: #E5E7EB;
+            --font-family: system-ui, -apple-system, sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-family); color: var(--color-text); line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+        header { padding: 1rem 0; border-bottom: 1px solid var(--color-border); }
+        header .container { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 700; }
+        nav a { margin-left: 1.5rem; color: var(--color-text); text-decoration: none; }
+        main { padding: 4rem 0; text-align: center; }
+        h1 { font-size: 3rem; margin-bottom: 1rem; }
+        p { color: #6B7280; max-width: 600px; margin: 0 auto 2rem; font-size: 1.125rem; }
+        .btn { display: inline-block; padding: 0.75rem 1.5rem; background: var(--color-accent); color: white; text-decoration: none; border-radius: 8px; font-weight: 500; }
+        .btn:hover { opacity: 0.9; }
+        footer { padding: 2rem 0; border-top: 1px solid var(--color-border); text-align: center; color: #6B7280; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">Brand</div>
+            <nav>
+                <a href="#">Features</a>
+                <a href="#">About</a>
+                <a href="#">Contact</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <h1>Welcome to Our Product</h1>
+            <p>A simple, elegant landing page template built with semantic HTML and CSS custom properties.</p>
+            <a href="#" class="btn">Get Started</a>
+        </div>
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Brand. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>''',
+        }
+        return defaults.get(template_name, defaults["landing/minimal"])
+
+    def _get_default_prompt(self, mode: str) -> str:
+        """Return an embedded default prompt when no disk prompts are available."""
+        defaults = {
+            "generate_html": '''You are an expert frontend developer and UI designer. Create a complete, self-contained HTML page based on the user\'s request.
+
+Design System: {design_system}
+Design CSS:
+{design_css}
+
+Base Template:
+{template_html}
+
+User Request: {user_message}
+
+Guidelines:
+1. Return ONLY a complete HTML document
+2. All CSS must be inline in a <style> tag
+3. No external dependencies - everything self-contained
+4. Use semantic HTML5 elements
+5. Include proper meta tags and viewport
+6. Make it responsive and mobile-first
+7. Use CSS custom properties for theming
+8. Add ARIA labels for accessibility
+9. Return the code in a ```html code block
+
+Generate the complete HTML code:''',
+        }
+        return defaults.get(mode, defaults["generate_html"])
 
     def _log_error(self, message: str) -> None:
         """Log an error to stderr (will appear in Open WebUI logs)."""

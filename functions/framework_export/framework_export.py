@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class FrameworkExport:
+class Action:
     """Framework Export — Export designs as React, Vue, or Next.js code."""
 
     def __init__(self):

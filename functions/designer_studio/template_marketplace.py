@@ -33,7 +33,7 @@ DANGEROUS_PATTERNS = [
 ]
 
 
-class TemplateValidator:
+class Action:
     """Validate user-submitted templates for security."""
 
     @staticmethod

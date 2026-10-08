@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class ResponsivePreview:
+class Action:
     """Responsive Preview Studio — See designs on multiple devices simultaneously."""
 
     def __init__(self):

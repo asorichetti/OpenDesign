@@ -205,7 +205,7 @@ COMPONENT_PROPS = {
 # ---------------------------------------------------------------------------
 # Props Renderer
 # ---------------------------------------------------------------------------
-class PropsRenderer:
+class Action:
     """Render component props configuration UI."""
 
     @staticmethod

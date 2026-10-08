@@ -4,7 +4,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Tests](https://github.com/asorichetti/OpenDesigner/actions/workflows/ci.yml/badge.svg)](https://github.com/asorichetti/OpenDesigner/actions)
 [![Security](https://img.shields.io/badge/Security-Verified%20Green-brightgreen)](https://github.com/asorichetti/OpenDesigner/security)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com/asorichetti/OpenDesigner/releases)
+[![Version](https://img.shields.io/badge/version-1.0.1-blue)](https://github.com/asorichetti/OpenDesigner/releases)
 
 **AI-powered design generation platform for Open WebUI** — Transform conversational prompts into production-ready visual designs.
 
@@ -185,22 +185,58 @@ Status: CLEAN ✅
 5. Restart
 ```
 
-### Method 2: Manual Installation
+### Method 2: Manual API Installation (GitOps / Scripted)
+
+For repeatable deployments, use the install script:
+
 ```bash
 # Clone repository
 git clone https://github.com/asorichetti/OpenDesigner.git
+cd OpenDesigner
 
-# Copy to Open WebUI
-cp -r OpenDesigner/functions/* /path/to/openwebui/data/plugin-functions/
-cp -r OpenDesigner/templates /path/to/openwebui/data/templates/
+# Set environment variables
+export OPENWEBUI_URL="http://localhost:3000"
+export OPENWEBUI_API_KEY="your-api-key-from-settings"
 
-# Restart Open WebUI
+# Install all functions
+python3 scripts/install_openwebui.py
 ```
 
-### Method 3: Docker Installation
+The script will:
+- Validate all 19 functions
+- Import each function via the Open WebUI API
+- Enable all functions automatically
+- Run a smoke test to verify installation
+
+**Getting your API key:** Open WebUI → Settings → Account → API Keys
+
+### Method 3: Admin Panel Installation
+
+1. Open Open WebUI
+2. Go to **Admin Settings** → **Functions**
+3. Click **Add Function**
+4. For each file in `functions/`:
+   - Copy the entire file content
+   - Paste into the content field
+   - Set ID to the filename (without .py)
+   - Set title from the frontmatter
+5. Click Save
+
+### Method 4: Docker with API
+
 ```bash
+# Start Open WebUI
 cd OpenDesigner/docker
 docker-compose up -d
+
+# Wait for it to start
+sleep 10
+
+# Install functions via script
+cd ..
+export OPENWEBUI_URL="http://localhost:3000"
+export OPENWEBUI_API_KEY="your-api-key"
+python3 scripts/install_openwebui.py
 ```
 
 ---

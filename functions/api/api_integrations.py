@@ -9,7 +9,7 @@ required_open_webui_version: 0.10.0
 from typing import Any
 
 
-class OpenDesignerAPI:
+class Action:
     """OpenDesigner API — external integrations and programmatic access."""
 
     def __init__(self):
