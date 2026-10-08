@@ -80,6 +80,12 @@ SECURITY_PATTERNS = {
     },
 }
 
+# Extensions considered "code" files (where dangerous function calls matter)
+CODE_EXTENSIONS = {".py", ".js", ".ts", ".jsx", ".tsx", ".mjs"}
+
+# Patterns for dangerous code functions (eval/exec/compile)
+DANGEROUS_CODE_PATTERNS = {"eval_call", "exec_call", "compile_call"}
+
 # Files to exclude from scanning
 EXCLUDED_PATTERNS = [
     "__pycache__",
@@ -88,16 +94,17 @@ EXCLUDED_PATTERNS = [
     "node_modules",
     "venv",
     ".venv",
+    ".cache",
 ]
 
-# Directories to exclude (docs, tests, and self-reference)
+# Files/directories to exclude from scanning (exact match or prefix)
 EXCLUDED_DIRS = [
     "docs/",
     "tests/",
     "demo/",
     "scripts/check_security.py",
     "scripts/validate_templates.py",
-    "opendesign_cli.py",
+    "opendesigner_cli.py",
     "README.md",
     "plugins/",
 ]
@@ -147,6 +154,11 @@ def scan_file(filepath: Path) -> list[dict]:
             if pattern_name == "compile_call" and (
                 "re.compile" in line_text or "regex" in line_text
             ):
+                continue
+
+            # Skip dangerous code patterns (eval/exec/compile) in non-code files
+            # These are only security concerns in actual executable code, not docs
+            if pattern_name in DANGEROUS_CODE_PATTERNS and filepath.suffix not in CODE_EXTENSIONS:
                 continue
 
             issues.append(
