@@ -7,7 +7,7 @@ an Open WebUI instance via the API. It is idempotent - safe to re-run.
 
 Usage:
     export OPENWEBUI_URL="http://localhost:3000"
-    export OPENWEBUI_API_KEY="your-api-key-from-settings"
+    export OPENWEBUI_API_KEY="xxx"
     python3 scripts/install_openwebui.py
 
 Or with explicit arguments:
