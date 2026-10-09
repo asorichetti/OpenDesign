@@ -3,7 +3,7 @@
 OpenDesigner Plugin Install Script for Open WebUI
 
 This script programmatically imports all OpenDesigner functions into
-an Open WebUI instance via the API. It is idempotent - safe to re-run.
+an Open WebUI instance via the API. It is idempotent — safe to re-run.
 
 Usage:
     export OPENWEBUI_URL="http://localhost:3000"
@@ -44,13 +44,16 @@ class OpenDesignerInstaller:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.session: aiohttp.ClientSession | None = None
-        self.functions_config = {}
+        self.functions_config: dict = {}
 
     async def __aenter__(self):
-        # Use generous timeouts — some functions are large (~46KB)
+        # Generous timeouts — some functions are large (~46KB)
         timeout = aiohttp.ClientTimeout(total=120, connect=30, sock_read=60)
         self.session = aiohttp.ClientSession(
-            headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
             timeout=timeout,
         )
         return self
@@ -90,30 +93,140 @@ class OpenDesignerInstaller:
         if not path.exists():
             return False, f"File not found: {path}"
 
-        # Check for required frontmatter
         with open(path) as f:
             content = f.read()
 
         if '"""' not in content[:200]:
             return False, "Missing frontmatter (triple-quoted docstring)"
-
         if "title:" not in content:
             return False, "Missing 'title' in frontmatter"
-
         if "author:" not in content:
             return False, "Missing 'author' in frontmatter"
 
-        # Check for valid class type
         class_type = self.detect_class_type(content)
         if class_type == "UNKNOWN":
             return False, "No Open WebUI Function class (Action/Pipe/Filter/Tools) found"
 
-        # Check for relative imports
         for line in content.split("\n"):
             if line.strip().startswith("from . "):
                 return False, f"Relative import found: {line.strip()}"
 
         return True, f"OK (type: {class_type})"
+
+    # ------------------------------------------------------------------
+    # API helpers
+    # ------------------------------------------------------------------
+
+    async def get_function(self, func_id: str) -> dict | None:
+        """Fetch a single function by ID to check its current state."""
+        try:
+            url = f"{self.base_url}{API_GET.format(id=func_id)}"
+            async with self.session.get(url) as resp:
+                if resp.status == 200:
+                    return await resp.json()
+                return None
+        except Exception:
+            return None
+
+    async def list_functions(self) -> list[dict]:
+        """List all functions (includes inactive ones via FunctionResponse)."""
+        try:
+            async with self.session.get(f"{self.base_url}{API_LIST}") as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    if isinstance(data, list):
+                        return data
+                    if isinstance(data, dict) and "functions" in data:
+                        return data["functions"]
+                    return [data] if data else []
+                return []
+        except Exception:
+            return []
+
+    async def _request_with_retry(
+        self,
+        method: str,
+        url: str,
+        json_data: dict | None = None,
+        max_retries: int = 3,
+    ) -> aiohttp.ClientResponse | None:
+        """Make an HTTP request with retry logic for transient failures."""
+        last_exception: Exception | None = None
+        for attempt in range(max_retries):
+            try:
+                if method == "GET":
+                    return await self.session.get(url)
+                elif method == "POST":
+                    return await self.session.post(url, json=json_data)
+            except (TimeoutError, aiohttp.ClientError) as e:
+                last_exception = e
+                if attempt < max_retries - 1:
+                    wait = 2**attempt  # 1s, 2s, 4s
+                    print(f"   ⏳ Retry {attempt + 1}/{max_retries} after {wait}s: {e}")
+                    await asyncio.sleep(wait)
+        if last_exception:
+            raise last_exception
+        return None
+
+    # ------------------------------------------------------------------
+    # Idempotent state setters
+    # ------------------------------------------------------------------
+
+    async def toggle_function(self, func_id: str, enable: bool = True) -> tuple[bool, str]:
+        """Enable or disable a function — safely idempotent.
+
+        The toggle endpoint FLIPS the current state, so we fetch the
+        current state first and only call toggle when necessary.
+        """
+        try:
+            func = await self.get_function(func_id)
+            if func is None:
+                return False, "Could not fetch function state"
+
+            current_active = func.get("is_active", False)
+
+            if current_active == enable:
+                return True, "Already set" if enable else "Already disabled"
+
+            url = f"{self.base_url}{API_TOGGLE.format(id=func_id)}"
+            resp = await self._request_with_retry("POST", url)
+            if resp is None:
+                return False, "Could not connect to server"
+            if resp.status in (200, 201):
+                return True, "Enabled" if enable else "Disabled"
+            return False, f"HTTP {resp.status}"
+        except Exception as e:
+            return False, str(e)
+
+    async def toggle_global(self, func_id: str, make_global: bool = True) -> tuple[bool, str]:
+        """Set/clear the global flag — safely idempotent.
+
+        The toggle global endpoint FLIPS the current state, so we
+        fetch the current state first and only call toggle when necessary.
+        """
+        try:
+            func = await self.get_function(func_id)
+            if func is None:
+                return False, "Could not fetch function state"
+
+            current_global = func.get("is_global", False)
+
+            if current_global == make_global:
+                return True, "Already global" if make_global else "Already not global"
+
+            url = f"{self.base_url}{API_TOGGLE_GLOBAL.format(id=func_id)}"
+            resp = await self._request_with_retry("POST", url)
+            if resp is None:
+                return False, "Could not connect to server"
+            if resp.status in (200, 201):
+                return True, "Set as global" if make_global else "Cleared global"
+            return False, f"HTTP {resp.status}"
+        except Exception as e:
+            return False, str(e)
+
+    # ------------------------------------------------------------------
+    # Create / Update
+    # ------------------------------------------------------------------
 
     async def create_function(self, func_path: str) -> tuple[bool, str]:
         """Create or update a function via the API."""
@@ -126,11 +239,8 @@ class OpenDesignerInstaller:
 
         func_id = path.stem
         func_name = Path(func_path).parent.name.replace("_", " ").title()
-
-        # Extract frontmatter
         frontmatter = self._extract_frontmatter(content)
 
-        # Build payload - Open WebUI extracts type from content (Pipe/Filter/Action/Event)
         payload: dict = {
             "id": func_id,
             "name": frontmatter.get("title", func_name),
@@ -142,15 +252,11 @@ class OpenDesignerInstaller:
             },
         }
 
-        # Note: Open WebUI extracts requirements from frontmatter in content,
-        # so we do NOT send it in the payload (FunctionForm doesn't have that field)
-
         try:
             async with self.session.post(f"{self.base_url}{API_CREATE}", json=payload) as resp:
                 if resp.status in (200, 201):
                     return True, "Created"
                 error = await resp.text()
-                # Try update if create fails (function already exists)
                 if resp.status == 409 or "already exists" in error.lower():
                     return await self.update_function(func_id, content, frontmatter)
                 return False, f"HTTP {resp.status}: {error[:200]}"
@@ -164,8 +270,14 @@ class OpenDesignerInstaller:
     async def update_function(
         self, func_id: str, content: str, frontmatter: dict
     ) -> tuple[bool, str]:
-        """Update an existing function."""
+        """Update an existing function's content.
+
+        Sends name, content, and meta — the three fields required by
+        FunctionForm.  is_active / is_global are NOT touched.
+        """
+        func_name = frontmatter.get("title", func_id.replace("_", " ").title())
         payload: dict = {
+            "name": func_name,
             "content": content,
             "meta": {
                 "author": frontmatter.get("author", "Unknown"),
@@ -186,108 +298,22 @@ class OpenDesignerInstaller:
         except Exception as e:
             return False, str(e)
 
-    async def get_function(self, func_id: str) -> dict | None:
-        """Fetch a single function by ID to check its current state."""
-        try:
-            url = f"{self.base_url}{API_GET.format(id=func_id)}"
-            async with self.session.get(url) as resp:
-                if resp.status == 200:
-                    return await resp.json()
-                return None
-        except Exception:
-            return None
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
 
-    async def _request_with_retry(
-        self, method: str, url: str, json_data: dict | None = None, max_retries: int = 3
-    ) -> aiohttp.ClientResponse | None:
-        """Make an HTTP request with retry logic for transient failures."""
-        last_exception = None
-        for attempt in range(max_retries):
-            try:
-                if method == "GET":
-                    return await self.session.get(url)
-                elif method == "POST":
-                    return await self.session.post(url, json=json_data)
-            except (TimeoutError, aiohttp.ClientError) as e:
-                last_exception = e
-                if attempt < max_retries - 1:
-                    wait = 2**attempt  # 1s, 2s, 4s
-                    print(f"   ⏳ Retry {attempt + 1}/{max_retries} after {wait}s: {e}")
-                    await asyncio.sleep(wait)
-        if last_exception:
-            raise last_exception
-        return None
-
-    async def toggle_function(self, func_id: str, enable: bool = True) -> tuple[bool, str]:
-        """Enable or disable a function — safely idempotent.
-
-        The toggle endpoint FLIPS the current state, so we fetch the
-        current state first and only call toggle when necessary.
-        """
-        try:
-            # Fetch current state
-            func = await self.get_function(func_id)
-            if func is None:
-                return False, "Could not fetch function state"
-
-            current_active = func.get("is_active", False)
-
-            if current_active == enable:
-                # Already in desired state — nothing to do
-                return True, "Already set" if enable else "Already disabled"
-
-            # Only toggle when state differs (with retry)
-            url = f"{self.base_url}{API_TOGGLE.format(id=func_id)}"
-            resp = await self._request_with_retry("POST", url)
-            if resp is None:
-                return False, "Could not connect to server"
-            if resp.status in (200, 201):
-                return True, "Enabled" if enable else "Disabled"
-            return False, f"HTTP {resp.status}"
-        except Exception as e:
-            return False, str(e)
-
-    async def toggle_global(self, func_id: str, make_global: bool = True) -> tuple[bool, str]:
-        """Set/clear the global flag — safely idempotent.
-
-        The toggle global endpoint FLIPS the current state, so we
-        fetch the current state first and only call toggle when necessary.
-        """
-        try:
-            # Fetch current state
-            func = await self.get_function(func_id)
-            if func is None:
-                return False, "Could not fetch function state"
-
-            current_global = func.get("is_global", False)
-
-            if current_global == make_global:
-                # Already in desired state — nothing to do
-                return True, "Already global" if make_global else "Already not global"
-
-            # Only toggle when state differs (with retry)
-            url = f"{self.base_url}{API_TOGGLE_GLOBAL.format(id=func_id)}"
-            resp = await self._request_with_retry("POST", url)
-            if resp is None:
-                return False, "Could not connect to server"
-            if resp.status in (200, 201):
-                return True, "Set as global" if make_global else "Cleared global"
-            return False, f"HTTP {resp.status}"
-        except Exception as e:
-            return False, str(e)
-
-    def _extract_frontmatter(self, content: str) -> dict:
+    @staticmethod
+    def _extract_frontmatter(content: str) -> dict:
         """Extract frontmatter from Open WebUI function file."""
         if not content.startswith('"""'):
             return {}
 
-        # Find closing triple quotes
         end_idx = content.find('"""', 3)
         if end_idx == -1:
             return {}
 
         fm_text = content[3:end_idx]
-        frontmatter = {}
+        frontmatter: dict = {}
         for line in fm_text.split("\n"):
             line = line.strip()
             if ":" in line and not line.startswith('"'):
@@ -296,23 +322,15 @@ class OpenDesignerInstaller:
 
         return frontmatter
 
-    async def list_functions(self) -> list[dict]:
-        """List all current functions."""
-        try:
-            async with self.session.get(f"{self.base_url}{API_LIST}") as resp:
-                if resp.status == 200:
-                    return await resp.json()
-                return []
-        except Exception:
-            return []
-
     async def smoke_test(
-        self, expected_count: int, expected_ids: list[str], global_ids: set[str] | None = None
+        self,
+        expected_ids: list[str],
+        global_ids: set[str] | None = None,
     ) -> tuple[bool, list[str]]:
-        """Run a smoke test to verify installation.
+        """Verify installation.
 
         Checks:
-        1. The expected function IDs are all present (not just a count)
+        1. All expected function IDs are present
         2. Each expected function is active (is_active == True)
         3. Functions in global_ids are also global (is_global == True)
 
@@ -321,48 +339,55 @@ class OpenDesignerInstaller:
         functions = await self.list_functions()
         func_map = {f["id"]: f for f in functions}
 
-        failures = []
-        expected_ids_set = set(expected_ids)
+        failures: list[str] = []
+        expected_set = set(expected_ids)
 
-        # Check 1: All expected IDs are present
-        missing = expected_ids_set - set(func_map.keys())
+        # 1. All expected IDs present
+        missing = expected_set - set(func_map.keys())
         if missing:
             failures.append(f"Missing functions: {', '.join(sorted(missing))}")
 
-        # Check 2: All expected functions are active
-        inactive = []
-        for fid in expected_ids:
-            if fid in func_map and not func_map[fid].get("is_active", False):
-                inactive.append(fid)
+        # 2. All expected functions are active
+        inactive = [
+            fid
+            for fid in expected_ids
+            if fid in func_map and not func_map[fid].get("is_active", False)
+        ]
         if inactive:
             failures.append(f"Inactive functions: {', '.join(sorted(inactive))}")
 
-        # Check 3: Global functions must also be global
+        # 3. Global functions must also be global
         if global_ids:
-            not_global = []
-            for fid in global_ids:
-                if fid in func_map and not func_map[fid].get("is_global", False):
-                    not_global.append(fid)
+            not_global = [
+                fid
+                for fid in global_ids
+                if fid in func_map and not func_map[fid].get("is_global", False)
+            ]
             if not_global:
                 failures.append(
                     f"Functions not global (need global): {', '.join(sorted(not_global))}"
                 )
 
-        # Count active functions for display
         active_count = sum(1 for f in functions if f.get("is_active", False))
 
         print("\n🔍 Smoke Test Results:")
-        print(f"   Expected functions: {expected_count}")
+        print(f"   Expected functions: {len(expected_ids)}")
+        print(f"   Total functions: {len(functions)}")
         print(f"   Active: {active_count}/{len(functions)}")
 
         if not failures:
             print("   Status: ✅ PASS")
             return True, []
-        else:
-            print("   Status: ❌ FAIL")
-            for failure in failures:
-                print(f"      ⚠️  {failure}")
-            return False, failures
+
+        print("   Status: ❌ FAIL")
+        for failure in failures:
+            print(f"      ⚠️  {failure}")
+        return False, failures
+
+
+# ------------------------------------------------------------------
+# Main
+# ------------------------------------------------------------------
 
 
 async def main():
@@ -373,7 +398,9 @@ async def main():
         help="Open WebUI URL",
     )
     parser.add_argument(
-        "--api-key", default=os.environ.get("OPENWEBUI_API_KEY", ""), help="Open WebUI API key"
+        "--api-key",
+        default=os.environ.get("OPENWEBUI_API_KEY", ""),
+        help="Open WebUI API key",
     )
     parser.add_argument(
         "--enable-all",
@@ -385,8 +412,10 @@ async def main():
         "--global-funcs",
         nargs="*",
         default=[],
-        help="Function IDs that should be set as global (filters/actions). "
-        "Default: all functions are global.",
+        help=(
+            "Function IDs that should be set as global (filters/actions). "
+            "Default: all functions are global."
+        ),
     )
     args = parser.parse_args()
 
@@ -405,7 +434,7 @@ async def main():
 
         # Validate all functions first
         print("\n📋 Validating functions...")
-        valid_funcs = []
+        valid_funcs: list[str] = []
         for func_path in func_paths:
             is_valid, msg = installer.validate_function(func_path)
             status = "✓" if is_valid else "✗"
@@ -417,9 +446,9 @@ async def main():
             print("\n❌ No valid functions to install!")
             sys.exit(1)
 
-        # Create missing __init__.py files (needed for proper module resolution)
+        # Ensure __init__.py files exist
         print("\n📦 Ensuring __init__.py files...")
-        init_dirs = set()
+        init_dirs: set[str] = set()
         for func_path in valid_funcs:
             init_dirs.add(str(installer.get_function_path(func_path).parent))
 
@@ -432,15 +461,18 @@ async def main():
                 print(f"   ✓ Exists: {dir_path}/__init__.py")
 
         # Determine which functions should be global
-        # Default: all functions are global (needed for filters/actions to apply per-user)
-        global_func_ids = set(args.global_funcs) if args.global_funcs else None
-        if global_func_ids is None:
+        # Default: all functions are global
+        global_func_ids: set[str] | None = None
+        if args.global_funcs:
+            global_func_ids = set(args.global_funcs)
+        else:
             global_func_ids = {installer.get_function_path(fp).stem for fp in valid_funcs}
 
         # Install each function
         print(f"\n📦 Installing {len(valid_funcs)} functions...")
-        results = []
+        results: list[tuple[str, bool]] = []
         any_failure = False
+
         for func_path in valid_funcs:
             success, msg = await installer.create_function(func_path)
             status = "✓" if success else "✗"
@@ -453,37 +485,37 @@ async def main():
         if args.enable_all:
             print("\n🔓 Enabling functions...")
             for func_path, _ in results:
-                if func_path:
-                    func_id = installer.get_function_path(func_path).stem
-                    success, msg = await installer.toggle_function(func_id, enable=True)
-                    status = "✓" if success else "✗"
-                    print(f"   {status} {func_id}: {msg}")
-                    if not success:
-                        any_failure = True
+                if func_path is None:
+                    continue
+                func_id = installer.get_function_path(func_path).stem
+                success, msg = await installer.toggle_function(func_id, enable=True)
+                status = "✓" if success else "✗"
+                print(f"   {status} {func_id}: {msg}")
+                if not success:
+                    any_failure = True
 
         # Set global flag (idempotently)
         if global_func_ids:
             print("\n🌍 Setting global functions...")
             for func_path, _ in results:
-                if func_path:
-                    func_id = installer.get_function_path(func_path).stem
-                    if func_id in global_func_ids:
-                        success, msg = await installer.toggle_global(func_id, make_global=True)
-                        status = "✓" if success else "✗"
-                        print(f"   {status} {func_id}: {msg}")
-                        if not success:
-                            any_failure = True
+                if func_path is None:
+                    continue
+                func_id = installer.get_function_path(func_path).stem
+                if func_id in global_func_ids:
+                    success, msg = await installer.toggle_global(func_id, make_global=True)
+                    status = "✓" if success else "✗"
+                    print(f"   {status} {func_id}: {msg}")
+                    if not success:
+                        any_failure = True
 
         # Run smoke test
         expected_ids = [installer.get_function_path(fp).stem for fp in valid_funcs]
         success_count = sum(1 for _, s in results if s)
-        smoke_passed, smoke_failures = await installer.smoke_test(
-            success_count, expected_ids, global_func_ids
-        )
+        smoke_passed, smoke_failures = await installer.smoke_test(expected_ids, global_func_ids)
         if not smoke_passed:
             any_failure = True
 
-        # Summary
+        # Summary — exit code reflects success/failure
         print("\n" + "=" * 50)
         if any_failure:
             print("❌ Installation completed with errors")
