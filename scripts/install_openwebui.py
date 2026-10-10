@@ -118,7 +118,10 @@ class OpenDesignerInstaller:
     # ------------------------------------------------------------------
 
     async def get_function(self, func_id: str) -> dict | None:
-        """Fetch a single function by ID to check its current state."""
+        """Fetch a single function by ID to check its current state.
+
+        Returns the full FunctionModel dict with is_active, is_global, etc.
+        """
         try:
             url = f"{self.base_url}{API_GET.format(id=func_id)}"
             async with self.session.get(url) as resp:
@@ -172,64 +175,94 @@ class OpenDesignerInstaller:
     # Idempotent state setters
     # ------------------------------------------------------------------
 
-    async def toggle_function(self, func_id: str, enable: bool = True) -> tuple[bool, str]:
-        """Enable or disable a function — safely idempotent.
+    async def set_function_active(self, func_id: str, enable: bool = True) -> tuple[bool, str]:
+        """Set a function's active state — safely idempotent.
 
-        The toggle endpoint FLIPS the current state, so we fetch the
+        The toggle endpoint FLIPS the current state. We fetch the
         current state first and only call toggle when necessary.
+
+        IMPORTANT: We verify the actual state AFTER toggling to ensure
+        the operation succeeded, retrying if the state is still wrong.
         """
         try:
-            func = await self.get_function(func_id)
-            if func is None:
-                return False, "Could not fetch function state"
+            for _ in range(3):  # Max 3 attempts
+                func = await self.get_function(func_id)
+                if func is None:
+                    return False, "Could not fetch function state"
 
-            current_active = func.get("is_active", False)
+                current_active = func.get("is_active", False)
 
-            if current_active == enable:
-                return True, "Already set" if enable else "Already disabled"
+                if current_active == enable:
+                    return True, "Already set" if enable else "Already disabled"
 
-            url = f"{self.base_url}{API_TOGGLE.format(id=func_id)}"
-            resp = await self._request_with_retry("POST", url)
-            if resp is None:
-                return False, "Could not connect to server"
-            if resp.status in (200, 201):
-                return True, "Enabled" if enable else "Disabled"
-            return False, f"HTTP {resp.status}"
+                # Only toggle when state differs
+                url = f"{self.base_url}{API_TOGGLE.format(id=func_id)}"
+                resp = await self._request_with_retry("POST", url)
+                if resp is None:
+                    return False, "Could not connect to server"
+                if resp.status not in (200, 201):
+                    return False, f"HTTP {resp.status}"
+
+                # Verify the toggle actually worked
+                func = await self.get_function(func_id)
+                if func and func.get("is_active", False) == enable:
+                    return True, "Enabled" if enable else "Disabled"
+                # State still wrong — loop will retry
         except Exception as e:
             return False, str(e)
 
-    async def toggle_global(self, func_id: str, make_global: bool = True) -> tuple[bool, str]:
+        return False, "Failed to set active state after retries"
+
+    async def set_function_global(self, func_id: str, make_global: bool = True) -> tuple[bool, str]:
         """Set/clear the global flag — safely idempotent.
 
-        The toggle global endpoint FLIPS the current state, so we
-        fetch the current state first and only call toggle when necessary.
+        The toggle global endpoint FLIPS the current state. We fetch
+        the current state first and only call toggle when necessary.
+
+        IMPORTANT: We verify the actual state AFTER toggling to ensure
+        the operation succeeded, retrying if the state is still wrong.
         """
         try:
-            func = await self.get_function(func_id)
-            if func is None:
-                return False, "Could not fetch function state"
+            for _ in range(3):  # Max 3 attempts
+                func = await self.get_function(func_id)
+                if func is None:
+                    return False, "Could not fetch function state"
 
-            current_global = func.get("is_global", False)
+                current_global = func.get("is_global", False)
 
-            if current_global == make_global:
-                return True, "Already global" if make_global else "Already not global"
+                if current_global == make_global:
+                    return True, "Already global" if make_global else "Already not global"
 
-            url = f"{self.base_url}{API_TOGGLE_GLOBAL.format(id=func_id)}"
-            resp = await self._request_with_retry("POST", url)
-            if resp is None:
-                return False, "Could not connect to server"
-            if resp.status in (200, 201):
-                return True, "Set as global" if make_global else "Cleared global"
-            return False, f"HTTP {resp.status}"
+                # Only toggle when state differs
+                url = f"{self.base_url}{API_TOGGLE_GLOBAL.format(id=func_id)}"
+                resp = await self._request_with_retry("POST", url)
+                if resp is None:
+                    return False, "Could not connect to server"
+                if resp.status not in (200, 201):
+                    return False, f"HTTP {resp.status}"
+
+                # Verify the toggle actually worked
+                func = await self.get_function(func_id)
+                if func and func.get("is_global", False) == make_global:
+                    return True, "Set as global" if make_global else "Cleared global"
+                # State still wrong — loop will retry
         except Exception as e:
             return False, str(e)
 
+        return False, "Failed to set global state after retries"
+
     # ------------------------------------------------------------------
-    # Create / Update
+    # Create / Update — the core idempotency logic
     # ------------------------------------------------------------------
 
     async def create_function(self, func_path: str) -> tuple[bool, str]:
-        """Create or update a function via the API."""
+        """Create or update a function via the API.
+
+        This is the key idempotency function:
+        - If the function doesn't exist, create it (returns 201)
+        - If the function already exists (returns 400/409), update it
+        - In both cases, the function will exist with the correct content
+        """
         path = self.get_function_path(func_path)
         if not path.exists():
             return False, f"File not found: {path}"
@@ -241,6 +274,8 @@ class OpenDesignerInstaller:
         func_name = Path(func_path).parent.name.replace("_", " ").title()
         frontmatter = self._extract_frontmatter(content)
 
+        # Build payload — ALL fields required by FunctionForm schema:
+        #   id, name, content, meta
         payload: dict = {
             "id": func_id,
             "name": frontmatter.get("title", func_name),
@@ -256,10 +291,18 @@ class OpenDesignerInstaller:
             async with self.session.post(f"{self.base_url}{API_CREATE}", json=payload) as resp:
                 if resp.status in (200, 201):
                     return True, "Created"
-                error = await resp.text()
-                if resp.status == 409 or "already exists" in error.lower():
+
+                # Function already exists — try update
+                error_text = await resp.text()
+                # OpenWebUI returns 400 with ID_TAKEN message when function exists
+                if (
+                    resp.status in (400, 409)
+                    or "already" in error_text.lower()
+                    or "taken" in error_text.lower()
+                ):
                     return await self.update_function(func_id, content, frontmatter)
-                return False, f"HTTP {resp.status}: {error[:200]}"
+
+                return False, f"HTTP {resp.status}: {error_text[:200]}"
         except TimeoutError:
             return False, "Request timeout (function content is large, try again)"
         except aiohttp.ClientError as e:
@@ -272,11 +315,18 @@ class OpenDesignerInstaller:
     ) -> tuple[bool, str]:
         """Update an existing function's content.
 
-        Sends name, content, and meta — the three fields required by
-        FunctionForm.  is_active / is_global are NOT touched.
+        IMPORTANT: This sends ALL required FunctionForm fields:
+        - id (required by schema) — THIS WAS THE BUG — was missing!
+        - name (required by schema)
+        - content (required by schema)
+        - meta (required by schema)
+
+        This does NOT touch is_active or is_global — those are preserved
+        from the existing record.
         """
         func_name = frontmatter.get("title", func_id.replace("_", " ").title())
         payload: dict = {
+            "id": func_id,  # CRITICAL: must include id for FunctionForm validation
             "name": func_name,
             "content": content,
             "meta": {
@@ -488,7 +538,7 @@ async def main():
                 if func_path is None:
                     continue
                 func_id = installer.get_function_path(func_path).stem
-                success, msg = await installer.toggle_function(func_id, enable=True)
+                success, msg = await installer.set_function_active(func_id, enable=True)
                 status = "✓" if success else "✗"
                 print(f"   {status} {func_id}: {msg}")
                 if not success:
@@ -502,7 +552,7 @@ async def main():
                     continue
                 func_id = installer.get_function_path(func_path).stem
                 if func_id in global_func_ids:
-                    success, msg = await installer.toggle_global(func_id, make_global=True)
+                    success, msg = await installer.set_function_global(func_id, make_global=True)
                     status = "✓" if success else "✗"
                     print(f"   {status} {func_id}: {msg}")
                     if not success:
