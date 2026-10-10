@@ -14,6 +14,8 @@ Or with explicit arguments:
     python3 scripts/install_openwebui.py --url http://localhost:3000 --api-key your-key
 """
 
+from __future__ import annotations
+
 import argparse
 import asyncio
 import json
@@ -22,7 +24,11 @@ import re
 import sys
 from pathlib import Path
 
-import aiohttp
+try:
+    import aiohttp
+except ImportError:
+    print("❌ aiohttp is required. Install it: pip install aiohttp")
+    sys.exit(1)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 PLUGIN_JSON = BASE_DIR / "plugin" / "plugin.json"
@@ -55,6 +61,7 @@ class OpenDesignerInstaller:
                 "Content-Type": "application/json",
             },
             timeout=timeout,
+            ssl=True,
         )
         return self
 
@@ -68,8 +75,12 @@ class OpenDesignerInstaller:
             print(f"❌ plugin.json not found at {PLUGIN_JSON}")
             sys.exit(1)
 
-        with open(PLUGIN_JSON) as f:
-            self.functions_config = json.load(f)
+        try:
+            with open(PLUGIN_JSON) as f:
+                self.functions_config = json.load(f)
+        except json.JSONDecodeError as e:
+            print(f"❌ plugin.json is corrupt: {e}")
+            sys.exit(1)
 
         print(
             f"📦 Loaded plugin: {self.functions_config['name']} v{self.functions_config['version']}"
@@ -126,7 +137,10 @@ class OpenDesignerInstaller:
             url = f"{self.base_url}{API_GET.format(id=func_id)}"
             async with self.session.get(url) as resp:
                 if resp.status == 200:
-                    return await resp.json()
+                    try:
+                        return await resp.json()
+                    except (json.JSONDecodeError, ValueError):
+                        return None
                 return None
         except Exception:
             return None
@@ -136,7 +150,10 @@ class OpenDesignerInstaller:
         try:
             async with self.session.get(f"{self.base_url}{API_LIST}") as resp:
                 if resp.status == 200:
-                    data = await resp.json()
+                    try:
+                        data = await resp.json()
+                    except (json.JSONDecodeError, ValueError):
+                        return []
                     if isinstance(data, list):
                         return data
                     if isinstance(data, dict) and "functions" in data:
@@ -151,16 +168,46 @@ class OpenDesignerInstaller:
         method: str,
         url: str,
         json_data: dict | None = None,
-        max_retries: int = 3,
+        max_retries: int = 5,
     ) -> aiohttp.ClientResponse | None:
-        """Make an HTTP request with retry logic for transient failures."""
+        """Make an HTTP request with retry logic for transient failures.
+
+        Retries on:
+        - Network errors (TimeoutError, aiohttp.ClientError)
+        - HTTP 429 Too Many Requests (rate limiting)
+        - HTTP 5xx server errors (transient failures)
+        """
         last_exception: Exception | None = None
         for attempt in range(max_retries):
             try:
                 if method == "GET":
-                    return await self.session.get(url)
+                    resp = await self.session.get(url)
                 elif method == "POST":
-                    return await self.session.post(url, json=json_data)
+                    resp = await self.session.post(url, json=json_data)
+                else:
+                    return None
+
+                # Retry on transient HTTP errors
+                if resp.status == 429:  # Rate limiting
+                    try:
+                        wait = int(resp.headers.get("Retry-After", 2**attempt))
+                    except (ValueError, TypeError):
+                        wait = 2**attempt  # Fallback to exponential backoff
+                    print(
+                        f"   ⏳ Rate limited (429), retrying after {wait}s: {attempt + 1}/{max_retries}"
+                    )
+                    await asyncio.sleep(wait)
+                    continue
+                elif 500 <= resp.status < 600:  # Server errors
+                    wait = 2**attempt  # 1s, 2s, 4s
+                    print(
+                        f"   ⏳ Server error ({resp.status}), retrying after {wait}s: {attempt + 1}/{max_retries}"
+                    )
+                    await asyncio.sleep(wait)
+                    continue
+                else:
+                    return resp  # Success — return immediately
+
             except (TimeoutError, aiohttp.ClientError) as e:
                 last_exception = e
                 if attempt < max_retries - 1:
@@ -270,6 +317,15 @@ class OpenDesignerInstaller:
         with open(path) as f:
             content = f.read()
 
+        # Limit content size to prevent OOM and hit API limits (~50KB max)
+        max_content_size = 50_000  # 50KB
+        if len(content) > max_content_size:
+            return False, (
+                f"Function content too large ({len(content)} bytes). "
+                f"Maximum allowed: {max_content_size} bytes. "
+                f"This may indicate a corrupted or malicious function file."
+            )
+
         func_id = path.stem
         func_name = Path(func_path).parent.name.replace("_", " ").title()
         frontmatter = self._extract_frontmatter(content)
@@ -288,21 +344,33 @@ class OpenDesignerInstaller:
         }
 
         try:
-            async with self.session.post(f"{self.base_url}{API_CREATE}", json=payload) as resp:
-                if resp.status in (200, 201):
-                    return True, "Created"
+            url = f"{self.base_url}{API_CREATE}"
+            resp = await self._request_with_retry("POST", url, json_data=payload)
+            if resp is None:
+                return False, "Could not connect to server"
 
-                # Function already exists — try update
-                error_text = await resp.text()
-                # OpenWebUI returns 400 with ID_TAKEN message when function exists
-                if (
-                    resp.status in (400, 409)
-                    or "already" in error_text.lower()
-                    or "taken" in error_text.lower()
-                ):
-                    return await self.update_function(func_id, content, frontmatter)
+            # Handle transient errors by retrying
+            if resp.status == 429:
+                # Retry-After already handled in _request_with_retry, but if we get here
+                # after all retries exhausted, fall through to update attempt
+                pass
+            elif 500 <= resp.status < 600:
+                # Server error after retries exhausted — try update (may be stale state)
+                pass
+            elif resp.status in (200, 201):
+                return True, "Created"
 
-                return False, f"HTTP {resp.status}: {error_text[:200]}"
+            # Function already exists — try update
+            error_text = await resp.text()
+            # OpenWebUI returns 400 with ID_TAKEN message when function exists
+            if (
+                resp.status in (400, 409)
+                or "already" in error_text.lower()
+                or "taken" in error_text.lower()
+            ):
+                return await self.update_function(func_id, content, frontmatter)
+
+            return False, f"HTTP {resp.status}: {error_text[:200]}"
         except TimeoutError:
             return False, "Request timeout (function content is large, try again)"
         except aiohttp.ClientError as e:
@@ -332,15 +400,18 @@ class OpenDesignerInstaller:
             "meta": {
                 "author": frontmatter.get("author", "Unknown"),
                 "version": frontmatter.get("version", "0.1.0"),
+                "description": func_name,
             },
         }
 
         try:
             url = f"{self.base_url}{API_UPDATE.format(id=func_id)}"
-            async with self.session.post(url, json=payload) as resp:
-                if resp.status in (200, 201):
-                    return True, "Updated"
-                return False, f"HTTP {resp.status}: {await resp.text()[:200]}"
+            resp = await self._request_with_retry("POST", url, json_data=payload)
+            if resp is None:
+                return False, "Could not connect to server"
+            if resp.status in (200, 201):
+                return True, "Updated"
+            return False, f"HTTP {resp.status}: {await resp.text()[:200]}"
         except TimeoutError:
             return False, "Request timeout during update"
         except aiohttp.ClientError as e:
@@ -387,7 +458,11 @@ class OpenDesignerInstaller:
         Returns (passed, list_of_failure_messages).
         """
         functions = await self.list_functions()
-        func_map = {f["id"]: f for f in functions}
+        func_map = {}
+        for f in functions:
+            fid = f.get("id")
+            if fid is not None:
+                func_map[fid] = f
 
         failures: list[str] = []
         expected_set = set(expected_ids)
@@ -505,8 +580,11 @@ async def main():
         for dir_path in sorted(init_dirs):
             init_file = Path(dir_path) / "__init__.py"
             if not init_file.exists():
-                init_file.write_text("# Open WebUI function module\n")
-                print(f"   ✓ Created: {dir_path}/__init__.py")
+                try:
+                    init_file.write_text("# Open WebUI function module\n")
+                    print(f"   ✓ Created: {dir_path}/__init__.py")
+                except OSError as e:
+                    print(f"   ✗ Failed to create {dir_path}/__init__.py: {e}")
             else:
                 print(f"   ✓ Exists: {dir_path}/__init__.py")
 
